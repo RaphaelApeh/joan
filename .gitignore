@@ -1,2 +1,4 @@
 .lib/
 *.exe
+# cmake dir
+CMakeFiles
