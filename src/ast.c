@@ -165,17 +165,17 @@ AST* ast_match(Arena* arena, AST* sub, case_t* cases, AST* def)
     return ast;
 }
 
-AST* ast_struct(const char* ident, attr_t* attr)
+AST* ast_struct(Arena* arena,const char* ident, attr_t* attr)
 {
-    AST* ast = malloc(sizeof(ast));
+    AST* ast = ast_create(arena, AST_MATCH);
     ast->struct_node.attrs = attr;
     ast->struct_node.ident = ident;
     return ast;
 }
 
-AST* ast_class(const char* ident, attr_t* attr, klass_t* base)
+AST* ast_class(Arena* arena, const char* ident, attr_t* attr, klass_t* base)
 {
-    AST* ast = malloc(sizeof(ast));
+    AST* ast = ast_create(arena, AST_MATCH);
     ast->type = AST_CLASS;
     ast->class_node.ident = ident;
     ast->class_node.base = base;
@@ -201,7 +201,7 @@ AST* ast_call(Arena* arena, const char* callee)
     AST* ast = ast_create(arena, AST_CALL);
     ast->call.callee = callee;
     ast->call.pos_count = 0;
-    ast->call.pos_args = malloc(sizeof(AST *) * 8);
+    ast->call.pos_args = arena_alloc(arena, sizeof(AST *) * 8);
     ast->call.params = param_init();
     return ast;
 }
