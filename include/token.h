@@ -46,6 +46,10 @@ typedef enum {
     TOKEN_ARSHIFT, // >>=
     TOKEN_ALSHIFT, // <<=
     TOKEN_APERCENTAGE, // %=
+    TOKEN_ABITAC, // ^=
+    TOKEN_ASLASH, // /=
+    TOKEN_ABITAND, // &=
+    TOKEN_ABITOR, // |= TODO: name change
 
     TOKEN_EQUAL,
     TOKEN_EQEQ,

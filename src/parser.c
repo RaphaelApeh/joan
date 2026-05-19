@@ -12,6 +12,7 @@
 #define _check(p, t, n)((n) ? (p)->next.type == (type) : (p)->curr.type == (type))
 
 #define GET_LEX(p)((p)->curr.lexeme)
+#define GET_TOK(p) (p)->curr
 
 int check(parser* p, TokenType type)
 {
@@ -24,6 +25,30 @@ static bool match(parser* p, TokenType type)
     advance_parser_c(p);
     return true;
 }
+
+
+static bool is_assign_token(TokenType type)
+{
+    switch (type)
+    {
+        case TOKEN_APLUS:
+        case TOKEN_AMINUS:
+        case TOKEN_ASTAR: // TODO: TOKEN_AMUL
+        case TOKEN_EQUAL:
+        case TOKEN_ASLASH:
+        case TOKEN_APERCENTAGE:
+        case TOKEN_ARSHIFT:
+        case TOKEN_ALSHIFT:
+        case TOKEN_ABITAC:
+        case TOKEN_ABITAND:
+        case TOKEN_ABITOR:
+            return true;
+        default:
+            return false;
+    }
+}
+
+
 void advance_parser(parser* p)
 {
     p->curr = p->next;
@@ -319,18 +344,9 @@ static AST* parse_postfix(parser* p, AST* left)
         //     left = parse_member(p, left);
         //     continue;
         // }
-        if (
-            check(p, TOKEN_APLUS) ||
-            check(p, TOKEN_AMINUS) ||
-            check(p, TOKEN_ASTAR) ||
-            check(p, TOKEN_ARSHIFT) ||
-            check(p, TOKEN_ALSHIFT) ||
-            check(p, TOKEN_EQUAL) ||
-            check(p, TOKEN_APERCENTAGE)
-        )
-        {
+        if (is_assign_token(GET_TOK(p).type))
             return parse_reassign(p, left);
-        }
+    
         if (check(p, TOKEN_LBRACKET))
         {
             left = parse_index(p, left);

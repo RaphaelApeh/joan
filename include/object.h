@@ -9,12 +9,25 @@
 typedef struct array_t array_t;
 typedef struct Object Object;
 
-#define STR_OBJ(s)(String8{.str = (s), .len = strlen((s))})
+#define STR_OBJ(s)(ObjString{.str = (s), .len = strlen((s))})
+
+typedef Object* (* NativeFn) (Object** argv, size_t argc);
 
 typedef struct {
     char* str;
     size_t len;
-} String8;
+} ObjString;
+
+
+typedef struct {
+    NativeFn fn;
+    char* fnName;
+} NativeObject;
+
+typedef struct {
+    size_t start;
+    size_t end;
+} RangeObject;
 
 typedef enum{
     NONE_TYPE = -1,
@@ -25,24 +38,29 @@ typedef enum{
     ARRAY_TYPE,
     DICT_TYPE,
     FUNCTION_TYPE,
+    NATIVE_TYPE,
+    ITER_TYPE,
+    INSTANCE_TYPE,
+    ENUM_TYPE,
 } ObjectType;
 
 typedef struct array_t
 {
-    Object** items;
     size_t count;
     size_t capacity;
+    Object** items;
 } array_t;
 
 
 typedef struct Object{
     ObjectType kind;
     union{
-        char* o_string;
-        int o_int;
+        char* o_string; // TODO: change to ObjString o_string;
+        int o_int; // TODO: change to ....(something)
         bool o_bool;
         double o_float;
         array_t* o_array;
+        NativeObject* o_nativefn;
     };
 } Object;
 

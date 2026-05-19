@@ -1,10 +1,20 @@
 #include <strings.h>
 #include <ctype.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include "token.h"
 #include "lexer.h"
 
 #define CHECK_TOK(lex, str) ((strcmp((lex), (str))) == 0)
+
+static bool peekAdvance(lexer* l, char c)
+{
+    if (peek(l) != c)
+        return false;
+    advance(l);
+    return true;
+}
+
 token clean_token(lexer* l)
 {
     token t;
@@ -263,6 +273,8 @@ token next_token(lexer* l)
             }
             return make_token(l, TOKEN_GT);
         case '^':
+            if (peekAdvance(l, '='))
+                return make_token(l, TOKEN_ABITAC);
             return make_token(l, TOKEN_BITAC);
         case '<':
             if (peek(l) == '='){
@@ -295,6 +307,8 @@ token next_token(lexer* l)
         case '/':
             if (peek(l) == '/')
                 return make_comment(l);
+            else if (peekAdvance(l, '='))
+                return make_token(l, TOKEN_ASLASH);
             return make_token(l, TOKEN_SLASH);
         case '?':
             return make_token(l, TOKEN_QUESTION);
@@ -307,14 +321,16 @@ token next_token(lexer* l)
             {
                 advance(l);
                 return make_token(l, TOKEN_AND);
-            }
+            } else if (peekAdvance(l, '='))
+                return make_token(l, TOKEN_ABITAND);
             return make_token(l, TOKEN_BITAND);
         case '|':
             if (peek(l) == '|')
             {
                 advance(l);
                 return make_token(l, TOKEN_OR);
-            }
+            } else if (peekAdvance(l, '='))
+                return make_token(l, TOKEN_ABITOR);
             return make_token(l, TOKEN_BITOR);
         case '#':
             return make_token(l, TOKEN_HASH);

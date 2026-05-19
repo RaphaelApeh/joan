@@ -22,7 +22,7 @@ static int loop_depth = 0;
 static InterpretResult die(VM* vm, const char* msg, ...)
 {
     va_list arg; va_start(arg, msg);
-    fprintf(
+    fprintf( // TODO: current impl does not get the exact line and column
         stderr, 
         "Error[main:%d:%d] ",
         vm->p->curr.line, vm->p->curr.column
@@ -39,10 +39,7 @@ static void push(VM* vm, Object* object)
     *vm->sp++ = object;
 }
 
-static Object* pop(VM* vm)
-{
-    return *--vm->sp;
-}
+static Object* pop(VM* vm){ return *--vm->sp; }
 
 InterpretResult vm_run(VM* vm)
 {
@@ -108,6 +105,11 @@ InterpretResult vm_run(VM* vm)
                 a = eval_binary(b, a, EVAL_PERC);
                 if (NULL == a)
                     err(vm, "Invalid binary");
+                push(vm, a);
+                break;
+            case OP_DIV:
+                a = pop(vm); b = pop(vm);
+                a = eval_binary(b, a, EVAL_DIV);
                 push(vm, a);
                 break;
             case OP_BITAC:
@@ -202,22 +204,78 @@ InterpretResult vm_run(VM* vm)
                 o = get_env(vm->env, ident);
                 if (NULL == a)
                     err(vm, "undefine variable.");
+                if (o->kind != a->kind)
+                    return die(vm, "Expected a type '%s' but got '%s'."); // TODO: get type str repr
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
-                        o->o_int += a->o_int;
+                        b = eval_binary(o, a, EVAL_ADD);
+                        if (NULL == b)
+                            break;
+                        *o = *b; // TODO
                         break;
                     case TOKEN_AMINUS:
-                        o->o_int -= a->o_int;
+                        b = eval_binary(o, a, EVAL_SUB);
+                        if (NULL == b)
+                            break;
+                        *o = *b; // TODO
                         break;
                     case TOKEN_EQUAL:
-                        o->o_bool = a->o_bool;
+                        *o = *a; //TODO
                         break;
                     case TOKEN_ASTAR:
-                        o->o_int *= a->o_int;
+                        b = eval_binary(o, a, EVAL_MUL);
+                        if (NULL == b)
+                            break;
+                        *o = *b; // TODO
                         break;
                     case TOKEN_ARSHIFT:
-                        o->o_int = o->o_int >> a->o_int;
+                        b = eval_binary(o, a, EVAL_RSHIFT);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_ALSHIFT:
+                        b = eval_binary(o, a, EVAL_LSHIFT);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_BITAC:
+                        b = eval_binary(o, a, EVAL_BAC);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_APERCENTAGE:
+                        b = eval_binary(o, a, EVAL_PERC);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_ABITAC:
+                        b = eval_binary(o, a, EVAL_BAC);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_ASLASH:
+                        b = eval_binary(o, a, EVAL_DIV);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_ABITAND:
+                        b = eval_binary(o, a, EVAL_BAND);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
+                        break;
+                    case TOKEN_ABITOR:
+                        b = eval_binary(o, a, EVAL_BOR);
+                        if (NULL == b)
+                            break;
+                        *o = *b;
                         break;
                     default:
                         err(vm, "invalid operator.");
@@ -487,6 +545,9 @@ void compile(AST* node, Chuck* chuck)
                 break;
             case TOKEN_IN:
                 write_chuck(chuck, OP_IN);
+                break;
+            case TOKEN_SLASH:
+                write_chuck(chuck, OP_DIV);
                 break;
             default:
                 break;
