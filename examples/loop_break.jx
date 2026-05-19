@@ -1,0 +1,15 @@
+loop {
+    println "Ran once"
+    break // loop breaks
+    println "NaN"
+}
+{
+    loop {
+        loop {
+            println "Hello World"
+            break
+        }
+        break
+    }
+}
+println "Done"

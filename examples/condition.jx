@@ -1,0 +1,19 @@
+// boolean operation
+let x = true
+let count = 0
+let capacity = 8 // change to any capacity
+loop {
+    count += 1
+    // skip 2
+    if count == 2 then 
+        continue
+    if x {
+        x = !x
+        println "x is true"
+    } elseif !x {
+        x = !x
+        println "x is false"
+    }
+    if count == capacity then 
+        break
+}

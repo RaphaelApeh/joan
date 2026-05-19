@@ -1,0 +1,6 @@
+let x = 0
+loop {
+    println x
+    x += 1
+    if x == 20 then break
+}

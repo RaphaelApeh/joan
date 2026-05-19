@@ -1,0 +1,2 @@
+const max = fn(a, b) a if a > b else b
+println max(12, 3)

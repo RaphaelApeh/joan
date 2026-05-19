@@ -1,0 +1,4 @@
+let name = "John"
+println name
+name = "Doe"
+println name

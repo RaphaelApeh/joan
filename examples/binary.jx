@@ -1,0 +1,4 @@
+let x = 32.2
+let y = x * 23.4
+println y
+println 1 << 10 // 1024

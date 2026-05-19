@@ -1,0 +1,4 @@
+
+let hello = `Hello World`
+let x = hello
+println x // print Hello World

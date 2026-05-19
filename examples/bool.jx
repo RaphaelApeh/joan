@@ -1,0 +1,5 @@
+let bool = 1 + 3 >= 4
+const x = true
+println !bool// boolean
+println not bool
+println bool == not x
