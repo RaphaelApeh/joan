@@ -1,0 +1,26 @@
+{
+  "name": "joan",
+  "displayName": "Joan",
+  "description": "Joan Programming Language",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.120.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "joan",
+      "aliases": ["Joan", "joan"],
+      "extensions": [".jx"],
+      "icon": {"dark": "./images/logo.png", "light": "./images/logo.png"},
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "joan",
+      "scopeName": "source.jx",
+      "path": "./syntaxes/joan.tmLanguage.json"
+    }]
+  }
+}

@@ -289,7 +289,7 @@ AST* ast_call(Arena* arena, const char* callee);
 //Match
 AST* ast_match(Arena* arena, AST* sub, case_t* cases, AST* def);
 //CLASS, STRUCT
-AST* ast_struct(const char* ident, attr_t* attr);
+AST* ast_struct(Arena* arena, const char* ident, attr_t* attr);
 
 //AST* ast_class(const char* ident, attr_t* attr, klass_t* base);
 

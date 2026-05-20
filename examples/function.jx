@@ -1,5 +1,9 @@
-fn add(a, b){
-    retrun a + b
+let x = "John"
+let count = len(x)
+let curr = 3
+loop {
+    curr -= 1
+    if curr == 0 then
+        break
+    println x[curr]
 }
-let x = add(23, 43)
-println x

@@ -244,70 +244,63 @@ static AST* parse_reassign(parser* p, AST* node)
     return ast;
 }
 
-static AST* parse_call(parser* p, const char* callee)
+static AST* parse_call(parser* p, AST* callee)
 {
-    advance_parser_c(p);
-    AST* ast = ast_call(p->arena, callee);
-    while(!check(p, TOKEN_RPARN))
+    //e.g main(1, None, true)
+    //TODO:
+    if (callee->type != AST_IDENTIFIER)
+        return parse_error(p, "Expected an identifier.");
+    advance_parser_c(p); // (
+    AST* ast = ast_call(p->arena, callee->identifier);// TODO
+    AST* args[20]  = {0}; // TODO
+    size_t len = 0;
+    while(!match(p, TOKEN_RPARN))
     {
-        if (check(p, TOKEN_IDENTIFIER) && check_next(p, TOKEN_EQUAL))
-        {
-
-            char* ident = p->curr.lexeme;
-            advance_parser_c(p);
-            if (check(p, TOKEN_EQUAL))
-            {
-                advance_parser_c(p);
-                AST* v = parse_expr(p);
-                param_add(ast->call.params, ident, v);
-            }
-        }else if (check(p, TOKEN_IDENTIFIER))
-            call_add_pos(ast, parse_expr(p));
-        else if (!check(p, TOKEN_COMMA))
-            call_add_pos(ast, parse_value(p));
-        if (check(p, TOKEN_COMMA))
-        {
-            advance_parser_c(p);
+        args[len++] = parse_expr(p);
+        if (match(p, TOKEN_COMMA))
             continue;
-        }
+        if (match(p, TOKEN_RPARN))
+            break;
     }
-    advance_parser_c(p); // )
+    ast->call.pos_args = args;
+    ast->call.pos_count = len;
     return ast;
 }
 
 static AST* parse_member(parser* p, AST* obj)
 {
-    advance_parser_c(p);
-    if (!check(p, TOKEN_IDENTIFIER))
-        return parse_error(p, "Expected a field identifier but got %s", GET_LEX(p));
-    char* field = GET_LEX(p);
-    advance_parser_c(p);
-    AST* ret = ast_member(p->arena, obj, field);
-    // MEMBER CALL
-    if (check(p, TOKEN_LPARN))
-    {
-        AST* callie = parse_call(p, field);
-        ret->member.is_call = true;
-        ret->member.is_getter = false;
-        ret->member.is_setter = false;
-        ret->member.callie = callie;
-        return ret;
-    }
-    // MEMBER SETTER
-    else if (check(p, TOKEN_EQUAL))
-    {
-        advance_parser(p);
-        if (check(p, TOKEN_NEWLINE))
-            return parse_error(p, "Expected a value");
-        AST* setter = parse_expr(p);
-        ret->member.is_setter = true;
-        ret->member.is_call = false;
-        ret->member.is_getter = false;
-        ret->member.setter = setter;
-        return ret;
-    }
-    // DEFAULT GETTER
-    return ret;
+    //TODO
+    // advance_parser_c(p);
+    // if (!check(p, TOKEN_IDENTIFIER))
+    //     return parse_error(p, "Expected a field identifier but got %s", GET_LEX(p));
+    // char* field = GET_LEX(p);
+    // advance_parser_c(p);
+    // AST* ret = ast_member(p->arena, obj, field);
+    // // MEMBER CALL
+    // if (check(p, TOKEN_LPARN))
+    // {
+    //     AST* callie = parse_call(p, field);
+    //     ret->member.is_call = true;
+    //     ret->member.is_getter = false;
+    //     ret->member.is_setter = false;
+    //     ret->member.callie = callie;
+    //     return ret;
+    // }
+    // // MEMBER SETTER
+    // else if (check(p, TOKEN_EQUAL))
+    // {
+    //     advance_parser(p);
+    //     if (check(p, TOKEN_NEWLINE))
+    //         return parse_error(p, "Expected a value");
+    //     AST* setter = parse_expr(p);
+    //     ret->member.is_setter = true;
+    //     ret->member.is_call = false;
+    //     ret->member.is_getter = false;
+    //     ret->member.setter = setter;
+    //     return ret;
+    // }
+    // // DEFAULT GETTER
+    // return ret;
 }
 
 static AST* parse_index(parser* p, AST* arr)
@@ -333,12 +326,12 @@ static AST* parse_postfix(parser* p, AST* left)
 
     while (true)
     {
+        if (check(p, TOKEN_LPARN))
+        {
+            left = parse_call(p, left);
+            continue;
+        }
         //TODO
-        // if (check(p, TOKEN_LPARN))
-        // {
-        //     left = parse_call(p, ident);
-        //     continue;
-        // }
         // if (check(p, TOKEN_DOT))
         // {
         //     left = parse_member(p, left);

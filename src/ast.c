@@ -195,14 +195,15 @@ AST* ast_member(Arena* arena, AST* obj, const char* field)
     return ast;
 }
 
-// obj(2, a=b)
+
 AST* ast_call(Arena* arena, const char* callee)
 {
     AST* ast = ast_create(arena, AST_CALL);
     ast->call.callee = callee;
     ast->call.pos_count = 0;
-    ast->call.pos_args = arena_alloc(arena, sizeof(AST *) * 8);
-    ast->call.params = param_init();
+    //TODO
+    //ast->call.pos_args = arena_alloc(arena, sizeof(AST *) * 8);
+    //ast->call.params = param_init();
     return ast;
 }
 

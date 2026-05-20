@@ -30,8 +30,8 @@ typedef struct {
 } RangeObject;
 
 typedef enum{
-    NONE_TYPE = -1,
-    STR_TYPE = 0,
+    NONE_TYPE = 0,
+    STR_TYPE,
     INT_TYPE,
     BOOL_TYPE,
     FLOAT_TYPE,

@@ -417,6 +417,30 @@ InterpretResult vm_run(VM* vm)
                 offset |= READ_BYTE();
                 vm->ip -= offset;
                 break;
+            case OP_CALL:
+                count = READ_BYTE();  ident = READ_IDENT();
+                o = get_env(vm->env, ident);
+                if (NULL == o)
+                    return die(vm, "undefine function '%s'.", ident);
+                if (o->kind != FUNCTION_TYPE && o->kind != NATIVE_TYPE)
+                    return die(vm, "%s is not a callable.", ident);
+                Object* args[20];
+                size_t len = 0;
+                for (size_t i = 0; i < count; ++i)
+                    args[len++] = pop(vm);
+                switch (o->kind)
+                {
+                    case NATIVE_TYPE: {
+                        a = o->o_nativefn->fn(args, (size_t)count);
+                        if (a == NULL)
+                            return die(vm, "SystemError: got NULL");
+                        push(vm, a);
+                        break;
+                    }
+                    default: 
+                        break;
+                }
+                break;
             case OP_ERROR_MSG:
                 ident = READ_IDENT();
                 printf("%s\n", ident);
@@ -460,6 +484,16 @@ void compile(AST* node, Chuck* chuck)
             compile(node->array.elements[i], chuck);
         write_chuck(chuck, OP_ARRAY);
         write_chuck(chuck, node->array.count);
+        break;
+    case AST_CALL:
+        for (size_t i = 0; i < node->call.pos_count; i++)
+        {
+            compile(node->call.pos_args[i], chuck);
+        }
+        id = add_ident(chuck, (char *)node->call.callee);
+        write_chuck(chuck, OP_CALL);
+        write_chuck(chuck, node->call.pos_count);
+        write_chuck(chuck, id);
         break;
     case AST_BLOCK:
         write_chuck(chuck, OP_SCOPE_ENTER);

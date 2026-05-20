@@ -1,0 +1,71 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Joan",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#operators"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#single_string"
+		},
+		{
+			"include": "#template-string"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.joan",
+				"match": "\\b(if|elseif|else|fn|class|struct|match|const|let|while|for|break|continue|is|and|or|as|not|using|println|loop|None|true|false|then|return)\\b"
+			}]
+		},
+		"operators": {
+			"patterns": [
+				{
+					"name": "keyword.control.joan",
+					"match": "[=+\\-\\*.<>@~$%^&!?:.\\\\#]+"
+				}
+			]
+		},
+		"single_string": {
+			"name": "string.quoted.single.joan",
+			"begin": "'",
+			"end": "'",
+			"patterns": [
+				{
+					"name": "constant.character.escape.joan",
+					"match": "\\\\."
+				}
+			]
+		},
+		"template-string": {
+			"name": "string.quoted.temp_string.joan",
+			"begin": "`",
+			"end": "`",
+			"patterns": [
+				{
+					"name": "constant.character.escape.joan",
+					"match": "\\\\."
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.joan",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.joan",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.jx"
+}
