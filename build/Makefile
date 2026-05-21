@@ -183,6 +183,30 @@ src/ast.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/ast.c.s
 .PHONY : src/ast.c.s
 
+src/builtins/function.obj: src/builtins/function.c.obj
+.PHONY : src/builtins/function.obj
+
+# target to build an object file
+src/builtins/function.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.obj
+.PHONY : src/builtins/function.c.obj
+
+src/builtins/function.i: src/builtins/function.c.i
+.PHONY : src/builtins/function.i
+
+# target to preprocess a source file
+src/builtins/function.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.i
+.PHONY : src/builtins/function.c.i
+
+src/builtins/function.s: src/builtins/function.c.s
+.PHONY : src/builtins/function.s
+
+# target to generate assembly for a file
+src/builtins/function.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.s
+.PHONY : src/builtins/function.c.s
+
 src/chuck.obj: src/chuck.c.obj
 .PHONY : src/chuck.obj
 
@@ -487,6 +511,9 @@ help:
 	@echo ... src/ast.obj
 	@echo ... src/ast.i
 	@echo ... src/ast.s
+	@echo ... src/builtins/function.obj
+	@echo ... src/builtins/function.i
+	@echo ... src/builtins/function.s
 	@echo ... src/chuck.obj
 	@echo ... src/chuck.i
 	@echo ... src/chuck.s

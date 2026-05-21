@@ -1,9 +1,6 @@
-let x = "John"
-let count = len(x)
-let curr = 3
-loop {
-    curr -= 1
-    if curr == 0 then
-        break
-    println x[curr]
-}
+// built-in len function
+let name = gets("Enter your Name: ")
+if (name == "") then
+    println "Did not provide a name."
+else
+println "Hi " + name

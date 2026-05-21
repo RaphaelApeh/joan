@@ -6,6 +6,7 @@
 #include "vm.h"
 #include "chuck.h"
 #include "arena.h"
+#include "builtins/function.h"
 
 char* read_file(const char* filename)
 {
@@ -32,12 +33,6 @@ char* read_file(const char* filename)
 }
 
 
-Object* builtin_len(Object** argv, size_t argc)
-{
-    if ((int)argc > 1)
-        return NULL;
-    return obj_int(strlen(argv[0]->o_string));
-}
 int main(int argc, char** argv)
 {
     if (argc != 2)
@@ -57,12 +52,6 @@ int main(int argc, char** argv)
     chuck.env = p->env;
     p->arena = &arena;
     chuck_init(&chuck);
-    Object len;
-    len.kind = NATIVE_TYPE;
-    len.o_nativefn = malloc(sizeof(NativeObject));
-    len.o_nativefn->fnName = "len";
-    len.o_nativefn->fn = builtin_len;
-    set_env(p->env, "len", &len, true, false);
     VM vm = {0};
     vm.p = p;
     while(p->curr.type != TOKEN_EOF)
@@ -77,6 +66,7 @@ int main(int argc, char** argv)
     vm.sp = vm.stack;
     vm.global = chuck.env;
     vm.env = vm.global;
+    set_functions(chuck.env);
     InterpretResult i = vm_run(&vm);
     if (i == INTERPRET_RUNTIME_ERROR)
         goto end;

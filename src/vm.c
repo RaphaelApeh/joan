@@ -426,8 +426,15 @@ InterpretResult vm_run(VM* vm)
                     return die(vm, "%s is not a callable.", ident);
                 Object* args[20];
                 size_t len = 0;
-                for (size_t i = 0; i < count; ++i)
+                for (int i = 0; i < count; ++i)
+                {
                     args[len++] = pop(vm);
+                }
+                a = o->o_nativefn->fn(args, (size_t)count);
+                if (a == NULL)
+                    return die(vm, "SystemError: got NULL");
+                push(vm, a);
+                break;
                 switch (o->kind)
                 {
                     case NATIVE_TYPE: {
@@ -438,7 +445,7 @@ InterpretResult vm_run(VM* vm)
                         break;
                     }
                     default: 
-                        break;
+                        return die(vm, "Invalid function call.");
                 }
                 break;
             case OP_ERROR_MSG:
@@ -486,7 +493,7 @@ void compile(AST* node, Chuck* chuck)
         write_chuck(chuck, node->array.count);
         break;
     case AST_CALL:
-        for (size_t i = 0; i < node->call.pos_count; i++)
+        for (int i = 0; i < node->call.pos_count; i++)
         {
             compile(node->call.pos_args[i], chuck);
         }
