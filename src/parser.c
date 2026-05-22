@@ -87,7 +87,6 @@ precedence get_prec(TokenType type)
     case TOKEN_STAR:
     case TOKEN_SLASH:
     case TOKEN_PLUS:
-    case TOKEN_RANGE:
     case TOKEN_RSHIFT:
     case TOKEN_LSHIFT:
     case TOKEN_PERCENTAGE:
@@ -105,6 +104,10 @@ precedence get_prec(TokenType type)
     
     case TOKEN_OR:
         return PREC_OR;
+    
+    case TOKEN_RANGE:
+        return PREC_PRIMARY;
+    
     default:
         return PREC_NONE;
     }

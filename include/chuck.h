@@ -47,8 +47,11 @@ typedef enum{
     OP_SCOPE_ENTER,
     OP_SCOPE_EXIT,
 
+    OP_ITER,
     OP_ARRAY,
     OP_INDEX,
+    OP_RANGE,
+
     OP_REASSIGN,
     OP_FUNCTION,
     OP_BLOCK,

@@ -18,10 +18,12 @@ static Object* builtin_len(Object** argv, size_t argc)
 {
     if ((int)argc > 1 || (int)argc < 1)
         return NULL;
-    if (argv[0]->kind != STR_TYPE && argv[0]->kind != ARRAY_TYPE)
+    if (argv[0]->kind != STR_TYPE && argv[0]->kind != ARRAY_TYPE && argv[0]->kind != ITER_TYPE)
         return NULL;
     if (argv[0]->kind == STR_TYPE)
         return obj_int(strlen(argv[0]->o_string));
+    else if (argv[0]->kind == ITER_TYPE)
+        return obj_int(argv[0]->iter->count);
     return obj_int(argv[0]->o_array->count);
 }
 

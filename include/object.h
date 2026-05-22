@@ -11,6 +11,15 @@ typedef struct Object Object;
 
 #define STR_OBJ(s)(ObjString{.str = (s), .len = strlen((s))})
 
+#define pushItem(arr, obj) do{\
+    if ((arr)->count >= (arr)->capacity)\
+    {\
+        (arr)->capacity *= 2;\
+        (arr)->items = realloc((arr)->items, sizeof(Object *) * (arr)->capacity);\
+    }\
+    (arr)->items[(arr)->count++] = (obj); \
+}while(false)
+
 typedef Object* (* NativeFn) (Object** argv, size_t argc);
 
 typedef struct {
@@ -28,6 +37,12 @@ typedef struct {
     size_t start;
     size_t end;
 } RangeObject;
+
+typedef struct {
+    Object** items;
+    size_t count;
+    size_t capacity;
+} IterObject;
 
 typedef enum{
     NONE_TYPE = 0,
@@ -61,6 +76,7 @@ typedef struct Object{
         double o_float;
         array_t* o_array;
         NativeObject* o_nativefn;
+        IterObject* iter;
     };
 } Object;
 
@@ -71,6 +87,7 @@ Object* obj_string(char* str);
 Object* obj_none(void);
 Object* obj_bool(bool o_bool);
 Object* obj_float(double o_float);
+IterObject* ObjectIter(unsigned int capacity);
 
 array_t* init_array(void);
 void array_add(array_t* arr, Object* obj);

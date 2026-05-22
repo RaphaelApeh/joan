@@ -48,6 +48,7 @@ InterpretResult vm_run(VM* vm)
     #define READ_IDENT() (vm->chuck->idents[READ_BYTE()])
     int count;
     Object* o = NULL;
+    IterObject* iter = NULL;
     Object *a, *b;
     Object *array, *pos;
     char* ident;
@@ -197,6 +198,19 @@ InterpretResult vm_run(VM* vm)
                 o->o_array = arr;
                 push(vm, o);
                 break;
+            case OP_ITER:
+                count = READ_BYTE();
+                iter = ObjectIter(count);
+                for (int i = count - 1; i >= 0; --i)
+                {
+                    //pushItem(iter, pop(vm));
+                    iter->items[i] = pop(vm);
+                    iter->count++;
+                }
+                o = obj_new(ITER_TYPE);
+                o->iter = iter;
+                push(vm, o);
+                break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
                 int t_op = READ_BYTE();
@@ -291,6 +305,27 @@ InterpretResult vm_run(VM* vm)
                 o = pop(vm);
                 push(vm, obj_bool(!is_truthy(o)));
                 break;
+            case OP_RANGE:
+                Object *b = pop(vm), *a = pop(vm);
+                if (a->kind != INT_TYPE || b->kind != INT_TYPE)
+                    return die(vm, "Expected type int but got TODO:");
+                int start = a->o_int, end = b->o_int;
+                int tmp;
+                if (start > end)
+                {
+                    tmp = end;
+                    end = start;
+                    start = tmp;
+                }
+                iter = ObjectIter(b->o_int);
+                for (int i = start; i < end; ++i)
+                {
+                    pushItem(iter, obj_int(i));
+                }
+                o = obj_new(ITER_TYPE);
+                o->iter = iter;
+                push(vm, o);
+                break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
                 o = get_env(vm->env, ident);
@@ -337,7 +372,7 @@ InterpretResult vm_run(VM* vm)
                 pos = pop(vm);
                 if (!array || !pos)
                     err(vm, "None value array or pos.");
-                if (array->kind != ARRAY_TYPE && array->kind != STR_TYPE)
+                if (array->kind != ARRAY_TYPE && array->kind != STR_TYPE && array->kind != ITER_TYPE)
                     err(vm, "Invalid kind for array or pos.");
                 if (pos->kind != INT_TYPE)
                     err(vm, "pos is not an int");
@@ -359,14 +394,18 @@ InterpretResult vm_run(VM* vm)
                         o = obj_string(str);
                         push(vm, o);
                         break;
+                    case ITER_TYPE:
+                        if (index < 0 || index >= array->iter->count)
+                            return die(vm, "pos is > or < array length");
+                        o = array->iter->items[index];
+                        push(vm, o);
+                        break;
                     default:
                         err(vm, "Got an invaild array type");
                 }
                 break;
             case OP_SET_INDEX:
                 Object* value = pop(vm); array = pop(vm); pos = pop(vm);
-                if (array->kind != ARRAY_TYPE && array->kind != STR_TYPE)
-                    return die(vm, "Expected a type 'array' or 'string'.");
                 index = pos->o_int;
                 if (index < 0)
                     return die(vm, "Got an negative index value.");
@@ -378,15 +417,19 @@ InterpretResult vm_run(VM* vm)
                         array->o_array->items[index] = value;
                         break;
                     case STR_TYPE:
-                    if (index >= strlen(array->o_string))
-                            return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", strlen(array->o_string), index);
-                    if (value->kind != STR_TYPE)
-                        return die(vm, "string index expect a string value.");
-                    if (strlen(value->o_string) > 0)
-                        return die(vm, "Can only set a char to a string.");
-                    array->o_string[index] = value->o_string[0];
-                    break;
-                }
+                        if (index >= strlen(array->o_string))
+                                return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", strlen(array->o_string), index);
+                        if (value->kind != STR_TYPE)
+                            return die(vm, "string index expect a string value.");
+                        if (strlen(value->o_string) > 0)
+                            return die(vm, "Can only set a char to a string.");
+                        array->o_string[index] = value->o_string[0];
+                        break;
+                    case ITER_TYPE:
+                        return die(vm, "Iter object does not support index setting.");
+                    default:
+                        return die(vm, "type does not support index setting.");
+                 }
                 break;
             case OP_SCOPE_ENTER:
                 env_t* local = init_env(vm->env);
@@ -492,6 +535,12 @@ void compile(AST* node, Chuck* chuck)
         write_chuck(chuck, OP_ARRAY);
         write_chuck(chuck, node->array.count);
         break;
+    case AST_TUPLE:
+        for (size_t i = 0; i < node->tuple.count; ++i)
+            compile(node->tuple.elements[i], chuck);
+        write_chuck(chuck, OP_ITER);
+        write_chuck(chuck, node->tuple.count);
+        break;
     case AST_CALL:
         for (int i = 0; i < node->call.pos_count; i++)
         {
@@ -590,6 +639,8 @@ void compile(AST* node, Chuck* chuck)
             case TOKEN_SLASH:
                 write_chuck(chuck, OP_DIV);
                 break;
+            case TOKEN_RANGE:
+                write_chuck(chuck, OP_RANGE); break;
             default:
                 break;
         }

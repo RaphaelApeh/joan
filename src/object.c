@@ -81,6 +81,20 @@ void print_array(Object* obj)
     }
     fprintf(stderr, "]");
 }
+
+IterObject* ObjectIter(unsigned int capacity)
+{
+    IterObject* iter = malloc(sizeof(IterObject));
+    if (capacity <= 0)
+    {
+        capacity = 100;
+    }
+    iter->items = malloc(sizeof(Object *) * capacity);
+    iter->capacity = 100;
+    iter->count = 0;
+    return iter;
+}
+
 void print_object(Object* obj)
 {
     if (NULL == obj) return;
@@ -104,6 +118,9 @@ void print_object(Object* obj)
             break;
         case FUNCTION_TYPE:
             //TODO
+            break;
+        case ITER_TYPE:
+            fprintf(stderr, "<iter <%llu> at %p>", obj->iter->count, obj->iter);
             break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->o_nativefn->fnName, obj->o_nativefn);

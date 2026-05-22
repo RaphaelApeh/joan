@@ -1,5 +1,6 @@
-for x in 0...10
-{
-    put "number: "
-    println x
-}
+// Range expression
+let x = 32..21
+let count = 2
+// ❌ Error can not set an iter object
+//x[count + 1] = 23
+println len(x)

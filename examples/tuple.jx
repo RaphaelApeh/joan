@@ -1,2 +1,1 @@
-let empty_values = (0, false, None, "")
-println empty_values
+// TODO:

@@ -34,6 +34,7 @@ typedef enum{
     AST_WHILE,
     AST_MATCH,
     AST_ARRAY,
+    AST_RANGE,
     AST_HASHMAP,
     AST_LOOP,
     AST_MEMBER,
@@ -194,6 +195,12 @@ typedef struct AST{
             bool is_yield;
             bool is_async;
         } fn_node;
+
+        struct {
+            AST* start;
+            AST* end;
+        } range_node;
+
         struct {
             AST** statements;
             u64 count;
