@@ -33,6 +33,14 @@
 				}
 			]
 		},
+		"comment": {
+			"patterns": [
+				{
+					"name": "comment.block.joan",
+					"match": "//.*"
+				}
+			]
+		},
 		"single_string": {
 			"name": "string.quoted.single.joan",
 			"begin": "'",
