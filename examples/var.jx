@@ -1,4 +1,5 @@
-let first_name = "John"
-let last_name = "Doe"
-
-println first_name + " " + last_name
+let name = None
+if name is None {
+    name = "John"
+}
+println name

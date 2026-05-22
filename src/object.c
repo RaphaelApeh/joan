@@ -7,6 +7,8 @@
 #include "helper.h"
 
 
+Object NoneObj = {0};
+Object TrueObj = {0};
 
 Object* obj_new(ObjectType kind)
 {
@@ -31,9 +33,16 @@ Object* obj_string(char* str)
 
 Object* obj_bool(bool o_bool)
 {
-    Object* obj = obj_new(BOOL_TYPE);
-    obj->o_bool = o_bool;
-    return obj;
+    // professional code :)
+    if (o_bool)
+    {
+        TrueObj.kind = BOOL_TYPE;
+        TrueObj.o_bool = o_bool;
+        return &TrueObj;
+    }
+    NoneObj.kind = BOOL_TYPE;
+    NoneObj.o_bool = o_bool;
+    return &NoneObj;
 }
 
 Object* obj_float(double o_float)
@@ -45,9 +54,10 @@ Object* obj_float(double o_float)
 
 Object* obj_none(void)
 {
-    Object* obj = obj_new(NONE_TYPE);
-    obj->o_int = -1;
-    return obj;
+    //Probably not the best way to do it.
+    NoneObj.kind = NONE_TYPE;
+    NoneObj.o_int = 0;
+    return &NoneObj;
 }
 
 array_t* init_array(void)

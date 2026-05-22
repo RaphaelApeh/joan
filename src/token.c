@@ -129,6 +129,8 @@ token identifier(lexer* l)
         t.type = TOKEN_IN;
     else if (strcmp(t.lexeme, "or") == 0)
         t.type = TOKEN_OR;
+    else if (strcmp(t.lexeme, "is") == 0)
+        t.type = TOKEN_IS;
     else if (strcmp(t.lexeme, "do") == 0)
         t.type = TOKEN_DO;
     else if (strcmp(t.lexeme, "while") == 0)

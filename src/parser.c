@@ -101,10 +101,11 @@ precedence get_prec(TokenType type)
     
     case TOKEN_IN:
         return PREC_IN;
-    
+
     case TOKEN_OR:
         return PREC_OR;
     
+    case TOKEN_IS:
     case TOKEN_RANGE:
         return PREC_PRIMARY;
     
@@ -349,10 +350,10 @@ static AST* parse_postfix(parser* p, AST* left)
             continue;
         }
 
-        if (check(p, TOKEN_IF))
-        {
-            return parse_inline_if(p, left);
-        }
+        // if (check(p, TOKEN_IF))
+        // {
+        //     return parse_inline_if(p, left);
+        // }
         //TODO
         // if (check(p, TOKEN_DOT))
         // {

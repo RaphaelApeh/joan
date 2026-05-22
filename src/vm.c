@@ -218,8 +218,7 @@ InterpretResult vm_run(VM* vm)
                 o = get_env(vm->env, ident);
                 if (NULL == a)
                     err(vm, "undefine variable.");
-                if (o->kind != a->kind)
-                    return die(vm, "Expected a type '%s' but got '%s'."); // TODO: get type str repr
+                o->kind = a->kind;
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
@@ -299,6 +298,13 @@ InterpretResult vm_run(VM* vm)
                 a = pop(vm);
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_IN);
+                push(vm, a);
+                break;
+            case OP_IS:
+                b = pop(vm); a = pop(vm);
+                a = eval_binary(a, b, EVAL_IS);
+                if (NULL == a)
+                    return die(vm, "Invalid binary opration.");
                 push(vm, a);
                 break;
             case OP_NOT:
@@ -409,6 +415,7 @@ InterpretResult vm_run(VM* vm)
                 index = pos->o_int;
                 if (index < 0)
                     return die(vm, "Got an negative index value.");
+                array->kind = value->kind;
                 switch (array->kind)
                 {
                     case ARRAY_TYPE:
@@ -641,6 +648,8 @@ void compile(AST* node, Chuck* chuck)
                 break;
             case TOKEN_RANGE:
                 write_chuck(chuck, OP_RANGE); break;
+            case TOKEN_IS:
+                write_chuck(chuck, OP_IS); break;
             default:
                 break;
         }

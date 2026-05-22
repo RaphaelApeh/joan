@@ -79,6 +79,7 @@ typedef enum {
     TOKEN_WHILE,
     TOKEN_OR,
     TOKEN_AS,
+    TOKEN_IS,
     TOKEN_IN,
     TOKEN_NOT,
     TOKEN_AND,

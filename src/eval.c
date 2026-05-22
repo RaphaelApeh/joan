@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 #include "eval.h"
 
 #define eval_bin(l, r, op) obj_float(tonumber((l)) op tonumber((r)))
@@ -25,8 +26,24 @@ static double tonumber(Object* obj)
 
 Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
 {
+    bool is_true = false;
     if (NULL == lhs || NULL == rhs)
         goto end;
+    if (op == EVAL_IS)
+    {
+        // TODO
+        if (lhs == rhs)
+            is_true = true;
+        return obj_bool(is_true);
+    }
+    //TODO
+    // if (lhs->kind == NONE_TYPE || rhs->kind == NONE_TYPE)
+    // {
+    //     if (lhs->kind == NONE_TYPE)
+    //     {
+
+    //     }
+    // }
     if (isnumber(lhs) && isnumber(rhs))
     {
         ObjectType ot;
@@ -71,6 +88,7 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
                 goto end;
         }
     }
+    
     if (lhs->kind == STR_TYPE && rhs->kind == STR_TYPE)
     {
         char* str = NULL;
