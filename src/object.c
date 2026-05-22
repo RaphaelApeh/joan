@@ -90,7 +90,7 @@ void print_object(Object* obj)
         case INT_TYPE:
             fprintf(stderr, "%d", obj->o_int); break;
         case STR_TYPE:
-            fprintf(stderr, "\"%s\"", (obj->o_string[0] != '\0') ? obj->o_string : "None");
+            fprintf(stderr, "%s", (obj->o_string[0] != '\0') ? obj->o_string : "None");
             break;
         case BOOL_TYPE:
             fprintf(stderr, (obj->o_bool) ? "true": "false"); break;
@@ -104,6 +104,9 @@ void print_object(Object* obj)
             break;
         case FUNCTION_TYPE:
             //TODO
+            break;
+        case NATIVE_TYPE:
+            fprintf(stderr, "<function <%s> at %p>", obj->o_nativefn->fnName, obj->o_nativefn);
             break;
         default:
             fprintf(stderr, "undefine");

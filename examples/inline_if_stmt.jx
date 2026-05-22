@@ -1,0 +1,7 @@
+// <then> if <cond> else <otherwise>
+let username = gets("Enter your username: ")
+let firstname = gets("Enter your firstname: ")
+let lastname = gets("Enter your lastname: ")
+let name = username if username != "" else "Anonymous User"
+put("Hello, ")
+println name + " " + firstname + " " + lastname

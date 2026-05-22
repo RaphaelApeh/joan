@@ -303,6 +303,20 @@ static AST* parse_member(parser* p, AST* obj)
     // return ret;
 }
 
+static AST* parse_inline_if(parser* p, AST* node)
+{
+    advance_parser_c(p); // if
+    AST* cond = parse_expr(p);
+    if (!match(p, TOKEN_ELSE))
+        return parse_error(p, "Expected an 'else' clause.");
+    AST* elsenode = parse_expr(p);
+    AST* ast = ast_create(p->arena, AST_INLINE_IF);
+    ast->inline_if_stmt.cond = cond;
+    ast->inline_if_stmt.then = node;
+    ast->inline_if_stmt.otherwise = elsenode;
+    return ast;
+}
+
 static AST* parse_index(parser* p, AST* arr)
 {
     advance_parser_c(p); //[
@@ -330,6 +344,11 @@ static AST* parse_postfix(parser* p, AST* left)
         {
             left = parse_call(p, left);
             continue;
+        }
+
+        if (check(p, TOKEN_IF))
+        {
+            return parse_inline_if(p, left);
         }
         //TODO
         // if (check(p, TOKEN_DOT))

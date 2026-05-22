@@ -594,6 +594,15 @@ void compile(AST* node, Chuck* chuck)
                 break;
         }
         break;
+    case AST_INLINE_IF:
+        compile(node->inline_if_stmt.cond, chuck);
+        int inline_false_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        compile(node->inline_if_stmt.then, chuck);
+        int inline_end_jmp = emit_jump(chuck, OP_JUMP);
+        patch_jump(chuck, inline_false_jmp);
+        compile(node->inline_if_stmt.otherwise, chuck);
+        patch_jump(chuck, inline_end_jmp);
+        break;
     case AST_IF:
         compile(node->if_node.condition, chuck);
         int false_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);

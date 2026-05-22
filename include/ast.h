@@ -43,6 +43,7 @@ typedef enum{
     AST_SETTER,
     AST_INSTANCE,
     AST_IF,
+    AST_INLINE_IF,
     AST_BLOCK,
     AST_FOR,
     AST_FUNCTION,
@@ -111,6 +112,12 @@ typedef struct AST{
             size_t count;
             size_t capacity;
         } tuple;
+
+        struct {
+            AST* then;
+            AST* cond;
+            AST* otherwise;
+        } inline_if_stmt;
 
         struct {
             AST* out;
