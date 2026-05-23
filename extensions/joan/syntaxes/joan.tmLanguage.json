@@ -6,6 +6,9 @@
 			"include": "#comment"
 		},
 		{
+			"include": "#typewords"
+		},
+		{
 			"include": "#keywords"
 		},
 		{
@@ -31,8 +34,16 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.joan",
-				"match": "\\b(if|elseif|else|fn|class|struct|match|const|let|while|for|break|continue|is|and|or|as|not|using|println|loop|None|true|false|then|return)\\b"
+				"match": "\\b(if|elseif|else|fn|class|struct|match|const|let|while|for|break|continue|is|and|or|as|not|using|loop|return)\\b"
 			}]
+		},
+		"typewords": {
+			"patterns": [
+				{
+					"name": "typewords.joan",
+					"match": "\\b(None|true|false|println|then)\\b"
+				}
+			]
 		},
 		"operators": {
 			"patterns": [

@@ -4,21 +4,28 @@
             {
                 "scope": "keyword.control.joan",
                 "settings": {
-                    "foreground": "#01bb01f5",
+                    "foreground": "#D8A0DF",
                     "fontStyle": "bold"
                 }
             },
             {
                 "scope": "operators.control.joan",
                 "settings": {
-                    "foreground": "#ca2508",
+                    "foreground": "#B4B4B4",
                     "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": "typewords.joan",
+                "settings": {
+                    "foreground": "#6675c7",
+                    "fontStyle": "bold",
                 }
             },
             {
                 "scope": "ident.joan",
                 "settings": {
-                    "foreground": "#21da11",
+                    "foreground": "#DADADA",
                     "fontStyle": "bold"
                 }
             }
