@@ -1,0 +1,27 @@
+{
+    "editor.tokenColorCustomizations": {
+        "textMateRules": [
+            {
+                "scope": "keyword.control.joan",
+                "settings": {
+                    "foreground": "#01bb01f5",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": "operators.control.joan",
+                "settings": {
+                    "foreground": "#ca2508",
+                    "fontStyle": "bold"
+                }
+            },
+            {
+                "scope": "ident.joan",
+                "settings": {
+                    "foreground": "#21da11",
+                    "fontStyle": "bold"
+                }
+            }
+        ]
+    }
+}
