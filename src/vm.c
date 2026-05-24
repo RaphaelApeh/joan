@@ -483,7 +483,7 @@ InterpretResult vm_run(VM* vm)
                 offset |= READ_BYTE();
                 vm->ip -= offset;
                 break;
-            case OP_CALL:
+            case OP_CALL:{
                 count = READ_BYTE();  ident = READ_IDENT();
                 o = get_env(vm->env, ident);
                 if (NULL == o)
@@ -496,11 +496,6 @@ InterpretResult vm_run(VM* vm)
                 {
                     args[len++] = pop(vm);
                 }
-                a = o->o_nativefn->fn(args, (size_t)count);
-                if (a == NULL)
-                    return die(vm, "SystemError: got NULL");
-                push(vm, a);
-                break;
                 switch (o->kind)
                 {
                     case NATIVE_TYPE: {
@@ -514,6 +509,7 @@ InterpretResult vm_run(VM* vm)
                         return die(vm, "Invalid function call.");
                 }
                 break;
+            }
             case OP_ERROR_MSG:
                 ident = READ_IDENT();
                 printf("%s\n", ident);
