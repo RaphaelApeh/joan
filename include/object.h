@@ -6,6 +6,8 @@
 
 #include "env.h"
 
+typedef struct Chuck Chuck;
+
 typedef struct array_t array_t;
 typedef struct Object Object;
 
@@ -59,6 +61,13 @@ typedef enum{
     ENUM_TYPE,
 } ObjectType;
 
+typedef struct {
+    Chuck* chuck;
+    char** params;
+    int arity;
+    char* name;
+} ObjFunction;
+
 typedef struct array_t
 {
     size_t count;
@@ -77,6 +86,7 @@ typedef struct Object{
         array_t* o_array;
         NativeObject* o_nativefn;
         IterObject* iter;
+        ObjFunction* fn;
     };
 } Object;
 
@@ -88,6 +98,7 @@ Object* obj_none(void);
 Object* obj_bool(bool o_bool);
 Object* obj_float(double o_float);
 IterObject* ObjectIter(unsigned int capacity);
+Object* obj_function(Chuck* chuck, char** params, int arity, char* name);
 
 array_t* init_array(void);
 void array_add(array_t* arr, Object* obj);

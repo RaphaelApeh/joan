@@ -144,7 +144,7 @@ AST* parse_error(parser* p, const char* msg, ...)
     return ast_error(p->arena, p, msg);
 }
 
-AST* parse_loop(parser* p)
+static AST* parse_loop(parser* p)
 {
     advance_parser_c(p); // loop
     AST* ast = ast_create(p->arena, AST_LOOP);
@@ -153,7 +153,7 @@ AST* parse_loop(parser* p)
     return ast;
 }
 
-AST* parse_while(parser* p)
+static AST* parse_while(parser* p)
 {
     advance_parser_c(p); // while
     AST* cond = parse_expr(p);
@@ -169,7 +169,8 @@ AST* parse_while(parser* p)
     ast->while_node.block = block;
     return ast;
 }
-AST* parse_if(parser* p)
+
+static AST* parse_if(parser* p)
 {
     advance_parser_c(p); // if token
     AST* cond = parse_expr(p);
@@ -213,8 +214,7 @@ AST* parse_if(parser* p)
     );
 }
 
-
-AST* parse_match(parser* p)
+static AST* parse_match(parser* p)
 {
     advance_parser_c(p); // match
     AST* stmt = parse_expr(p);
@@ -247,6 +247,44 @@ AST* parse_match(parser* p)
     ast->match_node.def = else_stmt;
     ast->match_node.cases = caseObj;
     ast->match_node.subject = stmt;
+    return ast;
+}
+
+static AST* parse_fn(parser* p)
+{
+    advance_parser_c(p); // fn
+    if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected an identifier.");
+    char* ident = GET_LEX(p);
+    advance_parser_c(p); // ident
+    char* params[256];
+    int len = 0;
+    AST* block = NULL;
+    if (!match(p, TOKEN_LPARN))
+        return parse_error(p, "Expected an '(");
+    while (!match(p, TOKEN_RPARN))
+    {
+        if (!check(p, TOKEN_IDENTIFIER))
+            return parse_error(p, "Expected an identifer.");
+        params[len++] = GET_LEX(p);
+        advance_parser_c(p);
+        if (match(p, TOKEN_COMMA))
+            continue;
+    }
+    if (match(p, TOKEN_THEN))
+        block = parse_expr(p);
+    else if (check(p, TOKEN_LBRACE))
+        block = parse_block(p);
+    else
+        return parse_error(p, "No function body.");
+    
+    AST* ast = ast_create(p->arena, AST_FUNCTION);
+    ast->fn_node.block = block;
+    ast->fn_node.name = ident;
+    ast->fn_node.params = params;
+    ast->fn_node.count = len;
+    ast->fn_node.is_async = false;
+    ast->fn_node.is_yield = false;
     return ast;
 }
 
@@ -504,6 +542,11 @@ AST* parse_value(parser* p)
             ast = ast_literal(p->arena, obj_string(t.lexeme));
             advance_parser_c(p);
             return ast;
+        case TOKEN_RETURN:
+            advance_parser_c(p);
+            ast = ast_create(p->arena, AST_RETURN);
+            ast->return_stmt.value = parse_expr(p);
+            return ast;
         case TOKEN_IDENTIFIER:
             ast = ast_identifier(p->arena, t.lexeme);
             advance_parser_c(p);
@@ -594,6 +637,8 @@ AST* parse_stmt(parser* p)
             return parse_match(p);
         case TOKEN_IF:
             return parse_if(p);
+        case TOKEN_FN:
+            return parse_fn(p);
         case TOKEN_LOOP:
             return parse_loop(p);
         case TOKEN_WHILE:

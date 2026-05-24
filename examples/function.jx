@@ -1,6 +1,6 @@
-// built-in len function
-let name = gets("Enter your Name: ")
-if (name == "") then
-    println "Did not provide a name."
-else
-println "Hi " + name
+let x = 1
+fn sayhello() {
+    // x += 1
+    println "Hello World"
+}
+sayhello()

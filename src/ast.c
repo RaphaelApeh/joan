@@ -147,15 +147,6 @@ AST* ast_continue(Arena* arena)
     return ast;
 }
 
-AST* ast_fn(Arena* arena, AST* block, const char* name, param_t* params)
-{
-    AST* ast = ast_create(arena, AST_FUNCTION);
-    ast->fn_node.name = name;
-    ast->fn_node.params = params;
-    ast->fn_node.block = block;
-    return ast;
-}
-
 AST* ast_match(Arena* arena, AST* sub, case_t* cases, AST* def)
 {
     AST* ast = ast_create(arena, AST_MATCH);

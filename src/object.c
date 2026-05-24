@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "chuck.h"
 #include "object.h"
 #include "helper.h"
 
@@ -64,6 +65,18 @@ Object* obj_none(void)
     NoneObj.kind = NONE_TYPE;
     NoneObj.o_int = 0;
     return &NoneObj;
+}
+
+Object* obj_function(Chuck* chuck, char** params, int arity, char* name)
+{
+    Object* obj = obj_new(FUNCTION_TYPE);
+    ObjFunction* fn = malloc(sizeof(ObjFunction));
+    fn->arity = arity;
+    fn->chuck = chuck;
+    fn->name = name;
+    fn->params = params;
+    obj->fn = fn;
+    return obj;
 }
 
 array_t* init_array(void)

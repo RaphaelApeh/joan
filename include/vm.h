@@ -8,6 +8,7 @@
 
 #define _STACK_MAX 1024
 #define _LOOP_MAX 256
+#define _FRAME_MAX 64
 
 typedef struct Chuck Chuck;
 typedef struct AST AST;
@@ -17,6 +18,12 @@ typedef enum
     INTERPRET_OK,
     INTERPRET_RUNTIME_ERROR
 } InterpretResult;
+
+typedef struct {
+    ObjFunction* fn;
+    uint8_t* ip;
+    env_t* env;
+} CallFrame;
 
 typedef struct VM{
     Chuck* chuck;
@@ -29,6 +36,10 @@ typedef struct VM{
 
     env_t* global;
     env_t* env;
+
+    CallFrame frames[_FRAME_MAX];
+    int frame_count;
+
     //GC gc;
 } VM;
 

@@ -189,12 +189,18 @@ typedef struct AST{
         } reassign;
 
         struct {
-            const char* name;
-            param_t* params;
             AST* block;
+            char* name;
+            // param_t* params;
+            char** params;
+            int count;
             bool is_yield;
             bool is_async;
         } fn_node;
+
+        struct {
+            AST* value;
+        } return_stmt;
 
         struct {
             AST* start;
@@ -295,8 +301,6 @@ AST* ast_if_node(Arena* arena, AST* cond, AST* then, elseif* elseif, AST* else_n
 AST* ast_break(Arena* arena);
 AST* ast_continue(Arena* arena);
 
-// FUNCTION, CALL, SETTER, GETTER
-AST* ast_fn(Arena* arena, AST* block, const char* ident, param_t* params);
 // obj()
 AST* ast_call(Arena* arena, const char* callee);
 

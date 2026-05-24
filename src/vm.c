@@ -505,6 +505,27 @@ InterpretResult vm_run(VM* vm)
                         push(vm, a);
                         break;
                     }
+                    case FUNCTION_TYPE: {
+                        ObjFunction* fn = o->fn;
+                        if (count != fn->arity)
+                            return die(
+                                vm, 
+                                "function '%s' expected %d args but got %d",
+                                fn->name, fn->arity, count
+                            );
+                        CallFrame* current = &vm->frames[vm->frame_count++];
+                        current->fn = fn;
+                        current->ip = vm->ip;
+                        current->env = vm->env;
+                        env_t* local = init_env(vm->env);
+                        for (int i = 0; i < fn->arity; ++i)
+                        {
+                            set_env(local, fn->params[i], args[i], false, false);
+                        }
+                        vm->env = local;
+                        vm->ip = fn->chuck->code;
+                        break;
+                    }
                     default: 
                         return die(vm, "Invalid function call.");
                 }
@@ -515,7 +536,18 @@ InterpretResult vm_run(VM* vm)
                 printf("%s\n", ident);
                 return INTERPRET_RUNTIME_ERROR;
             case OP_RETURN:
-                return INTERPRET_OK;
+                o = pop(vm);
+                vm->frame_count--;
+                if (vm->frame_count == 0)
+                {
+                    push(vm, o);
+                    return INTERPRET_OK;
+                }
+                CallFrame* frame = &vm->frames[vm->frame_count - 1];
+                vm->ip = frame->ip;
+                vm->env = frame->env;
+                push(vm, o);
+                break;
             case OP_ERROR:
                 return INTERPRET_RUNTIME_ERROR;
             default:
@@ -528,12 +560,12 @@ InterpretResult vm_run(VM* vm)
 
 void compile(AST* node, Chuck* chuck)
 {
-    int id, jump, offset;
+    int id, idx, jump, offset;
     LoopContext* loop;
     switch (node->type)
     {
     case AST_LITERAL:
-        int idx = add_constant(chuck, node->literal);
+        idx = add_constant(chuck, node->literal);
         write_chuck(chuck, OP_CONSTANT);
         write_chuck(chuck, idx);
         break;
@@ -702,6 +734,26 @@ void compile(AST* node, Chuck* chuck)
             patch_jump(chuck, end_jumps[i]);
 
         break;
+    case AST_FUNCTION: 
+        Chuck fn_chuck;
+        chuck_init(&fn_chuck);
+        compile(node->fn_node.block, &fn_chuck);
+        write_chuck(&fn_chuck, OP_RETURN);
+        Object* objFn = obj_function(
+            &fn_chuck,
+            node->fn_node.params,
+            node->fn_node.count,
+            node->fn_node.name
+        );
+        idx = add_constant(chuck, objFn);
+        write_chuck(chuck, OP_CONSTANT);
+        write_chuck(chuck, idx);
+
+        id = add_ident(chuck, node->fn_node.name);
+        write_chuck(chuck, OP_SET_GLOBAL);
+        write_chuck(chuck, id);
+        write_chuck(chuck, 1);
+        break;
     case AST_IF:
         compile(node->if_node.condition, chuck);
         int false_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
@@ -737,12 +789,8 @@ void compile(AST* node, Chuck* chuck)
         loop->breaks[loop->break_count++] = jump;
         break;
     case AST_RETURN:
-        if (loop_depth <= 0)
-        {
-            fprintf(stderr, "SystemError: add 'break' outside a loop.\n");
-            exit(72);
-        }
-        // TODO
+        compile(node->return_stmt.value, chuck);
+        write_chuck(chuck, OP_RETURN);
         break;
     case AST_CONTINUE:
         if (loop_depth <= 0)
