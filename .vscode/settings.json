@@ -28,6 +28,13 @@
                     "foreground": "#DADADA",
                     "fontStyle": "bold"
                 }
+            },
+            {
+                "scope": "function.call.joan",
+                "settings": {
+                    "foreground": "#FF0000",
+                    "fontStyle": "bold"
+                }
             }
         ]
     }
