@@ -1,0 +1,16 @@
+// Match statement
+let word = gets("Enter a word: ")
+
+match word {
+    "Hello" => {
+        println "Found"
+    }
+    "World" => {
+        println "Found"
+    }
+    "Hello World" => then
+        println "Found"
+    else {
+        println "Not Found"
+    }
+}

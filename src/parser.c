@@ -214,6 +214,42 @@ AST* parse_if(parser* p)
 }
 
 
+AST* parse_match(parser* p)
+{
+    advance_parser_c(p); // match
+    AST* stmt = parse_expr(p);
+    AST* else_stmt = NULL;
+    if (!match(p, TOKEN_LBRACE))
+        return parse_error(p, "Expected '{'"); // TODO
+    case_t* caseObj = init_case(p->arena);
+    while (!match(p, TOKEN_RBRACE))
+    {
+        if (match(p, TOKEN_ELSE))
+        {
+            if (match(p, TOKEN_THEN))
+                else_stmt = parse_expr(p);
+            else if (check(p, TOKEN_LBRACE))
+                else_stmt = parse_block(p);
+        } else 
+        {
+            AST* sub = parse_expr(p);
+            AST* block = NULL;
+            if (!match(p, TOKEN_EXR))
+                return parse_error(p, "Expected '=>'");
+            if (match(p, TOKEN_THEN))
+                block = parse_expr(p);
+            else if (check(p, TOKEN_LBRACE))
+                block = parse_block(p);
+            push_case(caseObj, sub, block);
+        }
+    }
+    AST* ast = ast_create(p->arena, AST_MATCH);
+    ast->match_node.def = else_stmt;
+    ast->match_node.cases = caseObj;
+    ast->match_node.subject = stmt;
+    return ast;
+}
+
 static AST* parse_assign(parser* p)
 {
     char* ident;
@@ -554,6 +590,8 @@ AST* parse_stmt(parser* p)
             return parse_assign(p);
         case TOKEN_LBRACE:
             return parse_block(p);
+        case TOKEN_MATCH:
+            return parse_match(p);
         case TOKEN_IF:
             return parse_if(p);
         case TOKEN_LOOP:

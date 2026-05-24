@@ -149,6 +149,8 @@ token identifier(lexer* l)
         t.type = TOKEN_CONST;
     else if (strcmp(t.lexeme, "struct") == 0)
         t.type = TOKEN_STRUCT;
+    else if (strcmp(t.lexeme, "match") == 0)
+        t.type = TOKEN_MATCH;
     else if (strcmp(t.lexeme, "println") == 0)
         t.type = TOKEN_PRINTLN;
     return t;

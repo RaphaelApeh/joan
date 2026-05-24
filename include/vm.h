@@ -7,7 +7,7 @@
 #include "parser.h"
 
 #define _STACK_MAX 1024
-#define _LooP_MAX 256
+#define _LOOP_MAX 256
 
 typedef struct Chuck Chuck;
 typedef struct AST AST;
@@ -35,13 +35,13 @@ typedef struct VM{
 typedef struct {
     int loop_offset;
     
-    int breaks[_LooP_MAX];
+    int breaks[_LOOP_MAX];
     int break_count;
 
-    int continues[_LooP_MAX];
+    int continues[_LOOP_MAX];
     int continue_count;
 
-    int returns[_LooP_MAX];
+    int returns[_LOOP_MAX];
     int return_count;
 } LoopContext;
 

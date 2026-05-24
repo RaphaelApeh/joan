@@ -376,8 +376,10 @@ InterpretResult vm_run(VM* vm)
                 }
                 break;
             case OP_POP:
-                pop(vm);
-                break;
+                pop(vm); break;
+            case OP_DUP:
+                Object* top = *(vm->sp - 1);
+                push(vm, top); break;
             case OP_SET_GLOBAL:
                 o = pop(vm);
                 ident = READ_IDENT();
@@ -680,6 +682,29 @@ void compile(AST* node, Chuck* chuck)
         patch_jump(chuck, inline_false_jmp);
         compile(node->inline_if_stmt.otherwise, chuck);
         patch_jump(chuck, inline_end_jmp);
+        break;
+    case AST_MATCH:
+        compile(node->match_node.subject, chuck);
+        int end_jumps[256];
+        int end_count = 0;
+        for (size_t i = 0; i < node->match_node.cases->count; ++i)
+        {
+            case_o caseObj = node->match_node.cases->cases[i];
+            write_chuck(chuck, OP_DUP);
+            compile(caseObj.pattern, chuck);
+            write_chuck(chuck, OP_EQUAL);
+            int next_case = emit_jump(chuck, OP_JUMP_IF_FALSE);
+            compile(caseObj.block, chuck);
+            end_jumps[end_count++] = emit_jump(chuck, OP_JUMP);
+            patch_jump(chuck, next_case);
+        }
+        if (node->match_node.def)
+        {
+            compile(node->match_node.def, chuck);
+        }
+        for (int i = 0; i < end_count; ++i)
+            patch_jump(chuck, end_jumps[i]);
+
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);

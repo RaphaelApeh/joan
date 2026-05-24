@@ -2,6 +2,7 @@
 
 #define HELPER_H
 #include <stdint.h>
+#include "arena.h"
 
 typedef struct AST AST;
 typedef uint64_t u64;
@@ -19,7 +20,7 @@ typedef struct param_t{
 } param_t;
 
 typedef struct case_o{
-    AST* check;
+    AST* pattern;
     AST* block;
 } case_o;
 
@@ -65,6 +66,8 @@ typedef struct klass_t{
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);
 param_t* param_init(void);
+case_t* init_case(Arena* arena);
+void push_case(case_t* caseObj, AST* sub, AST* block);
 
 void param_add(param_t* param, const char* ident, AST* value);
 

@@ -15,6 +15,28 @@ void runtime_error(char* msg, ...)
 }
 
 
+case_t* init_case(Arena* arena)
+{
+    case_t* caseObj = arena_alloc(arena, sizeof(case_t));
+    caseObj->count = 0;
+    caseObj->capacity = 100;
+    caseObj->cases = arena_alloc(
+        arena, sizeof(case_o) * caseObj->capacity
+    );
+    return caseObj;
+}
+
+void push_case(case_t* caseObj, AST* sub, AST* block)
+{
+    if (NULL == caseObj) return;
+    if (caseObj->count >= caseObj->capacity)
+    {
+        caseObj->capacity *= 2;
+        caseObj->cases = realloc(caseObj->cases, sizeof(case_o) * caseObj->capacity);
+    }
+    caseObj->cases[caseObj->count++] = (case_o){.pattern = sub, .block = block};
+}
+
 void call_add_pos(AST* call, AST* arg)
 {
     call->call.pos_args[call->call.pos_count++] = arg;

@@ -83,6 +83,7 @@ typedef enum {
     TOKEN_IN,
     TOKEN_NOT,
     TOKEN_AND,
+
     TOKEN_FN,
     TOKEN_DO,
     TOKEN_USING,
@@ -91,9 +92,11 @@ typedef enum {
     TOKEN_RETURN,
     TOKEN_CLASS,
     TOKEN_STRUCT,
+    TOKEN_MATCH,
     TOKEN_CONTINUE,
     TOKEN_BREAK,
     TOKEN_PRINTLN,
+    
     TOKEN_COMMENT,
 
     TOKEN_ERROR,
