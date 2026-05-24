@@ -1,6 +1,6 @@
-// IS Keyword
-println false is None // true
-println None is true // false
-println true is true // true
-println false is true // false
-println None is false // true
+let value = not false and (true or None)
+if value is not None then
+    println "Hello World"
+elseif (value is None) then
+    println "Name is None"
+// Hello World

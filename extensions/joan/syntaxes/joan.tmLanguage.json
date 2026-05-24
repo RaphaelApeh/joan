@@ -34,14 +34,14 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.joan",
-				"match": "\\b(if|elseif|else|fn|class|struct|match|const|let|while|for|break|continue|is|and|or|as|not|using|loop|return)\\b"
+				"match": "\\b(if|elseif|else|fn|class|struct|match|const|let|while|for|break|continue|is|and|or|as|not|using|loop|enum|return)\\b"
 			}]
 		},
 		"typewords": {
 			"patterns": [
 				{
 					"name": "typewords.joan",
-					"match": "\\b(None|true|false|println|then)\\b"
+					"match": "\\b(None|true|false|println|then|string|int|float|bool)\\b"
 				}
 			]
 		},

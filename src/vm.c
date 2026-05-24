@@ -307,6 +307,20 @@ InterpretResult vm_run(VM* vm)
                     return die(vm, "Invalid binary opration.");
                 push(vm, a);
                 break;
+            case OP_AND:
+                b = pop(vm); a = pop(vm);
+                a = eval_binary(a, b, EVAL_AND);
+                if (NULL == a)
+                    return die(vm, "Invalid binary opration.");
+                push(vm, a);
+                break;
+            case OP_OR:
+                b = pop(vm); a = pop(vm);
+                a = eval_binary(a, b, EVAL_OR);
+                if (NULL == a)
+                    return die(vm, "Invalid binary opration.");
+                push(vm, a);
+                break;
             case OP_NOT:
                 o = pop(vm);
                 push(vm, obj_bool(!is_truthy(o)));
@@ -650,6 +664,10 @@ void compile(AST* node, Chuck* chuck)
                 write_chuck(chuck, OP_RANGE); break;
             case TOKEN_IS:
                 write_chuck(chuck, OP_IS); break;
+            case TOKEN_AND:
+                write_chuck(chuck, OP_AND); break;
+            case TOKEN_OR:
+                write_chuck(chuck, OP_OR); break;
             default:
                 break;
         }

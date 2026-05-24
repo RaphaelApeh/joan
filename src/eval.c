@@ -35,6 +35,16 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
         if (lhs == rhs)
             is_true = true;
         return obj_bool(is_true);
+    }else if (op == EVAL_AND)
+    {
+        if (is_truthy(lhs) && is_truthy(rhs))
+            is_true = true;
+        return obj_bool(is_true);
+    } else if (op == EVAL_OR)
+    {
+        if (is_truthy(lhs) || is_truthy(rhs))
+            is_true = true;
+        return obj_bool(is_true);   
     }
     //TODO
     // if (lhs->kind == NONE_TYPE || rhs->kind == NONE_TYPE)

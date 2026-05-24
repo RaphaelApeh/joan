@@ -19,6 +19,12 @@ Object* obj_new(ObjectType kind)
 
 Object* obj_int(long o_int)
 {
+    if (o_int <= 0)
+    {
+        NoneObj.kind = INT_TYPE;
+        NoneObj.o_int = o_int;
+        return &NoneObj;
+    }
     Object* obj = obj_new(INT_TYPE);
     obj->o_int = o_int;
     return obj;

@@ -14,6 +14,8 @@ typedef enum{
     OP_NOT,
     OP_IN,
     OP_IS,
+    OP_OR,
+    OP_AND,
     OP_EQUAL,
     OP_NEQ,
     OP_GT,
