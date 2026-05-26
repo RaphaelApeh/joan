@@ -66,6 +66,8 @@ typedef enum{
     OP_BREAK,
     OP_CONTINUE,
 
+    OP_END,
+
     OP_ERROR_MSG,
     OP_ERROR,
 }OPCode;

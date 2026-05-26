@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "helper.h"
 #include "env.h"
 
 typedef struct Chuck Chuck;
@@ -11,7 +12,7 @@ typedef struct Chuck Chuck;
 typedef struct array_t array_t;
 typedef struct Object Object;
 
-#define STR_OBJ(s)(ObjString{.str = (s), .len = strlen((s))})
+#define STR_OBJ(s) (ObjString){.str = (s), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define pushItem(arr, obj) do{\
     if ((arr)->count >= (arr)->capacity)\
@@ -23,10 +24,12 @@ typedef struct Object Object;
 }while(false)
 
 typedef Object* (* NativeFn) (Object** argv, size_t argc);
+typedef Object* (* MethodFn) (Object* self, Object** argv, size_t argc);
 
 typedef struct {
     char* str;
-    size_t len;
+    unsigned long hash;
+    long len;
 } ObjString;
 
 
@@ -68,6 +71,13 @@ typedef struct {
     char* name;
 } ObjFunction;
 
+
+typedef struct {
+    Object** items;
+    size_t size;
+    size_t capacity;
+} ObjArray;
+
 typedef struct array_t
 {
     size_t count;
@@ -78,15 +88,17 @@ typedef struct array_t
 
 typedef struct Object{
     ObjectType kind;
-    union{
-        char* o_string; // TODO: change to ObjString o_string;
-        int o_int; // TODO: change to ....(something)
-        bool o_bool;
-        double o_float;
+    union
+    {
+        ObjString* str;
+        ObjArray* arr;
         array_t* o_array;
         NativeObject* o_nativefn;
         IterObject* iter;
         ObjFunction* fn;
+        double o_float;
+        bool o_bool;
+        int o_int; // TODO: change to ....(something)
     };
 } Object;
 

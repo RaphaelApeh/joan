@@ -10,6 +10,7 @@
 
 Object NoneObj = {0};
 Object TrueObj = {0};
+ObjString strObj = {0};
 
 Object* obj_new(ObjectType kind)
 {
@@ -34,7 +35,8 @@ Object* obj_int(long o_int)
 Object* obj_string(char* str)
 {
     Object* obj = obj_new(STR_TYPE);
-    obj->o_string = strdup(str);
+    strObj = STR_OBJ(str);
+    obj->str = &strObj;
     return obj;
 }
 
@@ -133,7 +135,7 @@ void print_object(Object* obj)
         case INT_TYPE:
             fprintf(stderr, "%d", obj->o_int); break;
         case STR_TYPE:
-            fprintf(stderr, "%s", (obj->o_string[0] != '\0') ? obj->o_string : "None");
+            fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->str : "None");
             break;
         case BOOL_TYPE:
             fprintf(stderr, (obj->o_bool) ? "true": "false"); break;
@@ -172,7 +174,7 @@ bool is_truthy(Object* obj)
     case FLOAT_TYPE:
         return obj->o_float != 0;
     case STR_TYPE:
-        return obj->o_string[0] != '\0';
+        return obj->str->len != 0;
     
     default:
         return false;

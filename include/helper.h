@@ -6,6 +6,7 @@
 
 typedef struct AST AST;
 typedef uint64_t u64;
+typedef struct J_DArray_Obj J_DArray_Obj;
 
 typedef struct param_o
 {
@@ -62,6 +63,16 @@ typedef struct klass_t{
     u64 count;
     u64 capacity;
 } klass_t;
+
+struct J_DArray_Obj {
+    void* items;
+    size_t size;
+    size_t capacity;
+};
+
+// Hash functions
+unsigned long fnv_hash(const void* key, uint32_t h);
+unsigned long djb2_hash(unsigned char* str);
 
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);

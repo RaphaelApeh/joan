@@ -1,2 +1,3 @@
-let hm = #{'a': 32, 'b': 32}
-println hm
+// let hm = #{'a': 32, 'b': 32}
+// println hm
+println "Hello World" is None

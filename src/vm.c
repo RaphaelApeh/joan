@@ -408,10 +408,10 @@ InterpretResult vm_run(VM* vm)
                         push(vm, o);
                         break;
                     case STR_TYPE:
-                        if (index < 0 || index >= strlen(array->o_string))
+                        if (index < 0 || index >= array->str->len)
                             return INTERPRET_RUNTIME_ERROR;
                         char* str = malloc(2);
-                        str[0] = array->o_string[index];
+                        str[0] = array->str->str[index];
                         str[1] = '\0';
                         o = obj_string(str);
                         push(vm, o);
@@ -429,9 +429,10 @@ InterpretResult vm_run(VM* vm)
             case OP_SET_INDEX:
                 Object* value = pop(vm); array = pop(vm); pos = pop(vm);
                 index = pos->o_int;
+                
                 if (index < 0)
                     return die(vm, "Got an negative index value.");
-                array->kind = value->kind;
+                
                 switch (array->kind)
                 {
                     case ARRAY_TYPE:
@@ -440,13 +441,13 @@ InterpretResult vm_run(VM* vm)
                         array->o_array->items[index] = value;
                         break;
                     case STR_TYPE:
-                        if (index >= strlen(array->o_string))
-                                return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", strlen(array->o_string), index);
+                        if (index >= array->str->len)
+                                return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
                         if (value->kind != STR_TYPE)
                             return die(vm, "string index expect a string value.");
-                        if (strlen(value->o_string) > 0)
+                        if (value->str->len > 0)
                             return die(vm, "Can only set a char to a string.");
-                        array->o_string[index] = value->o_string[0];
+                        array->str->str[index] = value->str->str[0];
                         break;
                     case ITER_TYPE:
                         return die(vm, "Iter object does not support index setting.");
@@ -538,6 +539,8 @@ InterpretResult vm_run(VM* vm)
                 ident = READ_IDENT();
                 printf("%s\n", ident);
                 return INTERPRET_RUNTIME_ERROR;
+            case OP_END:
+                return INTERPRET_OK;
             case OP_RETURN:
                 o = pop(vm);
                 if (vm->frame_count == 0)
@@ -742,9 +745,9 @@ void compile(AST* node, Chuck* chuck)
         Chuck fn_chuck;
         chuck_init(&fn_chuck);
         compile(node->fn_node.block, &fn_chuck);
-        // idx = add_constant(&fn_chuck, obj_none());
-        // write_chuck(&fn_chuck, OP_CONSTANT);
-        // write_chuck(&fn_chuck, idx);
+        idx = add_constant(&fn_chuck, obj_none());
+        write_chuck(&fn_chuck, OP_CONSTANT);
+        write_chuck(&fn_chuck, idx);
         write_chuck(&fn_chuck, OP_RETURN);
         Object* objFn = obj_function(
             &fn_chuck,

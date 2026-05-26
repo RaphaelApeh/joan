@@ -21,7 +21,7 @@ static Object* builtin_len(Object** argv, size_t argc)
     if (argv[0]->kind != STR_TYPE && argv[0]->kind != ARRAY_TYPE && argv[0]->kind != ITER_TYPE)
         return NULL;
     if (argv[0]->kind == STR_TYPE)
-        return obj_int(strlen(argv[0]->o_string));
+        return obj_int(argv[0]->str->len);
     else if (argv[0]->kind == ITER_TYPE)
         return obj_int(argv[0]->iter->count);
     return obj_int(argv[0]->o_array->count);
@@ -33,7 +33,7 @@ static Object* builtin_gets(Object** argv, size_t argc)
         return NULL;
     if (argv[0]->kind != STR_TYPE)
         return NULL;
-    fprintf(stderr, "%s", argv[0]->o_string);
+    fprintf(stderr, "%s", argv[0]->str->str);
     char buf[1024] = {0};
     char* str = fgets(buf, 1024, stdin);
     str[strlen(str) - 1] = '\0'; // remove "\n" char

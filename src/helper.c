@@ -5,6 +5,28 @@
 #include "ast.h"
 
 
+
+unsigned long djb2_hash(unsigned char* str)
+{
+    int c;
+    unsigned long hash = 5281;
+    while (c = *str++)
+        hash = ((hash << 5) + hash) + c;
+    return hash;
+}
+
+unsigned long fnv_hash(const void* key, uint32_t h)
+{
+    h ^= 2166136261UL;
+    const uint8_t* d = (const uint8_t*)key;
+    for (int i = 0; d[i] != '\0'; ++i)
+    {
+        h ^= d[i];
+        h *= 16777619;
+    }
+    return h;
+}
+
 void runtime_error(char* msg, ...)
 {
     va_list arg;

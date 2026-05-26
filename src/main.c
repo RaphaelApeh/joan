@@ -61,7 +61,7 @@ int main(int argc, char** argv)
         compile(stmt, &chuck);
         //write_chuck(&chuck, OP_POP);
     }
-    // write_chuck(&chuck, OP_RETURN);
+    write_chuck(&chuck, OP_END);
     vm.chuck = &chuck;
     vm.ip = chuck.code;
     vm.sp = vm.stack;

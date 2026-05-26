@@ -29,6 +29,7 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
     bool is_true = false;
     if (NULL == lhs || NULL == rhs)
         goto end;
+    
     if (op == EVAL_IS)
     {
         // TODO
@@ -46,14 +47,6 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
             is_true = true;
         return obj_bool(is_true);   
     }
-    //TODO
-    // if (lhs->kind == NONE_TYPE || rhs->kind == NONE_TYPE)
-    // {
-    //     if (lhs->kind == NONE_TYPE)
-    //     {
-
-    //     }
-    // }
     if (isnumber(lhs) && isnumber(rhs))
     {
         ObjectType ot;
@@ -105,17 +98,18 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
         switch (op)
         {
             case EVAL_ADD:
-                str = strcat(lhs->o_string, rhs->o_string);
+                str = strcat(lhs->str->str, rhs->str->str);
                 return obj_string(str);
+            case EVAL_IS:
             case EVAL_EQUAL:
                 return obj_bool(
-                    strcmp(lhs->o_string, rhs->o_string) == 0
+                    lhs->str->hash == rhs->str->hash
                 );
             case EVAL_IN:
-                return obj_bool(strstr(lhs->o_string, rhs->o_string) == NULL);
+                return obj_bool(strstr(lhs->str->str, rhs->str->str) == NULL);
             case EVAL_NOTEQUAL:
                 return obj_bool(
-                    strcmp(lhs->o_string, rhs->o_string) != 0
+                    lhs->str->hash != rhs->str->hash
                 );
             default:
                 goto end;
@@ -133,6 +127,7 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
             goto end;
         }
     }
+    
     return NULL;
     end:
         return NULL;
