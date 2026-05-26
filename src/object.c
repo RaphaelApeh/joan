@@ -175,7 +175,9 @@ bool is_truthy(Object* obj)
         return obj->o_float != 0;
     case STR_TYPE:
         return obj->str->len != 0;
-    
+    case NATIVE_TYPE:
+    case FUNCTION_TYPE:
+        return true;
     default:
         return false;
     }

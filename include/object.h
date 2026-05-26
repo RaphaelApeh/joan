@@ -49,6 +49,12 @@ typedef struct {
     size_t capacity;
 } IterObject;
 
+typedef struct {
+    Object* key;
+    Object* value;
+    Object* (* cmpFn)(Object* obj1, Object* obj2);
+} ObjHM;
+
 typedef enum{
     NONE_TYPE = 0,
     STR_TYPE,
@@ -93,6 +99,7 @@ typedef struct Object{
         ObjString* str;
         ObjArray* arr;
         array_t* o_array;
+        ObjHM* hashmap;
         NativeObject* o_nativefn;
         IterObject* iter;
         ObjFunction* fn;

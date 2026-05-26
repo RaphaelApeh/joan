@@ -1,5 +1,6 @@
-fn add(a, b) {
-    return a + b
-}
+// TODO
+// fn add() {
+//     println 2 + 3
+// }
 
-println add(22, 23)
+// add()
