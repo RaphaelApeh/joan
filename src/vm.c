@@ -745,10 +745,10 @@ void compile(AST* node, Chuck* chuck)
         Chuck fn_chuck;
         chuck_init(&fn_chuck);
         compile(node->fn_node.block, &fn_chuck);
-        idx = add_constant(&fn_chuck, obj_none());
-        write_chuck(&fn_chuck, OP_CONSTANT);
-        write_chuck(&fn_chuck, idx);
-        write_chuck(&fn_chuck, OP_RETURN);
+        // idx = add_constant(&fn_chuck, obj_none());
+        // write_chuck(&fn_chuck, OP_CONSTANT);
+        // write_chuck(&fn_chuck, idx);
+        write_chuck(&fn_chuck, OP_END);
         Object* objFn = obj_function(
             &fn_chuck,
             node->fn_node.params,
@@ -762,7 +762,7 @@ void compile(AST* node, Chuck* chuck)
         id = add_ident(chuck, node->fn_node.name);
         write_chuck(chuck, OP_SET_GLOBAL);
         write_chuck(chuck, id);
-        write_chuck(chuck, 1);
+        // write_chuck(chuck, 1);
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);

@@ -10,7 +10,6 @@
 
 Object NoneObj = {0};
 Object TrueObj = {0};
-ObjString strObj = {0};
 
 Object* obj_new(ObjectType kind)
 {
@@ -35,8 +34,9 @@ Object* obj_int(long o_int)
 Object* obj_string(char* str)
 {
     Object* obj = obj_new(STR_TYPE);
-    strObj = STR_OBJ(str);
-    obj->str = &strObj;
+    ObjString* strObj = malloc(sizeof(ObjString));
+    *strObj = STR_OBJ(str); // TODO
+    obj->str = strObj;
     return obj;
 }
 

@@ -12,7 +12,7 @@ typedef struct Chuck Chuck;
 typedef struct array_t array_t;
 typedef struct Object Object;
 
-#define STR_OBJ(s) (ObjString){.str = (s), .len = strlen((s)), .hash = djb2_hash((s))}
+#define STR_OBJ(s) (ObjString){.str = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define pushItem(arr, obj) do{\
     if ((arr)->count >= (arr)->capacity)\
