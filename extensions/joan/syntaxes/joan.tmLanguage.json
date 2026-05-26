@@ -15,13 +15,16 @@
 			"include": "#operators"
 		},
 		{
-			"include": "#identifier"
-		},
-		{
 			"include": "#function_call"
 		},
 		{
+			"include": "#identifier"
+		},
+		{
 			"include": "#strings"
+		},
+		{
+			"include": "#object"
 		},
 		{
 			"include": "#single_string"
@@ -57,7 +60,15 @@
 			"patterns": [
 				{
 					"name": "function.call.joan",
-					"match": "//b[a-zA-Z0-9_]*\\s*\\([^)]*\\)\\b"
+					"match": "\\b[a-zA-Z0-9_][a-zA-Z0-9_]*\\s*\\(\\b"
+				}
+			]
+		},
+		"object": {
+			"patterns": [
+				{
+					"name": "object.call.joan",
+					"match": "\\b[a-zA-Z0-9_][a-zA-Z0-9_]*\\s*\\{\\b"
 				}
 			]
 		},

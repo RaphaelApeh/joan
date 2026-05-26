@@ -492,9 +492,9 @@ InterpretResult vm_run(VM* vm)
                     return die(vm, "%s is not a callable.", ident);
                 Object* args[20];
                 size_t len = 0;
-                for (int i = 0; i < count; ++i)
+                for (int i = count - 1; i >= 0; --i)
                 {
-                    args[len++] = pop(vm);
+                    args[i] = pop(vm);
                 }
                 switch (o->kind)
                 {
@@ -506,6 +506,7 @@ InterpretResult vm_run(VM* vm)
                         break;
                     }
                     case FUNCTION_TYPE: {
+                        //  TODO
                         ObjFunction* fn = o->fn;
                         if (count != fn->arity)
                             return die(
@@ -513,12 +514,14 @@ InterpretResult vm_run(VM* vm)
                                 "function '%s' expected %d args but got %d",
                                 fn->name, fn->arity, count
                             );
+                        if (vm->frame_count >= _FRAME_MAX)
+                            return die(vm, "Stack Overflow");
                         CallFrame* current = &vm->frames[vm->frame_count++];
                         current->fn = fn;
                         current->ip = vm->ip;
                         current->env = vm->env;
                         env_t* local = init_env(vm->env);
-                        for (int i = 0; i < fn->arity; ++i)
+                        for (int i = 0; i < fn->arity; i++)
                         {
                             set_env(local, fn->params[i], args[i], false, false);
                         }
@@ -537,15 +540,16 @@ InterpretResult vm_run(VM* vm)
                 return INTERPRET_RUNTIME_ERROR;
             case OP_RETURN:
                 o = pop(vm);
-                vm->frame_count--;
                 if (vm->frame_count == 0)
                 {
                     push(vm, o);
                     return INTERPRET_OK;
                 }
-                CallFrame* frame = &vm->frames[vm->frame_count - 1];
+                env_t* old = vm->env;
+                CallFrame* frame = &vm->frames[--vm->frame_count];
                 vm->ip = frame->ip;
                 vm->env = frame->env;
+                free(old);
                 push(vm, o);
                 break;
             case OP_ERROR:
@@ -738,6 +742,9 @@ void compile(AST* node, Chuck* chuck)
         Chuck fn_chuck;
         chuck_init(&fn_chuck);
         compile(node->fn_node.block, &fn_chuck);
+        // idx = add_constant(&fn_chuck, obj_none());
+        // write_chuck(&fn_chuck, OP_CONSTANT);
+        // write_chuck(&fn_chuck, idx);
         write_chuck(&fn_chuck, OP_RETURN);
         Object* objFn = obj_function(
             &fn_chuck,

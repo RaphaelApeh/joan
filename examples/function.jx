@@ -1,6 +1,5 @@
-let x = 1
-fn sayhello() {
-    // x += 1
-    println "Hello World"
+fn add(a, b) {
+    return a + b
 }
-sayhello()
+
+println add(22, 23)

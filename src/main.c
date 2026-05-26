@@ -54,13 +54,14 @@ int main(int argc, char** argv)
     chuck_init(&chuck);
     VM vm = {0};
     vm.p = p;
+    vm.frame_count = 0;
     while(p->curr.type != TOKEN_EOF)
     {
         AST* stmt = parse_stmt(p);
         compile(stmt, &chuck);
         //write_chuck(&chuck, OP_POP);
     }
-    write_chuck(&chuck, OP_RETURN);
+    // write_chuck(&chuck, OP_RETURN);
     vm.chuck = &chuck;
     vm.ip = chuck.code;
     vm.sp = vm.stack;

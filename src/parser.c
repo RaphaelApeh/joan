@@ -257,7 +257,7 @@ static AST* parse_fn(parser* p)
         return parse_error(p, "Expected an identifier.");
     char* ident = GET_LEX(p);
     advance_parser_c(p); // ident
-    char* params[256];
+    char** params = malloc(sizeof(char *) * 100);
     int len = 0;
     AST* block = NULL;
     if (!match(p, TOKEN_LPARN))
@@ -277,7 +277,6 @@ static AST* parse_fn(parser* p)
         block = parse_block(p);
     else
         return parse_error(p, "No function body.");
-    
     AST* ast = ast_create(p->arena, AST_FUNCTION);
     ast->fn_node.block = block;
     ast->fn_node.name = ident;
