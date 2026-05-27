@@ -13,16 +13,6 @@ env_t* init_env(env_t* parent)
     return e;
 }
 
-static uint32_t hash(const char* str)
-{
-    uint32_t h = 2166136261u;
-    while (*str)
-    {
-        h ^= (unsigned char)*str++;
-        h *= 16777619;
-    }
-    return h;
-}
 void set_env(env_t* env, char* key, Object* obj, bool is_const, bool is_public)
 {
     if (NULL == env || NULL == obj) return;
@@ -46,6 +36,19 @@ void set_env(env_t* env, char* key, Object* obj, bool is_const, bool is_public)
     // env->entries[id].used = true;
     // strcpy(env->entries[id].key, key);
     // env->entries[id].value = obj;
+}
+
+entry_t* get_envEntry(env_t* env, char* key)
+{
+    if (NULL == env) return NULL;
+    while(env)
+    {
+        for (size_t i = 0; i < env->count; i++)
+            if (strcmp(env->entries[i].key, key) == 0)
+                return &env->entries[i];
+        env = env->parent;
+    }
+    return NULL;
 }
 
 Object* get_env(env_t* env, char* key)

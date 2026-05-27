@@ -27,4 +27,5 @@ typedef struct env_t
 env_t* init_env(env_t* parent);
 void set_env(env_t* env, char* key, Object* obj, bool is_const, bool is_public);
 Object* get_env(env_t* env, char* key);
+entry_t* get_envEntry(env_t* env, char* key);
 #endif

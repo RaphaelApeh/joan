@@ -1,5 +1,11 @@
-let name = None
-if name is None {
-    name = "John"
-}
+let name = "John Doe"
+let x = 43
+const pi = 3.14
+
+//pi = None // Error
+x = 0 // OK
+name = "Jane Doe" // OK
+
 println name
+println x
+println pi

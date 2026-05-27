@@ -232,9 +232,12 @@ InterpretResult vm_run(VM* vm)
                 ident = READ_IDENT();
                 int t_op = READ_BYTE();
                 a = pop(vm);
-                o = get_env(vm->env, ident);
-                if (NULL == a)
-                    err(vm, "undefine variable.");
+                entry_t* entry = get_envEntry(vm->env, ident);
+                if (NULL == a || NULL == entry)
+                    return die(vm, "undefine variable.");
+                if (entry->is_const)
+                    return die(vm, "Cannot reassign a variable of const.");
+                o = entry->value;
                 o->kind = a->kind;
                 switch (t_op)
                 {
