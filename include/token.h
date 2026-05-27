@@ -91,6 +91,7 @@ typedef enum {
     TOKEN_CONST,
     TOKEN_RETURN,
     TOKEN_CLASS,
+    TOKEN_ASSERT,
     TOKEN_STRUCT,
     TOKEN_MATCH,
     TOKEN_CONTINUE,

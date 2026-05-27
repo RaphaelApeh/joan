@@ -342,6 +342,15 @@ InterpretResult vm_run(VM* vm)
                 o = pop(vm);
                 push(vm, obj_bool(!is_truthy(o)));
                 break;
+            case OP_ASSERT:
+                o = pop(vm);
+                bool has_msg = READ_BYTE();
+                char* msg = "Assertion failed.";
+                if (has_msg)
+                    msg = READ_IDENT();
+                if (!is_truthy(o))
+                    return die(vm, msg);
+                break;
             case OP_RANGE:
                 Object *b = pop(vm), *a = pop(vm);
                 if (a->kind != INT_TYPE || b->kind != INT_TYPE)
@@ -654,6 +663,18 @@ void compile(AST* node, Chuck* chuck)
     case AST_PRINTLN:
         compile(node->println.out, chuck);
         write_chuck(chuck, OP_PRINTLN);
+        break;
+    case AST_ASSERT:
+        compile(node->assert_stmt.cond, chuck);
+        bool has_msg = false;
+        if (node->assert_stmt.msg != NULL)
+        {
+            has_msg = true;
+            id = add_ident(chuck, node->assert_stmt.msg);
+        }
+        write_chuck(chuck, OP_ASSERT);
+        write_chuck(chuck, has_msg);
+        write_chuck(chuck, id);
         break;
     case AST_UNARY:
         compile(node->unary.right, chuck);

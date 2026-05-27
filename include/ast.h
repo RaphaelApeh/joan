@@ -43,6 +43,7 @@ typedef enum{
     AST_GETTER,
     AST_SETTER,
     AST_INSTANCE,
+    AST_ASSERT,
     AST_IF,
     AST_INLINE_IF,
     AST_BLOCK,
@@ -96,6 +97,11 @@ typedef struct AST{
         struct {
             AST* block;
         } loop_stmt;
+
+        struct {
+            AST* cond;
+            char* msg;
+        } assert_stmt;
 
         struct {
             AST* obj;

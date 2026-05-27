@@ -505,6 +505,23 @@ AST* parse_array(parser* p)
     return arr;
 }
 
+static AST* parse_assert(parser* p)
+{
+    advance_parser_c(p); // assert
+    AST* cond = parse_expr(p);
+    char* msg = NULL;
+    if (match(p, TOKEN_COMMA))
+    {
+        if (!check(p, TOKEN_STRING)) return parse_error(p, "Expected 'string' but got %s.", GET_LEX(p));
+        msg = GET_LEX(p);
+        advance_parser_c(p);
+    }
+    AST* ast = ast_create(p->arena, AST_ASSERT);
+    ast->assert_stmt.cond = cond;
+    ast->assert_stmt.msg = msg;
+    return ast;
+}
+
 AST* parse_value(parser* p)
 {
     token t = p->curr;
@@ -547,9 +564,9 @@ AST* parse_value(parser* p)
         case TOKEN_IDENTIFIER:
             ast = ast_identifier(p->arena, t.lexeme);
             advance_parser_c(p);
-            //if (check(p, TOKEN_EQUAL))
-                //TODO
             return ast;
+        case TOKEN_ASSERT:
+            return parse_assert(p);
         case TOKEN_CONTINUE:
             advance_parser_c(p);
             return ast_continue(p->arena);

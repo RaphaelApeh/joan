@@ -62,6 +62,7 @@ typedef enum{
     OP_FUNCTION,
     OP_BLOCK,
 
+    OP_ASSERT,
     OP_PRINTLN,
     OP_RETURN,
     OP_BREAK,
