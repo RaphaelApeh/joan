@@ -14,6 +14,8 @@ typedef struct Object Object;
 
 #define STR_OBJ(s) (ObjString){.str = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
+#define HM_OBJ(k, v) (ObjHM){.key = (k), .value = (v)}
+
 #define pushItem(arr, obj) do{\
     if ((arr)->count >= (arr)->capacity)\
     {\
@@ -62,7 +64,7 @@ typedef enum{
     BOOL_TYPE,
     FLOAT_TYPE,
     ARRAY_TYPE,
-    DICT_TYPE,
+    HASHMAP_TYPE,
     FUNCTION_TYPE,
     NATIVE_TYPE,
     ITER_TYPE,
@@ -99,7 +101,7 @@ typedef struct Object{
         ObjString* str;
         ObjArray* arr;
         array_t* o_array;
-        ObjHM* hashmap;
+        J_DArray_Obj* hashmap;
         NativeObject* o_nativefn;
         IterObject* iter;
         ObjFunction* fn;
@@ -118,6 +120,9 @@ Object* obj_bool(bool o_bool);
 Object* obj_float(double o_float);
 IterObject* ObjectIter(unsigned int capacity);
 Object* obj_function(Chuck* chuck, char** params, int arity, char* name);
+// HASHMAP functions
+ObjHM* obj_hashmap(Object* key, Object* value);
+ObjHM* GetObject(Object* hm, Object* obj);
 
 array_t* init_array(void);
 void array_add(array_t* arr, Object* obj);

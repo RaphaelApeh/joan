@@ -11,6 +11,22 @@
 Object NoneObj = {0};
 Object TrueObj = {0};
 
+static inline bool ObjIntCmp(Object* key1, Object* key2)
+{
+    double k1 = tonumber(key1), k2 = tonumber(key2);
+    return k1 == k2;
+}
+
+static inline bool ObjStrCmp(Object* key1, Object* key2)
+{
+    return key1->str->hash == key2->str->hash;
+}
+
+static inline bool ObjectBoolCmp(Object* key1, Object* key2)
+{
+    return key1->o_bool == key2->o_bool;
+}
+
 Object* obj_new(ObjectType kind)
 {
     Object* obj = malloc(sizeof(Object));
@@ -42,16 +58,9 @@ Object* obj_string(char* str)
 
 Object* obj_bool(bool o_bool)
 {
-    // professional code :)
-    if (o_bool)
-    {
-        TrueObj.kind = BOOL_TYPE;
-        TrueObj.o_bool = o_bool;
-        return &TrueObj;
-    }
-    NoneObj.kind = BOOL_TYPE;
-    NoneObj.o_bool = o_bool;
-    return &NoneObj;
+    Object* obj = obj_new(BOOL_TYPE);
+    obj->o_bool = o_bool;
+    return obj;
 }
 
 Object* obj_float(double o_float)
@@ -59,6 +68,33 @@ Object* obj_float(double o_float)
     Object* obj = obj_new(FLOAT_TYPE);
     obj->o_float = o_float;
     return obj;
+}
+
+ObjHM* obj_hashmap(Object* key, Object* value)
+{
+    ObjHM* obj = malloc(sizeof(ObjHM));
+    obj->key = key;
+    obj->value = value;
+    return obj;
+}
+
+ObjHM* GetObject(Object* hm, Object* obj)
+{
+    for (int i = 0; i < hm->hashmap->size; ++i)
+    {
+        ObjHM* ele  = hm->hashmap->items[i];
+        if (ele->key->kind == obj->kind)
+        {
+            if (obj->kind == STR_TYPE && ObjStrCmp(ele->key, obj))
+                return ele;
+            if (obj->kind == INT_TYPE && ObjIntCmp(ele->key, obj))
+                return ele;
+            if (obj->kind == BOOL_TYPE && ObjectBoolCmp(ele->key, obj))
+                return ele;
+        }
+        continue;
+    }
+    return NULL;
 }
 
 Object* obj_none(void)
@@ -99,7 +135,7 @@ void array_add(array_t* arr, Object* obj)
     }
     arr->items[arr->count++] = obj;
 }
-void print_array(Object* obj)
+static void print_array(Object* obj)
 {
     if (NULL == obj && obj->kind != ARRAY_TYPE)
         return;
@@ -111,6 +147,21 @@ void print_array(Object* obj)
             fprintf(stderr, ", ");
     }
     fprintf(stderr, "]");
+}
+
+static void print_hashmap(Object* obj)
+{
+    fprintf(stderr, "#{");
+    for (int i = 0; i < obj->hashmap->size; ++i)
+    {
+        ObjHM* hm = obj->hashmap->items[i];
+        print_object(hm->key);
+        putchar(':');
+        print_object(hm->value);
+        if (i < obj->hashmap->size - 1)
+            fprintf(stderr, ", ");
+    }
+    putchar('}');
 }
 
 IterObject* ObjectIter(unsigned int capacity)
@@ -143,6 +194,9 @@ void print_object(Object* obj)
             fprintf(stderr, "%.15g", obj->o_float); break;
         case ARRAY_TYPE:
             print_array(obj);
+            break;
+        case HASHMAP_TYPE:
+            print_hashmap(obj);
             break;
         case NONE_TYPE:
             fprintf(stderr, "None");

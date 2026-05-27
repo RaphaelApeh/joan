@@ -453,8 +453,8 @@ static AST* parse_hashmap(parser* p)
     // TODO
     if (!match(p, TOKEN_LBRACE)) // {
         return parse_error(p, "Expected an opening '{'");
-    char* keys[1024];
-    AST* values[1024];
+    AST* keys[256]; // TODO
+    AST* values[256]; // TODO
     size_t len = 0;    
     AST* ast = ast_create(p->arena, AST_HASHMAP);
 
@@ -462,21 +462,19 @@ static AST* parse_hashmap(parser* p)
     {
         if (match(p, TOKEN_RBRACE))
             break;
-        if (match(p, TOKEN_COMMA))
-            continue;
-        token tok = p->curr;
+        keys[len] = parse_expr(p);
         if (!match(p, TOKEN_COLON))
-            return parse_error(p, "Expected a ':'.");
-        keys[len] = tok.lexeme;
+            return parse_error(p, "Expected an ':'");
         values[len] = parse_expr(p);
         len++;
         if (match(p, TOKEN_COMMA))
             continue;
         if (match(p, TOKEN_RBRACE))
             break;
+        return parse_error(p, "Something went wrong");
     }
-    memcmp(ast->hmp_node.keys, keys, len * sizeof(keys));
-    memcmp(ast->hmp_node.values, values, len * sizeof(values));
+    ast->hmp_node.keys = keys;
+    ast->hmp_node.values = values;
     ast->hmp_node.count = len;
     return ast;
 }
@@ -606,6 +604,7 @@ AST* parse_value(parser* p)
 AST* parse_prec(parser* p, precedence prec)
 {
     AST* left = parse_value(p);
+    left = parse_postfix(p, left);
     while (prec < get_prec(p->curr.type))
     {
         TokenType op = p->curr.type;
@@ -614,7 +613,7 @@ AST* parse_prec(parser* p, precedence prec)
         AST* rhs = parse_prec(p, op_prec);
         left = ast_binary(p->arena, left, op, rhs);
     }
-    return parse_postfix(p, left);
+    return  left;
 }
 AST* parse_expr(parser* p)
 {

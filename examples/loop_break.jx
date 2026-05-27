@@ -1,15 +1,10 @@
+let x = 1
 loop {
-    println "Ran once"
-    break // loop breaks
-    println "NaN"
-}
-{
-    loop {
-        loop {
-            println "Hello World"
-            break
+    match x {
+        1 => {
+            x += 1 
+            println "One"
         }
-        break
+        else then break
     }
 }
-println "Done"

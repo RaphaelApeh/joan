@@ -56,6 +56,7 @@ typedef enum{
     OP_ARRAY,
     OP_INDEX,
     OP_RANGE,
+    OP_HM,
 
     OP_REASSIGN,
     OP_FUNCTION,

@@ -50,6 +50,7 @@ InterpretResult vm_run(VM* vm)
     Object* o = NULL;
     IterObject* iter = NULL;
     Object *a, *b;
+    Object* key, *value;
     Object *array, *pos;
     char* ident;
     uint16_t offset;
@@ -210,6 +211,22 @@ InterpretResult vm_run(VM* vm)
                 o = obj_new(ITER_TYPE);
                 o->iter = iter;
                 push(vm, o);
+                break;
+            case OP_HM:
+                count = READ_BYTE();
+                J_DArray_Obj* jd_obj = malloc(sizeof(J_DArray_Obj));
+                jd_obj->size = 0;
+                jd_obj->capacity = count;
+                jd_obj->items = malloc(sizeof(ObjHM *) * count);
+                for (int i = count - 1; i >= 0; --i)
+                {
+                    value = pop(vm); key = pop(vm);
+                    jd_obj->items[i] = obj_hashmap(key, value);
+                    jd_obj->size++;
+                }
+                Object* obj = obj_new(HASHMAP_TYPE);
+                obj->hashmap = jd_obj;
+                push(vm, obj);
                 break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
@@ -394,9 +411,9 @@ InterpretResult vm_run(VM* vm)
                 pos = pop(vm);
                 if (!array || !pos)
                     err(vm, "None value array or pos.");
-                if (array->kind != ARRAY_TYPE && array->kind != STR_TYPE && array->kind != ITER_TYPE)
+                if (array->kind != ARRAY_TYPE && array->kind != STR_TYPE && array->kind != ITER_TYPE && array->kind != HASHMAP_TYPE)
                     err(vm, "Invalid kind for array or pos.");
-                if (pos->kind != INT_TYPE)
+                if (array->kind == ARRAY_TYPE && pos->kind != INT_TYPE)
                     err(vm, "pos is not an int");
                 int index = pos->o_int;
                 switch (array->kind)
@@ -422,15 +439,22 @@ InterpretResult vm_run(VM* vm)
                         o = array->iter->items[index];
                         push(vm, o);
                         break;
+                    case HASHMAP_TYPE:
+                    ObjHM* hm = GetObject(array, pos);
+                    if (NULL == hm)
+                        return die(vm, "index error");
+                    push(vm, hm->value); break;
                     default:
                         err(vm, "Got an invaild array type");
                 }
                 break;
             case OP_SET_INDEX:
-                Object* value = pop(vm); array = pop(vm); pos = pop(vm);
+                value = pop(vm); array = pop(vm); pos = pop(vm);
                 index = pos->o_int;
                 
-                if (index < 0)
+                if (array->kind != HASHMAP_TYPE && pos->kind != INT_TYPE)
+                    return die(vm, "Expected an 'int' type");
+                if (array->kind != HASHMAP_TYPE && index < 0)
                     return die(vm, "Got an negative index value.");
                 
                 switch (array->kind)
@@ -438,6 +462,7 @@ InterpretResult vm_run(VM* vm)
                     case ARRAY_TYPE:
                         if (index >= array->o_array->count)
                             return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->o_array->count, index);
+                        array->o_array->items[index]->kind = value->kind;
                         array->o_array->items[index] = value;
                         break;
                     case STR_TYPE:
@@ -448,6 +473,13 @@ InterpretResult vm_run(VM* vm)
                         if (value->str->len > 0)
                             return die(vm, "Can only set a char to a string.");
                         array->str->str[index] = value->str->str[0];
+                        break;
+                    case HASHMAP_TYPE:
+                            ObjHM* hm = GetObject(array, pos);
+                        if (NULL == hm)
+                            return die(vm, "index error");
+                        hm->value->kind = pos->kind;
+                        hm->value = value;
                         break;
                     case ITER_TYPE:
                         return die(vm, "Iter object does not support index setting.");
@@ -787,6 +819,16 @@ void compile(AST* node, Chuck* chuck)
         if (node->if_node.else_node)
             compile(node->if_node.else_node, chuck);
         patch_jump(chuck, end_jump);
+        break;
+    case AST_HASHMAP:
+        
+        for (size_t i = 0; i < node->hmp_node.count; ++i)
+        {
+            compile(node->hmp_node.keys[i], chuck);
+            compile(node->hmp_node.values[i], chuck);
+        }
+        write_chuck(chuck, OP_HM);
+        write_chuck(chuck, node->hmp_node.count);
         break;
     case AST_BREAK:
         if (loop_depth <= 0)

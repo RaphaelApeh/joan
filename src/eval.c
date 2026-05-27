@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "eval.h"
+#include "helper.h"
 
 #define eval_bin(l, r, op) obj_float(tonumber((l)) op tonumber((r)))
 
@@ -9,20 +10,6 @@
 
 #define eval_bin_bool(l, r, op) obj_bool(tonumber((l)) op tonumber((r)))
 
-static bool isnumber(Object* obj)
-{
-    if (NULL == obj) return false;
-    if (obj->kind == INT_TYPE || obj->kind == FLOAT_TYPE)
-        return true;
-    return false;
-}
-
-static double tonumber(Object* obj)
-{
-    if (obj->kind == INT_TYPE)
-        return (double)obj->o_int;
-    return obj->o_float;
-}
 
 Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
 {

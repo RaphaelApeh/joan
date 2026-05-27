@@ -88,10 +88,9 @@ typedef struct AST{
         } var_decl_stmt;
 
         struct {
-            char** keys;
+            AST** keys;
             AST** values;
             size_t count;
-            size_t capacity;
         } hmp_node;
 
         struct {

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include "object.h"
 #include "helper.h"
 #include "ast.h"
 
@@ -25,6 +26,21 @@ unsigned long fnv_hash(const void* key, uint32_t h)
         h *= 16777619;
     }
     return h;
+}
+
+bool isnumber(Object* obj)
+{
+    if (NULL == obj) return false;
+    if (obj->kind == INT_TYPE || obj->kind == FLOAT_TYPE)
+        return true;
+    return false;
+}
+
+double tonumber(Object* obj)
+{
+    if (obj->kind == INT_TYPE)
+        return (double)obj->o_int;
+    return obj->o_float;
 }
 
 void runtime_error(char* msg, ...)

@@ -6,7 +6,19 @@
 
 typedef struct AST AST;
 typedef uint64_t u64;
+typedef struct Object Object;
 typedef struct J_DArray_Obj J_DArray_Obj;
+
+#define RESIZE_DOBJ(arr) (arr)->items = realloc((arr)->items, sizeof(*(arr)->items) * (arr)->capacity)
+
+#define PUSH_ITEM(arr, obj) do {\
+    if ((arr)->size >= (arr)->capacity)\
+    {                                   \
+        (arr)->capacity *= 2;             \
+        RESIZE_DOBJ(arr);                   \
+    }                                        \
+    (arr)->items[(arr)->size++] = (obj);    \
+    } while(false)
 
 typedef struct param_o
 {
@@ -65,7 +77,7 @@ typedef struct klass_t{
 } klass_t;
 
 struct J_DArray_Obj {
-    void* items;
+    void** items;
     size_t size;
     size_t capacity;
 };
@@ -73,6 +85,9 @@ struct J_DArray_Obj {
 // Hash functions
 unsigned long fnv_hash(const void* key, uint32_t h);
 unsigned long djb2_hash(unsigned char* str);
+
+bool isnumber(Object* obj);
+double tonumber(Object* obj);
 
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);
