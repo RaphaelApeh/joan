@@ -347,12 +347,10 @@ InterpretResult vm_run(VM* vm)
                 break;
             case OP_ASSERT:
                 o = pop(vm);
-                bool has_msg = READ_BYTE();
-                char* msg = "Assertion failed.";
-                if (has_msg)
-                    msg = READ_IDENT();
+                char * msg = READ_IDENT();
                 if (!is_truthy(o))
                     return die(vm, msg);
+                // push(vm, obj_none());
                 break;
             case OP_RANGE:
                 Object *b = pop(vm), *a = pop(vm);
@@ -669,14 +667,12 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_ASSERT:
         compile(node->assert_stmt.cond, chuck);
-        bool has_msg = false;
         if (node->assert_stmt.msg != NULL)
-        {
-            has_msg = true;
             id = add_ident(chuck, node->assert_stmt.msg);
-        }
+        else
+            id  = add_ident(chuck, "Assertion failed.");
+
         write_chuck(chuck, OP_ASSERT);
-        write_chuck(chuck, has_msg);
         write_chuck(chuck, id);
         break;
     case AST_UNARY:
@@ -799,6 +795,7 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_FUNCTION: 
         Chuck fn_chuck;
+        fn_chuck.env = chuck->env;
         chuck_init(&fn_chuck);
         compile(node->fn_node.block, &fn_chuck);
         // idx = add_constant(&fn_chuck, obj_none());
@@ -818,7 +815,7 @@ void compile(AST* node, Chuck* chuck)
         id = add_ident(chuck, node->fn_node.name);
         write_chuck(chuck, OP_SET_GLOBAL);
         write_chuck(chuck, id);
-        // write_chuck(chuck, 1);
+        write_chuck(chuck, 1);
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);
