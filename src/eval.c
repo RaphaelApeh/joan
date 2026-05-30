@@ -86,7 +86,7 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
         switch (op)
         {
             case EVAL_ADD:
-                str = strcat(lhs->str->str, rhs->str->str);
+                str = strcat(lhs->str->chars, rhs->str->chars);
                 return obj_string(str);
             case EVAL_IS:
             case EVAL_EQUAL:
@@ -94,7 +94,7 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
                     lhs->str->hash == rhs->str->hash
                 );
             case EVAL_IN:
-                return obj_bool(strstr(lhs->str->str, rhs->str->str) == NULL);
+                return obj_bool(strstr(lhs->str->chars, rhs->str->chars) == NULL);
             case EVAL_NOTEQUAL:
                 return obj_bool(
                     lhs->str->hash != rhs->str->hash

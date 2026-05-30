@@ -7,11 +7,13 @@
 static Object* builtin_len(Object** argv, size_t argc);
 static Object* builtin_gets(Object** argv, size_t argc);
 static Object* builtin_put(Object** argv, size_t argc);
+static Object* builtin_id(Object** argv, size_t argc);
 
 NativeFunction builtin_functions[] = {
     {.name = "len", .func = builtin_len},
     {.name = "gets", .func = builtin_gets},
-    {.name = "put", .func = builtin_put}
+    {.name = "put", .func = builtin_put},
+    {.name = "id", .func = builtin_id}
 };
 
 static Object* builtin_len(Object** argv, size_t argc)
@@ -33,7 +35,7 @@ static Object* builtin_gets(Object** argv, size_t argc)
         return NULL;
     if (argv[0]->kind != STR_TYPE)
         return NULL;
-    fprintf(stderr, "%s", argv[0]->str->str);
+    fprintf(stderr, "%s", argv[0]->str->chars);
     char buf[1024] = {0};
     char* str = fgets(buf, 1024, stdin);
     str[strlen(str) - 1] = '\0'; // remove "\n" char
@@ -46,6 +48,14 @@ static Object* builtin_put(Object** argv, size_t argc)
         return NULL;
     print_object(argv[0]);
     return obj_none(); // must return something
+}
+
+static Object* builtin_id(Object** argv, size_t argc)
+{
+    if (argc > 1 || argc < 1)
+        return NULL;
+    uintptr_t ptr = (uintptr_t)argv[0];
+    return internObject(obj_int((long)ptr));
 }
 
 void set_functions(env_t* env)

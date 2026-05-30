@@ -61,12 +61,12 @@ InterpretResult vm_run(VM* vm)
         {
             case OP_CONSTANT:
                 o = READ_CONST();
-                push(vm, o);
+                push(vm, internObject(o));
                 break;
             case OP_ADD:
                 a = pop(vm);
                 b = pop(vm);
-                a = eval_binary(b, a, EVAL_ADD);
+                a = internObject(eval_binary(b, a, EVAL_ADD));
                 if (NULL == a)
                     err(vm, "Invalid binary");
                 push(vm, a);
@@ -254,6 +254,7 @@ InterpretResult vm_run(VM* vm)
                         *o = *b; // TODO
                         break;
                     case TOKEN_EQUAL:
+                        internObject(o);
                         *o = *a; //TODO
                         break;
                     case TOKEN_ASTAR:
@@ -329,14 +330,14 @@ InterpretResult vm_run(VM* vm)
                 break;
             case OP_AND:
                 b = pop(vm); a = pop(vm);
-                a = eval_binary(a, b, EVAL_AND);
+                a = internObject(eval_binary(a, b, EVAL_AND));
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
                 push(vm, a);
                 break;
             case OP_OR:
                 b = pop(vm); a = pop(vm);
-                a = eval_binary(a, b, EVAL_OR);
+                a = internObject(eval_binary(a, b, EVAL_OR));
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
                 push(vm, a);
@@ -387,7 +388,7 @@ InterpretResult vm_run(VM* vm)
                 o = get_env(vm->env, ident);
                 if (NULL == o)
                     return die(vm, "undefine variable '%s'.", ident);
-                push(vm, o);
+                push(vm, internObject(o));
                 break;
             case OP_PRINTLN:
                 Object* out = pop(vm);
@@ -446,7 +447,7 @@ InterpretResult vm_run(VM* vm)
                         if (index < 0 || index >= array->str->len)
                             return INTERPRET_RUNTIME_ERROR;
                         char* str = malloc(2);
-                        str[0] = array->str->str[index];
+                        str[0] = array->str->chars[index];
                         str[1] = '\0';
                         o = obj_string(str);
                         push(vm, o);
@@ -490,7 +491,7 @@ InterpretResult vm_run(VM* vm)
                             return die(vm, "string index expect a string value.");
                         if (value->str->len > 0)
                             return die(vm, "Can only set a char to a string.");
-                        array->str->str[index] = value->str->str[0];
+                        array->str->chars[index] = value->str->chars[0];
                         break;
                     case HASHMAP_TYPE:
                             ObjHM* hm = GetObject(array, pos);

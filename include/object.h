@@ -12,7 +12,9 @@ typedef struct Chuck Chuck;
 typedef struct array_t array_t;
 typedef struct Object Object;
 
-#define STR_OBJ(s) (ObjString){.str = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
+#define STR_OBJ(s) (ObjString){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
+
+#define INTER_SIZE 1024
 
 #define pushItem(arr, obj) do{\
     if ((arr)->count >= (arr)->capacity)\
@@ -27,7 +29,7 @@ typedef Object* (* NativeFn) (Object** argv, size_t argc);
 typedef Object* (* MethodFn) (Object* self, Object** argv, size_t argc);
 
 typedef struct {
-    char* str;
+    char* chars;
     unsigned long hash;
     long len;
 } ObjString;
@@ -100,6 +102,11 @@ typedef struct array_t
     Object** items;
 } array_t;
 
+typedef struct InternEntry {
+    Object* obj;
+    struct InternEntry* next;
+} InternEntry;
+
 
 typedef struct Object{
     ObjectType kind;
@@ -132,6 +139,8 @@ Object* obj_function(Chuck* chuck, char** params, int arity, char* name);
 ObjHM* HM_OBJ(Object* key, Object* value);
 
 Object* obj_enum(char* ident, char** fields, int count);
+
+Object* internObject(Object* obj);
 
 ObjHM* GetObject(Object* hm, Object* obj);
 

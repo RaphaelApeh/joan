@@ -3,9 +3,13 @@ let x = 43
 const pi = 3.14
 
 //pi = None // Error
-x = 0 // OK
+x = 10 // OK
 name = "Jane Doe" // OK
 
 println name
 println x
 println pi
+
+let y = x
+x = 5
+println x // 5

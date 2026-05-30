@@ -11,6 +11,8 @@
 Object NoneObj = {0};
 Object TrueObj = {0};
 
+static InternEntry* intern_pool[INTER_SIZE];
+
 static inline bool ObjIntCmp(Object* key1, Object* key2)
 {
     double k1 = tonumber(key1), k2 = tonumber(key2);
@@ -151,6 +153,61 @@ Object* obj_none(void)
     return &NoneObj;
 }
 
+static bool objEqual(Object* obj1, Object* obj2)
+{
+    if (obj1->kind != obj2->kind)
+        return false;
+    switch (obj1->kind)
+    {
+        case INT_TYPE:  return obj1->o_int == obj2->o_int;
+        case BOOL_TYPE: return obj1->o_bool == obj2->o_bool;
+        case STR_TYPE: return obj1->str->hash == obj2->str->hash;
+        default: return false;
+    }
+}
+
+static uint64_t hashObject(Object* obj)
+{
+    switch (obj->kind)
+    {
+        case INT_TYPE:
+            return (uint64_t)obj->o_int;
+        case BOOL_TYPE:
+            return obj->o_bool;
+        case FLOAT_TYPE:
+            return obj->o_float;
+        case STR_TYPE:
+            return obj->str->hash;
+        default:
+            printf("Unsupported Type\n");
+            return 0;
+    }
+}
+
+Object* internObject(Object* obj)
+{
+    if (obj->kind == ENUM_TYPE || obj->kind == FUNCTION_TYPE || obj->kind == NATIVE_TYPE)
+        return obj;
+    uint64_t hash = hashObject(obj);
+    size_t idx = hash % INTER_SIZE;
+    InternEntry* entry = intern_pool[idx];
+    
+    while(entry)
+    {
+        if (objEqual(entry->obj, obj))
+        {
+            return entry->obj;
+        }
+        entry = entry->next;
+    }
+
+    InternEntry* new_entry = malloc(sizeof(InternEntry));
+    new_entry->obj = obj;
+    new_entry->next = intern_pool[idx];
+    intern_pool[idx] = new_entry;
+    return obj;
+}
+
 Object* obj_function(Chuck* chuck, char** params, int arity, char* name)
 {
     Object* obj = obj_new(FUNCTION_TYPE);
@@ -230,9 +287,9 @@ void print_object(Object* obj)
     switch (obj->kind)
     {
         case INT_TYPE:
-            fprintf(stderr, "%d", obj->o_int); break;
+            fprintf(stderr, "%llu", obj->o_int); break;
         case STR_TYPE:
-            fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->str : "None");
+            fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->chars : "None");
             break;
         case BOOL_TYPE:
             fprintf(stderr, (obj->o_bool) ? "true": "false"); break;
