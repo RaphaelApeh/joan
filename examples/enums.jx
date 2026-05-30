@@ -6,4 +6,4 @@ enum Token {
     TOKEN_EQUAL
 }
 
-println Token
+println Token::TOKEN_EOF

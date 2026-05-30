@@ -344,40 +344,13 @@ static AST* parse_call(parser* p, AST* callee)
     return ast;
 }
 
+static AST* parse_for(parser* p)
+{
+    //TODO
+}
 static AST* parse_member(parser* p, AST* obj)
 {
     //TODO
-    // advance_parser_c(p);
-    // if (!check(p, TOKEN_IDENTIFIER))
-    //     return parse_error(p, "Expected a field identifier but got %s", GET_LEX(p));
-    // char* field = GET_LEX(p);
-    // advance_parser_c(p);
-    // AST* ret = ast_member(p->arena, obj, field);
-    // // MEMBER CALL
-    // if (check(p, TOKEN_LPARN))
-    // {
-    //     AST* callie = parse_call(p, field);
-    //     ret->member.is_call = true;
-    //     ret->member.is_getter = false;
-    //     ret->member.is_setter = false;
-    //     ret->member.callie = callie;
-    //     return ret;
-    // }
-    // // MEMBER SETTER
-    // else if (check(p, TOKEN_EQUAL))
-    // {
-    //     advance_parser(p);
-    //     if (check(p, TOKEN_NEWLINE))
-    //         return parse_error(p, "Expected a value");
-    //     AST* setter = parse_expr(p);
-    //     ret->member.is_setter = true;
-    //     ret->member.is_call = false;
-    //     ret->member.is_getter = false;
-    //     ret->member.setter = setter;
-    //     return ret;
-    // }
-    // // DEFAULT GETTER
-    // return ret;
 }
 
 static AST* parse_enum(parser* p)
@@ -456,11 +429,10 @@ static AST* parse_postfix(parser* p, AST* left)
         //     return parse_inline_if(p, left);
         // }
         //TODO
-        // if (check(p, TOKEN_DOT))
-        // {
-        //     left = parse_member(p, left);
-        //     continue;
-        // }
+        if (check(p, TOKEN_SETTER))
+        {
+            return parse_member(p, left);
+        }
         if (is_assign_token(GET_TOK(p).type))
             return parse_reassign(p, left);
     
