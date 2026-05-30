@@ -221,7 +221,7 @@ InterpretResult vm_run(VM* vm)
                 for (int i = count - 1; i >= 0; --i)
                 {
                     value = pop(vm); key = pop(vm);
-                    jd_obj->items[i] = obj_hashmap(key, value);
+                    jd_obj->items[i] = HM_OBJ(key, value);
                     jd_obj->size++;
                 }
                 Object* obj = obj_new(HASHMAP_TYPE);
@@ -352,6 +352,15 @@ InterpretResult vm_run(VM* vm)
                     return die(vm, msg);
                 // push(vm, obj_none());
                 break;
+            case OP_ENUM:
+                ident = READ_IDENT();
+                count = READ_BYTE();
+                printf("ENUM ident %s, fields %d\n", ident, count);
+                // for (int i = count; i <= 0; --i)
+                // {
+                //     printf("Field %s\n", READ_IDENT());
+                // }
+                break;
             case OP_RANGE:
                 Object *b = pop(vm), *a = pop(vm);
                 if (a->kind != INT_TYPE || b->kind != INT_TYPE)
@@ -414,7 +423,6 @@ InterpretResult vm_run(VM* vm)
                 if (o == NULL || ident == NULL)
                     err(vm, "Object not set.");
                 set_env(vm->env, ident, o, is_const, false);
-                // push(vm, o);
                 break;
             case OP_INDEX:
                 array = pop(vm);
@@ -760,6 +768,18 @@ void compile(AST* node, Chuck* chuck)
             default:
                 break;
         }
+        break;
+    case AST_ENUM: 
+        ident = node->enum_stmt.ident;
+        Object* enumObj = obj_enum(ident, node->enum_stmt.fields, node->enum_stmt.count);
+        idx = add_constant(chuck, enumObj);
+        write_chuck(chuck, OP_CONSTANT);
+        write_chuck(chuck, idx);
+
+        id = add_ident(chuck, ident);
+        write_chuck(chuck, OP_SET_GLOBAL);
+        write_chuck(chuck, id);
+        write_chuck(chuck, 1);
         break;
     case AST_INLINE_IF:
         compile(node->inline_if_stmt.cond, chuck);

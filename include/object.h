@@ -14,8 +14,6 @@ typedef struct Object Object;
 
 #define STR_OBJ(s) (ObjString){.str = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
-#define HM_OBJ(k, v) (ObjHM){.key = (k), .value = (v)}
-
 #define pushItem(arr, obj) do{\
     if ((arr)->count >= (arr)->capacity)\
     {\
@@ -57,6 +55,11 @@ typedef struct {
     Object* (* cmpFn)(Object* obj1, Object* obj2);
 } ObjHM;
 
+typedef struct {
+    Object* field_value;
+    char* field_name;
+} ObjField;
+
 typedef enum{
     NONE_TYPE = 0,
     STR_TYPE,
@@ -79,6 +82,10 @@ typedef struct {
     char* name;
 } ObjFunction;
 
+typedef struct {
+    J_DArray_Obj* fields; // hashmap
+    char* ident;
+} JEnumObj;
 
 typedef struct {
     Object** items;
@@ -105,6 +112,7 @@ typedef struct Object{
         NativeObject* o_nativefn;
         IterObject* iter;
         ObjFunction* fn;
+        JEnumObj* JEnum;
         double o_float;
         bool o_bool;
         int o_int; // TODO: change to ....(something)
@@ -121,7 +129,10 @@ Object* obj_float(double o_float);
 IterObject* ObjectIter(unsigned int capacity);
 Object* obj_function(Chuck* chuck, char** params, int arity, char* name);
 // HASHMAP functions
-ObjHM* obj_hashmap(Object* key, Object* value);
+ObjHM* HM_OBJ(Object* key, Object* value);
+
+Object* obj_enum(char* ident, char** fields, int count);
+
 ObjHM* GetObject(Object* hm, Object* obj);
 
 array_t* init_array(void);

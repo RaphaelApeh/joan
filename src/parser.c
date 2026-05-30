@@ -380,6 +380,34 @@ static AST* parse_member(parser* p, AST* obj)
     // return ret;
 }
 
+static AST* parse_enum(parser* p)
+{
+    advance_parser_c(p); // enum
+    if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected an identifier but got '%s'.", GET_LEX(p));
+    
+    char* ident = GET_LEX(p);
+    advance_parser_c(p);
+    if (!match(p, TOKEN_LBRACE))
+        return parse_error(p, "Expected an '{' but got '%s'.", GET_LEX(p));
+    
+    int len = 0;
+    char* fields[10] = {0}; // TODO
+    while (!match(p, TOKEN_RBRACE))
+    {
+        if (!check(p, TOKEN_IDENTIFIER))
+            return parse_error(p, "Expected an identifier.");
+        fields[len++] = GET_LEX(p);
+        advance_parser_c(p);
+        if (match(p, TOKEN_COMMA))
+            continue;
+    }
+    AST* ast = ast_create(p->arena, AST_ENUM);
+    ast->enum_stmt.ident = ident;
+    ast->enum_stmt.fields = fields;
+    ast->enum_stmt.count = len;
+    return ast; 
+}
 static AST* parse_inline_if(parser* p, AST* node)
 {
     advance_parser_c(p); // if
@@ -648,6 +676,8 @@ AST* parse_stmt(parser* p)
             return parse_assign(p);
         case TOKEN_LBRACE:
             return parse_block(p);
+        case TOKEN_ENUM:
+            return parse_enum(p);
         case TOKEN_MATCH:
             return parse_match(p);
         case TOKEN_IF:

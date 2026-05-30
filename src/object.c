@@ -52,6 +52,9 @@ Object* obj_string(char* str)
     Object* obj = obj_new(STR_TYPE);
     ObjString* strObj = malloc(sizeof(ObjString));
     *strObj = STR_OBJ(str); // TODO
+    // strObj->str = strdup(str);
+    // strObj->hash = djb2_hash(str);
+    // strObj->len = strlen(str);
     obj->str = strObj;
     return obj;
 }
@@ -67,14 +70,6 @@ Object* obj_float(double o_float)
 {
     Object* obj = obj_new(FLOAT_TYPE);
     obj->o_float = o_float;
-    return obj;
-}
-
-ObjHM* obj_hashmap(Object* key, Object* value)
-{
-    ObjHM* obj = malloc(sizeof(ObjHM));
-    obj->key = key;
-    obj->value = value;
     return obj;
 }
 
@@ -95,6 +90,57 @@ ObjHM* GetObject(Object* hm, Object* obj)
         continue;
     }
     return NULL;
+}
+
+void SetHmObject(Object* hm, Object* key, Object* value)
+{
+    ObjHM* obj_hm;
+    if (hm == NULL || key == NULL || value == NULL)
+        return;
+    if (hm->kind != HASHMAP_TYPE)
+        return;
+    if ((obj_hm = GetObject(hm, key)) != NULL)
+    {
+        obj_hm->value = value;
+        return;
+    }
+    if (hm->hashmap->size >= hm->hashmap->capacity)
+        RESIZE_DOBJ(hm->hashmap);
+    hm->hashmap->items[hm->hashmap->size++] = HM_OBJ(key, value);
+}
+
+ObjHM* HM_OBJ(Object* key, Object* value)
+{
+    ObjHM* hm = malloc(sizeof(ObjHM));
+    hm->key = key;
+    hm->value = value;
+    return hm;
+}
+
+ObjField* FieldObj(char* field_name, Object* field_value)
+{
+    ObjField* obj = malloc(sizeof(ObjField));
+    obj->field_name = strdup(field_name);
+    obj->field_value = field_value;
+    return obj;
+}
+
+
+Object* obj_enum(char* ident, char** fields, int count)
+{
+    J_DArray_Obj* jd_obj = malloc(sizeof(J_DArray_Obj));
+    jd_obj->size = 0;
+    jd_obj->capacity = count;
+    jd_obj->items = malloc(sizeof(ObjHM *) * count);
+    for (int i = 0; i < count; ++i)
+    {
+        jd_obj->items[jd_obj->size++] = FieldObj(fields[i], obj_int(i));
+    }
+    Object* enumObj = obj_new(ENUM_TYPE);
+    enumObj->JEnum = malloc(sizeof(JEnumObj));
+    enumObj->JEnum->fields = jd_obj;
+    enumObj->JEnum->ident = ident;
+    return enumObj;
 }
 
 Object* obj_none(void)
@@ -200,6 +246,9 @@ void print_object(Object* obj)
             break;
         case NONE_TYPE:
             fprintf(stderr, "None");
+            break;
+        case ENUM_TYPE:
+            fprintf(stderr, "<Enum '%s' fields(%d) >", obj->JEnum->ident, obj->JEnum->fields->size);
             break;
         case FUNCTION_TYPE:
             //TODO

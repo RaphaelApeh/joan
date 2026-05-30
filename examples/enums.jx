@@ -1,0 +1,9 @@
+enum Token {
+    TOKEN_EOF,
+    TOKEN_INT,
+    TOKEN_FLOAT,
+    TOKEN_STRING,
+    TOKEN_EQUAL
+}
+
+println Token

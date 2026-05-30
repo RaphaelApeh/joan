@@ -37,14 +37,14 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.joan",
-				"match": "\\b(if|elseif|else|fn|class|struct|assert|match|const|let|while|for|break|continue|is|in|and|or|as|not|using|loop|enum|return)\\b"
+				"match": "\\b(if|elseif|else|fn|class|struct|assert|match|const|let|while|for|break|continue|is|in|and|or|as|not|using|loop|then|enum|return)\\b"
 			}]
 		},
 		"typewords": {
 			"patterns": [
 				{
 					"name": "typewords.joan",
-					"match": "\\b(None|true|false|println|then|string|int|float|bool)\\b"
+					"match": "\\b(None|true|false|println|Array|Hashmap|string|int|float|bool)\\b"
 				}
 			]
 		},
