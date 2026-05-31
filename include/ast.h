@@ -137,7 +137,7 @@ typedef struct AST{
         } println;
 
         struct {
-            const char* callee;
+            AST* callee;
 
             AST** pos_args;
             int pos_count;
@@ -314,7 +314,7 @@ AST* ast_break(Arena* arena);
 AST* ast_continue(Arena* arena);
 
 // obj()
-AST* ast_call(Arena* arena, const char* callee);
+AST* ast_call(Arena* arena, AST* callee);
 
 //Match
 AST* ast_match(Arena* arena, AST* sub, case_t* cases, AST* def);

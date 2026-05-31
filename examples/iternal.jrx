@@ -1,4 +1,0 @@
-println "h" is "h" // true
-println id("h") == id("h") // true
-println "h" is "he" // false
-println "h" is None // false

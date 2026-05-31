@@ -328,7 +328,7 @@ static AST* parse_call(parser* p, AST* callee)
     if (callee->type != AST_IDENTIFIER)
         return parse_error(p, "Expected an identifier.");
     advance_parser_c(p); // (
-    AST* ast = ast_call(p->arena, callee->identifier);// TODO
+    AST* ast = ast_call(p->arena, callee);
     AST* args[20]  = {0}; // TODO
     size_t len = 0;
     while(!match(p, TOKEN_RPARN))
@@ -350,7 +350,14 @@ static AST* parse_for(parser* p)
 }
 static AST* parse_member(parser* p, AST* obj)
 {
-    //TODO
+    // ::<field>, .<field>
+    TokenType tok = p->curr.type;
+    advance_parser_c(p);
+    if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected an identifier but got '%s'.", GET_LEX(p));
+    char* field = GET_LEX(p);
+    advance_parser_c(p);
+    
 }
 
 static AST* parse_enum(parser* p)

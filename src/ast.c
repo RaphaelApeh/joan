@@ -187,7 +187,7 @@ AST* ast_member(Arena* arena, AST* obj, const char* field)
 }
 
 
-AST* ast_call(Arena* arena, const char* callee)
+AST* ast_call(Arena* arena, AST* callee)
 {
     AST* ast = ast_create(arena, AST_CALL);
     ast->call.callee = callee;

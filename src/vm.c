@@ -536,8 +536,7 @@ InterpretResult vm_run(VM* vm)
                 vm->ip -= offset;
                 break;
             case OP_CALL:{
-                count = READ_BYTE();  ident = READ_IDENT();
-                o = get_env(vm->env, ident);
+                count = READ_BYTE(); o = pop(vm);
                 if (NULL == o)
                     return die(vm, "undefine function '%s'.", ident);
                 if (o->kind != FUNCTION_TYPE && o->kind != NATIVE_TYPE)
@@ -651,14 +650,14 @@ void compile(AST* node, Chuck* chuck)
         write_chuck(chuck, node->tuple.count);
         break;
     case AST_CALL:
+        
         for (int i = 0; i < node->call.pos_count; i++)
         {
             compile(node->call.pos_args[i], chuck);
         }
-        id = add_ident(chuck, (char *)node->call.callee);
+        compile(node->call.callee, chuck);
         write_chuck(chuck, OP_CALL);
         write_chuck(chuck, node->call.pos_count);
-        write_chuck(chuck, id);
         break;
     case AST_BLOCK:
         write_chuck(chuck, OP_SCOPE_ENTER);
