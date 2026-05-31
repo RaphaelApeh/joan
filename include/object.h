@@ -54,7 +54,7 @@ typedef struct {
 typedef struct {
     Object* key;
     Object* value;
-    Object* (* cmpFn)(Object* obj1, Object* obj2);
+    uint64_t hash;
 } ObjHM;
 
 typedef struct {
@@ -74,6 +74,7 @@ typedef enum{
     NATIVE_TYPE,
     ITER_TYPE,
     INSTANCE_TYPE,
+    MODULE_TYPE,
     ENUM_TYPE,
 } ObjectType;
 
@@ -119,6 +120,7 @@ typedef struct Object{
         NativeObject* o_nativefn;
         IterObject* iter;
         ObjFunction* fn;
+        ObjField* field;
         JEnumObj* JEnum;
         double o_float;
         bool o_bool;

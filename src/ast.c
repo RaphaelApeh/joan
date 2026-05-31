@@ -174,18 +174,6 @@ AST* ast_class(Arena* arena, const char* ident, attr_t* attr, klass_t* base)
     return ast;
 }
 
-AST* ast_member(Arena* arena, AST* obj, const char* field)
-{
-    AST* ast = ast_create(arena, AST_MEMBER);
-    ast->member.obj = obj;
-    ast->member.field = field;
-    //default
-    ast->member.is_call = false;
-    ast->member.is_getter = false;
-    ast->member.is_setter = false;
-    return ast;
-}
-
 
 AST* ast_call(Arena* arena, AST* callee)
 {

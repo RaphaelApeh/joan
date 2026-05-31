@@ -6,4 +6,5 @@ enum Token {
     TOKEN_EQUAL
 }
 
-println Token::TOKEN_EOF
+println "Hello WOrld"
+println Token::TOKEN_STRING = 2 // Error

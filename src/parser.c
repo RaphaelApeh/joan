@@ -346,18 +346,33 @@ static AST* parse_call(parser* p, AST* callee)
 
 static AST* parse_for(parser* p)
 {
-    //TODO
+   advance_parser_c(p); // for
+   
 }
 static AST* parse_member(parser* p, AST* obj)
 {
     // ::<field>, .<field>
+    bool is_setter, is_getter = false;
+    AST* setter = NULL;
     TokenType tok = p->curr.type;
     advance_parser_c(p);
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected an identifier but got '%s'.", GET_LEX(p));
     char* field = GET_LEX(p);
     advance_parser_c(p);
-    
+    if (match(p, TOKEN_EQUAL))
+    {
+        is_setter = true;
+        setter = parse_expr(p);
+    }
+    AST* ast = ast_create(p->arena, AST_MEMBER);
+    ast->member.callie = obj;
+    ast->member.field = field;
+    ast->member.is_call = false;
+    ast->member.setter = setter;
+    ast->member.is_setter = is_setter;
+    ast->member.tok = tok;
+    return ast;
 }
 
 static AST* parse_enum(parser* p)
@@ -437,7 +452,7 @@ static AST* parse_postfix(parser* p, AST* left)
         }
 
         //TODO
-        if (check(p, TOKEN_SETTER))
+        if (check(p, TOKEN_SETTER) || check(p, TOKEN_DOT))
         {
             return parse_member(p, left);
         }

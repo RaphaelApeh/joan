@@ -111,13 +111,12 @@ typedef struct AST{
         } enum_stmt;
 
         struct {
-            AST* obj;
-            const char* field;
+            AST* callie;
+            AST* setter;
+            char* field;
+            TokenType tok;
             bool is_setter;
             bool is_call;
-            bool is_getter;
-            AST* setter;
-            AST* callie;
         } member;
 
         struct {
@@ -303,8 +302,6 @@ AST* ast_assign(
     bool is_const,
     AST* value
 );
-
-AST* ast_member(Arena* arena, AST* obj, const char* field);
 
 //IF STATEMENT
 AST* ast_if_node(Arena* arena, AST* cond, AST* then, elseif* elseif, AST* else_node);

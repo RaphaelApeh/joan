@@ -351,16 +351,22 @@ InterpretResult vm_run(VM* vm)
                 char * msg = READ_IDENT();
                 if (!is_truthy(o))
                     return die(vm, msg);
-                // push(vm, obj_none());
                 break;
-            case OP_ENUM:
-                ident = READ_IDENT();
-                count = READ_BYTE();
-                printf("ENUM ident %s, fields %d\n", ident, count);
-                // for (int i = count; i <= 0; --i)
-                // {
-                //     printf("Field %s\n", READ_IDENT());
-                // }
+            case OP_MEMBER:
+                char* field = READ_IDENT(); o = pop(vm); op = READ_BYTE();
+                printf("FIeld member %s, Object type %d Token %d\n", ident, o->kind, op);
+                // I assuming every object is an enum object: TODO
+                switch (op)
+                {
+                    case TOKEN_EXR:
+                        // TODO
+                        break;
+                    case TOKEN_DOT:
+                        break; // instance call
+                    default:
+                        return die(vm, "Got an invalid member token %d\n", op);
+                }
+                push(vm, obj_none()); // for now
                 break;
             case OP_RANGE:
                 Object *b = pop(vm), *a = pop(vm);
@@ -494,10 +500,9 @@ InterpretResult vm_run(VM* vm)
                         array->str->chars[index] = value->str->chars[0];
                         break;
                     case HASHMAP_TYPE:
-                            ObjHM* hm = GetObject(array, pos);
+                        ObjHM* hm = GetObject(array, pos);
                         if (NULL == hm)
                             return die(vm, "index error");
-                        hm->value->kind = pos->kind;
                         hm->value = value;
                         break;
                     case ITER_TYPE:
@@ -648,6 +653,13 @@ void compile(AST* node, Chuck* chuck)
             compile(node->tuple.elements[i], chuck);
         write_chuck(chuck, OP_ITER);
         write_chuck(chuck, node->tuple.count);
+        break;
+    case AST_MEMBER:
+        compile(node->member.callie, chuck);
+        idx = add_ident(chuck, node->member.field);
+        write_chuck(chuck, OP_MEMBER);
+        write_chuck(chuck, idx);
+        write_chuck(chuck, node->member.tok);
         break;
     case AST_CALL:
         

@@ -1,3 +1,3 @@
 let hm = #{'a': 1, 1: 12, true: false}
-hm["a"] = 1..10
+// hm["a"] = 2 TODO: Fix later
 println hm

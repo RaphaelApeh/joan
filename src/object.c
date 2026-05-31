@@ -29,6 +29,37 @@ static inline bool ObjectBoolCmp(Object* key1, Object* key2)
     return key1->o_bool == key2->o_bool;
 }
 
+static bool objEqual(Object* obj1, Object* obj2)
+{
+    if (obj1->kind != obj2->kind)
+        return false;
+    switch (obj1->kind)
+    {
+        case INT_TYPE:  return obj1->o_int == obj2->o_int;
+        case BOOL_TYPE: return obj1->o_bool == obj2->o_bool;
+        case STR_TYPE: return obj1->str->hash == obj2->str->hash;
+        default: return false;
+    }
+}
+
+static uint64_t hashObject(Object* obj)
+{
+    switch (obj->kind)
+    {
+        case INT_TYPE:
+            return (uint64_t)obj->o_int;
+        case BOOL_TYPE:
+            return obj->o_bool;
+        case FLOAT_TYPE:
+            return obj->o_float;
+        case STR_TYPE:
+            return obj->str->hash;
+        default:
+            printf("Unsupported Type\n");
+            return 0;
+    }
+}
+
 Object* obj_new(ObjectType kind)
 {
     Object* obj = malloc(sizeof(Object));
@@ -75,21 +106,22 @@ Object* obj_float(double o_float)
     return obj;
 }
 
+void SetObject(Object* hm, Object* key, Object* value)
+{
+    if (NULL == hm || NULL == key || NULL == value)
+        return;
+    if (hm->hashmap->size > hm->hashmap->capacity)
+        RESIZE_DOBJ(hm->hashmap);
+    uint64_t hash = hashObject(key);
+    hm->hashmap->items[hm->hashmap->size++] = HM_OBJ(key, value);
+}
 ObjHM* GetObject(Object* hm, Object* obj)
 {
     for (int i = 0; i < hm->hashmap->size; ++i)
     {
         ObjHM* ele  = hm->hashmap->items[i];
-        if (ele->key->kind == obj->kind)
-        {
-            if (obj->kind == STR_TYPE && ObjStrCmp(ele->key, obj))
-                return ele;
-            if (obj->kind == INT_TYPE && ObjIntCmp(ele->key, obj))
-                return ele;
-            if (obj->kind == BOOL_TYPE && ObjectBoolCmp(ele->key, obj))
-                return ele;
-        }
-        continue;
+        if (objEqual(ele->key, obj) && ele->hash == hashObject(obj))
+            return ele;
     }
     return NULL;
 }
@@ -116,6 +148,7 @@ ObjHM* HM_OBJ(Object* key, Object* value)
     ObjHM* hm = malloc(sizeof(ObjHM));
     hm->key = key;
     hm->value = value;
+    hm->hash = hashObject(key);
     return hm;
 }
 
@@ -153,40 +186,9 @@ Object* obj_none(void)
     return &NoneObj;
 }
 
-static bool objEqual(Object* obj1, Object* obj2)
-{
-    if (obj1->kind != obj2->kind)
-        return false;
-    switch (obj1->kind)
-    {
-        case INT_TYPE:  return obj1->o_int == obj2->o_int;
-        case BOOL_TYPE: return obj1->o_bool == obj2->o_bool;
-        case STR_TYPE: return obj1->str->hash == obj2->str->hash;
-        default: return false;
-    }
-}
-
-static uint64_t hashObject(Object* obj)
-{
-    switch (obj->kind)
-    {
-        case INT_TYPE:
-            return (uint64_t)obj->o_int;
-        case BOOL_TYPE:
-            return obj->o_bool;
-        case FLOAT_TYPE:
-            return obj->o_float;
-        case STR_TYPE:
-            return obj->str->hash;
-        default:
-            printf("Unsupported Type\n");
-            return 0;
-    }
-}
-
 Object* internObject(Object* obj)
 {
-    if (obj->kind == ENUM_TYPE || obj->kind == FUNCTION_TYPE || obj->kind == NATIVE_TYPE)
+    if (obj->kind == ENUM_TYPE || obj->kind == FUNCTION_TYPE || obj->kind == HASHMAP_TYPE || obj->kind == NATIVE_TYPE || obj->kind == NONE_TYPE)
         return obj;
     uint64_t hash = hashObject(obj);
     size_t idx = hash % INTER_SIZE;
