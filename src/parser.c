@@ -431,10 +431,11 @@ static AST* parse_postfix(parser* p, AST* left)
             continue;
         }
 
-        // if (check(p, TOKEN_IF))
-        // {
-        //     return parse_inline_if(p, left);
-        // }
+        if (match(p, TOKEN_AT) && check(p, TOKEN_IF))
+        {
+            return parse_inline_if(p, left);
+        }
+
         //TODO
         if (check(p, TOKEN_SETTER))
         {
