@@ -32,12 +32,23 @@ char* read_file(const char* filename)
     return buf;
 }
 
+void usage(void)
+{
+    fprintf(stderr, 
+    "Usage: joan [options] [file]\n"
+    "Options: \n"
+    "-v --version output joan version\n"
+    "-h --help output help information\n\n"
+    "Examples: \n"
+    "\t$ joan ./main.jx\n"    
+    );
+}
 
 int main(int argc, char** argv)
 {
     if (argc != 2)
     {
-        printf("Error expected a file.\n");
+        usage();
         return 1;
     }
     char* filename = argv[1];

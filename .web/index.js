@@ -12,11 +12,13 @@ var getAll = function (selector, scope) {
 // setup typewriter effect in the terminal demo
 if (document.getElementsByClassName('demo').length > 0) {
   var i = 0;
-  var txt = `main.jx
-        // Get user input.
-        let username = gets("Enter your username: ")
-        assert username is not None, "Username was not provided."
-        println \`Hello, \${username}\`
+  var txt = `
+    Usage: joan [options] [file]
+    Options:
+    -v --version output joan version
+    -h --help output help information
+    Examples:
+       $ joan ./main.jx 
   `;
   var speed = 60;
 
