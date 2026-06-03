@@ -6,7 +6,7 @@
 
 typedef struct Arena Arena;
 typedef struct AST AST;
-typedef struct lexer lexer;
+typedef struct joan_lexer_t joan_lexer_t;
 
 typedef enum{
     PREC_NONE,
@@ -22,23 +22,23 @@ typedef enum{
     PREC_PRIMARY
 } precedence;
 
-typedef struct parser{
-    lexer* l;
+typedef struct joan_parser_t{
+    joan_lexer_t* l;
     env_t* env;
     Arena* arena;
-    token curr;
-    token next;
-} parser;
+    joan_token_t curr;
+    joan_token_t next;
+} joan_parser_t;
 
 
-parser* init_parser(lexer* l);
-void advance_parser(parser* p);
-precedence get_prec(TokenType type);
+joan_parser_t* jn_init_parser(joan_lexer_t* l);
+void advance_parser(joan_parser_t* p);
+precedence get_prec(J_TokenType type);
 // Main function for the parser.
-AST* parse_stmt(parser* p);
-AST* parse_expr(parser* p);
-AST* parse_error(parser* p, const char* msg, ...);
-void advance_parser_c(parser* p);
-AST* parse_value(parser* p);
+AST* parse_stmt(joan_parser_t* p);
+AST* parse_expr(joan_parser_t* p);
+AST* parse_error(joan_parser_t* p, const char* msg, ...);
+void advance_parser_c(joan_parser_t* p);
+AST* parse_value(joan_parser_t* p);
 
 #endif

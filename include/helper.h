@@ -6,7 +6,7 @@
 
 typedef struct AST AST;
 typedef uint64_t u64;
-typedef struct Object Object;
+typedef struct JnObject JnObject;
 typedef struct J_DArray_Obj J_DArray_Obj;
 
 #define RESIZE_DOBJ(arr) (arr)->items = realloc((arr)->items, sizeof(*(arr)->items) * (arr)->capacity)
@@ -86,8 +86,8 @@ struct J_DArray_Obj {
 unsigned long fnv_hash(const void* key, uint32_t h);
 unsigned long djb2_hash(unsigned char* str);
 
-bool isnumber(Object* obj);
-double tonumber(Object* obj);
+bool isnumber(JnObject* obj);
+double tonumber(JnObject* obj);
 
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);

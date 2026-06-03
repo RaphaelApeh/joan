@@ -1,5 +1,5 @@
-#ifndef OBJECT_H
-#define OBJECT_H
+#ifndef JOAN_OBJECT_H
+#define JOAN_OBJECT_H
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -9,58 +9,45 @@
 
 typedef struct Chuck Chuck;
 
-typedef struct array_t array_t;
-typedef struct Object Object;
+typedef struct JnObject JnObject;
 
-#define STR_OBJ(s) (ObjString){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
+#define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
+
+#define JN_RETURN_NONE jn_obj_none()
+
+#define JN_OBJ_PUSH(arr, obj)
 
 #define INTER_SIZE 1024
 
-#define pushItem(arr, obj) do{\
-    if ((arr)->count >= (arr)->capacity)\
-    {\
-        (arr)->capacity *= 2;\
-        (arr)->items = realloc((arr)->items, sizeof(Object *) * (arr)->capacity);\
-    }\
-    (arr)->items[(arr)->count++] = (obj); \
-}while(false)
+typedef long long JnIntObject;
+typedef double JnFloatObject;
+typedef bool JnBoolObject;
 
-typedef Object* (* NativeFn) (Object** argv, size_t argc);
-typedef Object* (* MethodFn) (Object* self, Object** argv, size_t argc);
+typedef JnObject* (* NativeFn) (JnObject** argv, size_t argc);
+typedef JnObject* (* MethodFn) (JnObject* self, JnObject** argv, size_t argc);
 
 typedef struct {
     char* chars;
     unsigned long hash;
     long len;
-} ObjString;
-
+} JnStringObject;
 
 typedef struct {
     NativeFn fn;
     char* fnName;
-} NativeObject;
+} JnNativeObject;
 
 typedef struct {
-    size_t start;
-    size_t end;
-} RangeObject;
-
-typedef struct {
-    Object** items;
+    JnObject** items;
     size_t count;
     size_t capacity;
-} IterObject;
+} JnIterObject;
 
 typedef struct {
-    Object* key;
-    Object* value;
+    JnObject* key;
+    JnObject* value;
     uint64_t hash;
-} ObjHM;
-
-typedef struct {
-    Object* field_value;
-    char* field_name;
-} ObjField;
+} JnHashmapObject;
 
 typedef enum{
     NONE_TYPE = 0,
@@ -76,78 +63,63 @@ typedef enum{
     INSTANCE_TYPE,
     MODULE_TYPE,
     ENUM_TYPE,
-} ObjectType;
+} JnTypeObject;
 
 typedef struct {
     Chuck* chuck;
     char** params;
     int arity;
     char* name;
-} ObjFunction;
+} JnFunctionObject;
 
 typedef struct {
-    J_DArray_Obj* fields; // hashmap
-    char* ident;
-} JEnumObj;
-
-typedef struct {
-    Object** items;
+    JnObject** items;
     size_t size;
     size_t capacity;
-} ObjArray;
-
-typedef struct array_t
-{
-    size_t count;
-    size_t capacity;
-    Object** items;
-} array_t;
+} JnArrayObject;
 
 typedef struct InternEntry {
-    Object* obj;
+    JnObject* obj;
     struct InternEntry* next;
 } InternEntry;
 
-
-typedef struct Object{
-    ObjectType kind;
+typedef struct JnObject{
     union
     {
-        ObjString* str;
-        ObjArray* arr;
-        array_t* o_array;
+        JnStringObject* str;
+        JnArrayObject* arr;
+        JnFunctionObject* fn;
+        JnIterObject* iter;
         J_DArray_Obj* hashmap;
-        NativeObject* o_nativefn;
-        IterObject* iter;
-        ObjFunction* fn;
-        ObjField* field;
-        JEnumObj* JEnum;
-        double o_float;
-        bool o_bool;
-        int o_int; // TODO: change to ....(something)
+        JnNativeObject* native_fn;
+        JnIntObject int32;
+        JnFloatObject float32;
+        JnBoolObject bool8;
     };
-} Object;
+    JnTypeObject type;
+} JnObject;
 
-//Object
-Object* obj_new(ObjectType kind);
-Object* obj_int(long o_int);
-Object* obj_string(char* str);
-Object* obj_none(void);
-Object* obj_bool(bool o_bool);
-Object* obj_float(double o_float);
-IterObject* ObjectIter(unsigned int capacity);
-Object* obj_function(Chuck* chuck, char** params, int arity, char* name);
+//JnObject
+JnObject* jn_obj_new(JnTypeObject kind);
+JnObject* jn_obj_int(long o_int);
+JnObject* jn_obj_string(char* str);
+JnObject* jn_obj_none(void);
+JnObject* jn_obj_bool(bool o_bool);
+JnObject* jn_obj_float(double o_float);
+JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name);
+
+// JnObject* obj_enum(char* ident, char** fields, int count);
+
+JnObject* jn_intern_obj(JnObject* obj);
+
 // HASHMAP functions
-ObjHM* HM_OBJ(Object* key, Object* value);
+JnObject* obj_hashmap(J_DArray_Obj* jd_obj);
+void hashmap_set(JnObject* hm, JnObject* key, JnObject* value);
+// ObjHM* hashmap_get(JnObject* hm, JnObject* obj);
+// ObjHM* hashmap_init(JnObject* key, JnObject* value);
 
-Object* obj_enum(char* ident, char** fields, int count);
-
-Object* internObject(Object* obj);
-
-ObjHM* GetObject(Object* hm, Object* obj);
-
-array_t* init_array(void);
-void array_add(array_t* arr, Object* obj);
-bool is_truthy(Object* obj);
-void print_object(Object* obj);
+// array_t* init_array(void);
+// void array_add(array_t* arr, JnObject* obj);
+bool is_truthy(JnObject* obj);
+void print_JnObject(JnObject* obj);
 #endif

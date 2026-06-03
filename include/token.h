@@ -1,6 +1,6 @@
-#ifndef TOKEN_H
+#ifndef JOAN_TOKEN_H
 
-#define TOKEN_H
+#define JOAN_TOKEN_H
 
 #include "lexer.h"
 
@@ -101,28 +101,26 @@ typedef enum {
     TOKEN_COMMENT,
 
     TOKEN_ERROR,
-} TokenType;
+} J_TokenType;
 
-typedef struct token{
-    TokenType type;
+typedef struct joan_token_t{
+    J_TokenType type;
     char* lexeme;
     void* v;
     int line;
     int column;
-} token;
+} joan_token_t;
 
-token clean_token(lexer* l);
+joan_token_t clean_token(joan_lexer_t * l);
 
-token make_token(lexer* l, TokenType type);
+joan_token_t make_token(joan_lexer_t * l, J_TokenType type);
 
-void strip_ws(lexer* l);
+joan_token_t number(joan_lexer_t * l);
 
-token number(lexer* l);
-
-token identifier(lexer* l);
+joan_token_t identifier(joan_lexer_t * l);
 // TODO: improve on token_string function
-token token_string(lexer* l);
+joan_token_t token_string(joan_lexer_t * l);
 
-token next_token(lexer* l);
+joan_token_t next_token(joan_lexer_t * l);
 
 #endif

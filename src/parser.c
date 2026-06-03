@@ -14,12 +14,12 @@
 #define GET_LEX(p)((p)->curr.lexeme)
 #define GET_TOK(p) (p)->curr
 
-int check(parser* p, TokenType type)
+int check(joan_parser_t* p, J_TokenType type)
 {
     return _check(p, type, false);
 }
 
-static bool match(parser* p, TokenType type)
+static bool match(joan_parser_t* p, J_TokenType type)
 {
     if (p->curr.type != type) return false;
     advance_parser_c(p);
@@ -27,7 +27,7 @@ static bool match(parser* p, TokenType type)
 }
 
 
-static bool is_assign_token(TokenType type)
+static bool is_assign_token(J_TokenType type)
 {
     switch (type)
     {
@@ -49,28 +49,36 @@ static bool is_assign_token(TokenType type)
 }
 
 
-void advance_parser(parser* p)
+void advance_parser(joan_parser_t* p)
 {
     p->curr = p->next;
     p->next = next_token(p->l);
 }
 
-int check_next(parser* p, TokenType type)
+int check_next(joan_parser_t* p, J_TokenType type)
 {
     return _check(p, type, true);
 }
 
 
-parser* init_parser(lexer* l)
+joan_parser_t* jn_init_parser(joan_lexer_t* l)
 {
-    parser* p = malloc(sizeof(parser));
+    joan_parser_t* p = malloc(sizeof(joan_parser_t));
     p->l = l;
     p->env = init_env(NULL);
     p->next = clean_token(l);
     return p;
 }
 
-precedence get_prec(TokenType type)
+void J_parse_file(joan_parser_t* p, char* restrict filecontent)
+{
+    joan_lexer_t l;
+    J_init_lexer(&l, filecontent);
+    p->l = &l;
+    p->next = clean_token(&l);
+}
+
+precedence get_prec(J_TokenType type)
 {
     switch (type)
     {
@@ -114,7 +122,7 @@ precedence get_prec(TokenType type)
     }
 }
 
-AST* parse_block(parser* p)
+AST* parse_block(joan_parser_t* p)
 {
     advance_parser_c(p);
     AST* block = new_block(p->arena);
@@ -124,7 +132,7 @@ AST* parse_block(parser* p)
 }
 
 
-void advance_parser_c(parser* p)
+void advance_parser_c(joan_parser_t* p)
 {
     p->curr = p->next;
     while (true)
@@ -135,7 +143,7 @@ void advance_parser_c(parser* p)
     }
 }
 
-AST* parse_error(parser* p, const char* msg, ...)
+AST* parse_error(joan_parser_t* p, const char* msg, ...)
 {
     va_list args;
     va_start(args, msg);
@@ -144,7 +152,7 @@ AST* parse_error(parser* p, const char* msg, ...)
     return ast_error(p->arena, p, msg);
 }
 
-static AST* parse_loop(parser* p)
+static AST* parse_loop(joan_parser_t* p)
 {
     advance_parser_c(p); // loop
     AST* ast = ast_create(p->arena, AST_LOOP);
@@ -153,7 +161,7 @@ static AST* parse_loop(parser* p)
     return ast;
 }
 
-static AST* parse_while(parser* p)
+static AST* parse_while(joan_parser_t* p)
 {
     advance_parser_c(p); // while
     AST* cond = parse_expr(p);
@@ -170,7 +178,7 @@ static AST* parse_while(parser* p)
     return ast;
 }
 
-static AST* parse_if(parser* p)
+static AST* parse_if(joan_parser_t* p)
 {
     advance_parser_c(p); // if token
     AST* cond = parse_expr(p);
@@ -214,7 +222,7 @@ static AST* parse_if(parser* p)
     );
 }
 
-static AST* parse_match(parser* p)
+static AST* parse_match(joan_parser_t* p)
 {
     advance_parser_c(p); // match
     AST* stmt = parse_expr(p);
@@ -250,7 +258,7 @@ static AST* parse_match(parser* p)
     return ast;
 }
 
-static AST* parse_fn(parser* p)
+static AST* parse_fn(joan_parser_t* p)
 {
     advance_parser_c(p); // fn
     if (!check(p, TOKEN_IDENTIFIER))
@@ -287,7 +295,7 @@ static AST* parse_fn(parser* p)
     return ast;
 }
 
-static AST* parse_assign(parser* p)
+static AST* parse_assign(joan_parser_t* p)
 {
     char* ident;
     bool is_const = false;
@@ -306,12 +314,12 @@ static AST* parse_assign(parser* p)
     return ast_assign(p->arena, ident, is_const,  parse_expr(p));
 }
 
-static AST* parse_reassign(parser* p, AST* node)
+static AST* parse_reassign(joan_parser_t* p, AST* node)
 {
     if (node->type != AST_IDENTIFIER)
         return parse_error(p, "Expected an reassign operator.");
     const char* ident = node->identifier;
-    TokenType op = p->curr.type;
+    J_TokenType op = p->curr.type;
     AST* ast = ast_create(p->arena, AST_REASSIGN);
     advance_parser_c(p); // += reassign operator
     //x += 4;
@@ -321,7 +329,7 @@ static AST* parse_reassign(parser* p, AST* node)
     return ast;
 }
 
-static AST* parse_call(parser* p, AST* callee)
+static AST* parse_call(joan_parser_t* p, AST* callee)
 {
     //e.g main(1, None, true)
     //TODO:
@@ -344,17 +352,17 @@ static AST* parse_call(parser* p, AST* callee)
     return ast;
 }
 
-static AST* parse_for(parser* p)
+static AST* parse_for(joan_parser_t* p)
 {
    advance_parser_c(p); // for
    
 }
-static AST* parse_member(parser* p, AST* obj)
+static AST* parse_member(joan_parser_t* p, AST* obj)
 {
     // ::<field>, .<field>
     bool is_setter, is_getter = false;
     AST* setter = NULL;
-    TokenType tok = p->curr.type;
+    J_TokenType tok = p->curr.type;
     advance_parser_c(p);
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected an identifier but got '%s'.", GET_LEX(p));
@@ -375,7 +383,7 @@ static AST* parse_member(parser* p, AST* obj)
     return ast;
 }
 
-static AST* parse_enum(parser* p)
+static AST* parse_enum(joan_parser_t* p)
 {
     advance_parser_c(p); // enum
     if (!check(p, TOKEN_IDENTIFIER))
@@ -403,7 +411,7 @@ static AST* parse_enum(parser* p)
     ast->enum_stmt.count = len;
     return ast; 
 }
-static AST* parse_inline_if(parser* p, AST* node)
+static AST* parse_inline_if(joan_parser_t* p, AST* node)
 {
     advance_parser_c(p); // if
     AST* cond = parse_expr(p);
@@ -417,7 +425,7 @@ static AST* parse_inline_if(parser* p, AST* node)
     return ast;
 }
 
-static AST* parse_index(parser* p, AST* arr)
+static AST* parse_index(joan_parser_t* p, AST* arr)
 {
     advance_parser_c(p); //[
     AST* ast = ast_create(p->arena, AST_ARRAY_INDEX);
@@ -435,7 +443,7 @@ static AST* parse_index(parser* p, AST* arr)
     }
     return ast;
 }
-static AST* parse_postfix(parser* p, AST* left)
+static AST* parse_postfix(joan_parser_t* p, AST* left)
 {
 
     while (true)
@@ -471,7 +479,7 @@ static AST* parse_postfix(parser* p, AST* left)
     return left;
 }
 
-static AST* parse_hashmap(parser* p)
+static AST* parse_hashmap(joan_parser_t* p)
 {
     // TODO
     if (!match(p, TOKEN_LBRACE)) // {
@@ -501,7 +509,7 @@ static AST* parse_hashmap(parser* p)
     ast->hmp_node.count = len;
     return ast;
 }
-AST* parse_array(parser* p)
+AST* parse_array(joan_parser_t* p)
 {
     advance_parser_c(p); // [
     AST* arr = ast_array(p->arena);
@@ -528,7 +536,7 @@ AST* parse_array(parser* p)
     return arr;
 }
 
-static AST* parse_assert(parser* p)
+static AST* parse_assert(joan_parser_t* p)
 {
     advance_parser_c(p); // assert
     AST* cond = parse_expr(p);
@@ -545,7 +553,7 @@ static AST* parse_assert(parser* p)
     return ast;
 }
 
-AST* parse_value(parser* p)
+AST* parse_value(joan_parser_t* p)
 {
     token t = p->curr;
     AST* ast = NULL;
@@ -641,13 +649,13 @@ AST* parse_value(parser* p)
     }
 }
 
-AST* parse_prec(parser* p, precedence prec)
+AST* parse_prec(joan_parser_t* p, precedence prec)
 {
     AST* left = parse_value(p);
     left = parse_postfix(p, left);
     while (prec < get_prec(p->curr.type))
     {
-        TokenType op = p->curr.type;
+        J_TokenType op = p->curr.type;
         precedence op_prec = get_prec(op);
         advance_parser_c(p);
         AST* rhs = parse_prec(p, op_prec);
@@ -655,13 +663,13 @@ AST* parse_prec(parser* p, precedence prec)
     }
     return  left;
 }
-AST* parse_expr(parser* p)
+AST* parse_expr(joan_parser_t* p)
 {
     // MAIN FUNCTION
     return parse_prec(p, PREC_NONE);
 }
 
-AST* parse_stmt(parser* p)
+AST* parse_stmt(joan_parser_t* p)
 {
     switch (p->curr.type)
     {

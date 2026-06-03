@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include "vm.h"
-#include "chuck.h"
+#include "opcode.h"
 #include "ast.h"
 #include "object.h"
 #include "helper.h"
@@ -13,13 +13,92 @@
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
 
-#define err(vm, msg) do{ \
-    printf("Error[main:%d:%d] %s\n", (vm)->p->curr.line, (vm)->p->curr.column, msg);\
-    return INTERPRET_RUNTIME_ERROR; \
-} while(false)
+void chuck_init(Chuck* chuck)
+{
+    chuck->count = 0;
+    chuck->ident_count = 0;
+    chuck->ident_capacity = 100;
+    chuck->capacity = 100;
+    chuck->constants_count = 0;
+    chuck->constants_capacity = 100;
+    chuck->code = malloc(sizeof(uint8_t) * chuck->capacity);
+    chuck->constants = malloc(sizeof(Object *) * chuck->constants_capacity);
+    chuck->idents = malloc(sizeof(char *) * chuck->ident_capacity);
+}
 
 
-static InterpretResult die(VM* vm, const char* msg, ...)
+int add_ident(Chuck* chuck, char* ident)
+{
+    if (NULL == chuck) return -1;
+    if (chuck->ident_count >= chuck->ident_capacity)
+    {
+        chuck->ident_capacity *= 2;
+        chuck->idents = realloc(chuck->idents, sizeof(char *) * chuck->ident_capacity);
+    }
+    chuck->idents[chuck->ident_count] = ident;
+    return chuck->ident_count++;
+}
+
+static void write_chuck(Chuck* chuck, uint8_t byte)
+{
+    if (NULL == chuck)
+        return;
+    if (chuck->count >= chuck->capacity)
+    {
+        chuck->capacity *= 2;
+        chuck->code = realloc(
+            chuck->code, chuck->capacity
+        );
+    }
+    chuck->code[chuck->count++] = byte;
+}
+
+static int add_constant(Chuck* chuck, JnObject* object)
+{
+    if (NULL == chuck)
+        return -1;
+    if (chuck->constants_count >= chuck->constants_capacity)
+    {
+        chuck->capacity *= 2;
+        chuck->constants = realloc(
+            chuck->constants,
+            sizeof(Object *) * chuck->capacity
+        );
+    }
+    chuck->constants[chuck->constants_count] = object;
+    return chuck->constants_count++;
+}
+
+static int current_offset(Chuck* chuck)
+{
+    return chuck->count;
+}
+
+static int emit_jump(Chuck* chuck, uint8_t instrction)
+{
+    write_chuck(chuck, instrction);
+    write_chuck(chuck, 0xff);
+    write_chuck(chuck, 0xff);
+    return chuck->count - 2;
+}
+
+static void patch_jump(Chuck* chuck, int offset)
+{
+    int jump = chuck->count - offset - 2;
+    chuck->code[offset] = (jump >> 8) & 0xff;
+    chuck->code[offset + 1] = jump & 0xff;
+}
+
+static void emit_loop(Chuck* chuck, int loop_start)
+{
+    write_chuck(chuck, OP_LOOP);
+    int offset = chuck->count - loop_start + 2;
+    write_chuck(chuck, (offset >> 8) & 0xff);
+    write_chuck(chuck, offset & 0xff);
+}
+
+
+static InterpretResult die(JnVM* vm, const char* msg, ...)
 {
     va_list arg; va_start(arg, msg);
     fprintf( // TODO: current impl does not get the exact line and column
@@ -33,25 +112,23 @@ static InterpretResult die(VM* vm, const char* msg, ...)
     return INTERPRET_RUNTIME_ERROR;
 }
 
-static void push(VM* vm, Object* object)
+static void push(JnVM* vm, JnObject* object)
 {
     if (NULL == object) return;
     *vm->sp++ = object;
 }
 
-static Object* pop(VM* vm){ return *--vm->sp; }
+static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
-InterpretResult vm_run(VM* vm)
+static JnObject *a, *b, *key, *value, *array, *pos;
+
+InterpretResult vm_run(JnVM* vm)
 {
     #define READ_BYTE() (*vm->ip++)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
     #define READ_IDENT() (vm->chuck->idents[READ_BYTE()])
     int count;
-    Object* o = NULL;
-    IterObject* iter = NULL;
-    Object *a, *b;
-    Object* key, *value;
-    Object *array, *pos;
+    JnObject* o = NULL;
     char* ident;
     uint16_t offset;
     for (;;)
@@ -68,7 +145,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = internObject(eval_binary(b, a, EVAL_ADD));
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_SUB:
@@ -76,13 +153,13 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_SUB);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_MUL:
                 a = pop(vm);
                 b = pop(vm);
-                a->o_int = a->o_int * b->o_int;
+                a->int32 = a->int32 * b->int32;
                 push(vm, a);
                 break;
             case OP_BITAND:
@@ -90,7 +167,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_BAND);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_BITOR:
@@ -98,7 +175,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_BOR);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_PERC:
@@ -106,7 +183,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_PERC);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_DIV:
@@ -119,7 +196,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_BAC);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_EQUAL:
@@ -127,7 +204,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_EQUAL);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_LSHIFT:
@@ -135,7 +212,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_LSHIFT);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_RSHIFT:
@@ -143,7 +220,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_RSHIFT);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_NEQ:
@@ -151,7 +228,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_NOTEQUAL);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_GT:
@@ -159,7 +236,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_GT);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_GTE:
@@ -167,7 +244,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_GTE);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_LT:
@@ -175,7 +252,7 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_LT);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_LTE:
@@ -183,50 +260,50 @@ InterpretResult vm_run(VM* vm)
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_LTE);
                 if (NULL == a)
-                    err(vm, "Invalid binary");
+                    return die(vm, "Invalid binary");
                 push(vm, a);
                 break;
             case OP_ARRAY:
                 count = READ_BYTE();
-                array_t* arr = init_array();
+                JnArrayObject* arr = NULL;
                 for (int i = count - 1; i >= 0; --i)
                 {
                     //TODO
                     arr->items[i] = pop(vm);
-                    arr->count++;
+                    arr->size++;
                 }
                 o = obj_new(ARRAY_TYPE);
-                o->o_array = arr;
+                o->arr = arr;
                 push(vm, o);
                 break;
             case OP_ITER:
-                count = READ_BYTE();
-                iter = ObjectIter(count);
-                for (int i = count - 1; i >= 0; --i)
-                {
-                    //pushItem(iter, pop(vm));
-                    iter->items[i] = pop(vm);
-                    iter->count++;
-                }
-                o = obj_new(ITER_TYPE);
-                o->iter = iter;
-                push(vm, o);
+                // count = READ_BYTE();
+                // iter = ObjectIter(count);
+                // for (int i = count - 1; i >= 0; --i)
+                // {
+                //     //pushItem(iter, pop(vm));
+                //     iter->items[i] = pop(vm);
+                //     iter->count++;
+                // }
+                // o = obj_new(ITER_TYPE);
+                // o->iter = iter;
+                // push(vm, o);
                 break;
             case OP_HM:
-                count = READ_BYTE();
-                J_DArray_Obj* jd_obj = malloc(sizeof(J_DArray_Obj));
-                jd_obj->size = 0;
-                jd_obj->capacity = count;
-                jd_obj->items = malloc(sizeof(ObjHM *) * count);
-                for (int i = count - 1; i >= 0; --i)
-                {
-                    value = pop(vm); key = pop(vm);
-                    jd_obj->items[i] = HM_OBJ(key, value);
-                    jd_obj->size++;
-                }
-                Object* obj = obj_new(HASHMAP_TYPE);
-                obj->hashmap = jd_obj;
-                push(vm, obj);
+                // count = READ_BYTE();
+                // J_DArray_Obj* jd_obj = malloc(sizeof(J_DArray_Obj));
+                // jd_obj->size = 0;
+                // jd_obj->capacity = count;
+                // jd_obj->items = malloc(sizeof(ObjHM *) * count);
+                // for (int i = count - 1; i >= 0; --i)
+                // {
+                //     value = pop(vm); key = pop(vm);
+                //     printf("value = %d; key = %d\n", value->type, key->type);
+                //     jd_obj->items[i] = hashmap_init(key, value);
+                //     jd_obj->size++;
+                // }
+                // JnObject* obj = obj_hashmap(jd_obj);
+                // push(vm, obj);
                 break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
@@ -238,7 +315,7 @@ InterpretResult vm_run(VM* vm)
                 if (entry->is_const)
                     return die(vm, "Cannot reassign a variable of const.");
                 o = entry->value;
-                o->kind = a->kind;
+                o->type = a->type;
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
@@ -312,7 +389,7 @@ InterpretResult vm_run(VM* vm)
                         *o = *b;
                         break;
                     default:
-                        err(vm, "invalid operator.");
+                        return die(vm, "invalid operator.");
                 }
                 break;
             case OP_IN:
@@ -354,7 +431,7 @@ InterpretResult vm_run(VM* vm)
                 break;
             case OP_MEMBER:
                 char* field = READ_IDENT(); o = pop(vm); op = READ_BYTE();
-                printf("FIeld member %s, Object type %d Token %d\n", ident, o->kind, op);
+                printf("FIeld member %s, Object type %d Token %d\n", ident, o->type, op);
                 // I assuming every object is an enum object: TODO
                 switch (op)
                 {
@@ -369,25 +446,25 @@ InterpretResult vm_run(VM* vm)
                 push(vm, obj_none()); // for now
                 break;
             case OP_RANGE:
-                Object *b = pop(vm), *a = pop(vm);
-                if (a->kind != INT_TYPE || b->kind != INT_TYPE)
-                    return die(vm, "Expected type int but got TODO:");
-                int start = a->o_int, end = b->o_int;
-                int tmp;
-                if (start > end)
-                {
-                    tmp = end;
-                    end = start;
-                    start = tmp;
-                }
-                iter = ObjectIter(b->o_int);
-                for (int i = start; i < end; ++i)
-                {
-                    pushItem(iter, obj_int(i));
-                }
-                o = obj_new(ITER_TYPE);
-                o->iter = iter;
-                push(vm, o);
+                // Object *b = pop(vm), *a = pop(vm);
+                // if (a->type != INT_TYPE || b->type != INT_TYPE)
+                //     return die(vm, "Expected type int but got TODO:");
+                // int start = a->int32, end = b->int32;
+                // int tmp;
+                // if (start > end)
+                // {
+                //     tmp = end;
+                //     end = start;
+                //     start = tmp;
+                // }
+                // iter = ObjectIter(b->int32);
+                // for (int i = start; i < end; ++i)
+                // {
+                //     pushItem(iter, obj_int(i));
+                // }
+                // o = obj_new(ITER_TYPE);
+                // o->iter = iter;
+                // push(vm, o);
                 break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
@@ -397,56 +474,56 @@ InterpretResult vm_run(VM* vm)
                 push(vm, internObject(o));
                 break;
             case OP_PRINTLN:
-                Object* out = pop(vm);
+                JnObject* out = pop(vm);
                 print_object(out);
                 putchar('\n');
                 break;
             case OP_NEGATE:
                 o = pop(vm);
                 if (NULL == o) break;
-                switch (o->kind)
+                switch (o->type)
                 {
                     case INT_TYPE:
-                        o->o_int = -(o->o_int);
+                        o->int32 = -(o->int32);
                         push(vm, o);
                         break;
                     case FLOAT_TYPE:
-                        o->o_float = -o->o_float;
+                        o->float32 = -o->float32;
                         push(vm, o);
                         break;
                     default:
-                        err(vm, "Invalid type.");
+                        return die(vm, "Invalid type.");
                 }
                 break;
             case OP_POP:
                 pop(vm); break;
             case OP_DUP:
-                Object* top = *(vm->sp - 1);
+                JnObject* top = *(vm->sp - 1);
                 push(vm, top); break;
             case OP_SET_GLOBAL:
                 o = pop(vm);
                 ident = READ_IDENT();
                 bool is_const = (bool)READ_BYTE();
                 if (o == NULL || ident == NULL)
-                    err(vm, "Object not set.");
+                    return die(vm, "Object not set.");
                 set_env(vm->env, ident, o, is_const, false);
                 break;
             case OP_INDEX:
                 array = pop(vm);
                 pos = pop(vm);
                 if (!array || !pos)
-                    err(vm, "None value array or pos.");
-                if (array->kind != ARRAY_TYPE && array->kind != STR_TYPE && array->kind != ITER_TYPE && array->kind != HASHMAP_TYPE)
-                    err(vm, "Invalid kind for array or pos.");
-                if (array->kind == ARRAY_TYPE && pos->kind != INT_TYPE)
-                    err(vm, "pos is not an int");
-                int index = pos->o_int;
-                switch (array->kind)
+                    return die(vm, "None value array or pos.");
+                if (array->type != ARRAY_TYPE && array->type != STR_TYPE && array->type != ITER_TYPE && array->type != HASHMAP_TYPE)
+                    return die(vm, "Invalid type for array or pos.");
+                if (array->type == ARRAY_TYPE && pos->type != INT_TYPE)
+                    return die(vm, "pos is not an int");
+                int index = pos->int32;
+                switch (array->type)
                 {
                     case ARRAY_TYPE:
-                        if (index < 0 || pos->o_int >= array->o_array->count)
-                            err(vm, "pos is > or < array length");
-                        o = array->o_array->items[pos->o_int];
+                        if (index < 0 || pos->int32 >= array->arr->size)
+                            return die(vm, "pos is > or < array length");
+                        o = array->arr->items[pos->int32];
                         push(vm, o);
                         break;
                     case STR_TYPE:
@@ -465,45 +542,46 @@ InterpretResult vm_run(VM* vm)
                         push(vm, o);
                         break;
                     case HASHMAP_TYPE:
-                    ObjHM* hm = GetObject(array, pos);
-                    if (NULL == hm)
-                        return die(vm, "index error");
-                    push(vm, hm->value); break;
+                    // ObjHM* hm = hashmap_get(array, pos);
+                    // if (NULL == hm)
+                    //     return die(vm, "index error");
+                    // push(vm, hm->value); 
+                    break;
                     default:
-                        err(vm, "Got an invaild array type");
+                        return die(vm, "Got an invaild array type");
                 }
                 break;
             case OP_SET_INDEX:
                 value = pop(vm); array = pop(vm); pos = pop(vm);
-                index = pos->o_int;
+                index = pos->int32;
                 
-                if (array->kind != HASHMAP_TYPE && pos->kind != INT_TYPE)
+                if (array->type != HASHMAP_TYPE && pos->type != INT_TYPE)
                     return die(vm, "Expected an 'int' type");
-                if (array->kind != HASHMAP_TYPE && index < 0)
+                if (array->type != HASHMAP_TYPE && index < 0)
                     return die(vm, "Got an negative index value.");
                 
-                switch (array->kind)
+                switch (array->type)
                 {
                     case ARRAY_TYPE:
-                        if (index >= array->o_array->count)
-                            return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->o_array->count, index);
-                        array->o_array->items[index]->kind = value->kind;
-                        array->o_array->items[index] = value;
+                        if (index >= array->arr->size)
+                            return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->arr->size, index);
+                        array->arr->items[index]->type = value->type;
+                        array->arr->items[index] = value;
                         break;
                     case STR_TYPE:
                         if (index >= array->str->len)
                                 return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
-                        if (value->kind != STR_TYPE)
+                        if (value->type != STR_TYPE)
                             return die(vm, "string index expect a string value.");
                         if (value->str->len > 0)
                             return die(vm, "Can only set a char to a string.");
                         array->str->chars[index] = value->str->chars[0];
                         break;
                     case HASHMAP_TYPE:
-                        ObjHM* hm = GetObject(array, pos);
-                        if (NULL == hm)
-                            return die(vm, "index error");
-                        hm->value = value;
+                        // ObjHM* hm = hashmap_get(array, pos);
+                        // if (NULL == hm)
+                        //     return die(vm, "index error");
+                        // hm->value = value;
                         break;
                     case ITER_TYPE:
                         return die(vm, "Iter object does not support index setting.");
@@ -544,18 +622,18 @@ InterpretResult vm_run(VM* vm)
                 count = READ_BYTE(); o = pop(vm);
                 if (NULL == o)
                     return die(vm, "undefine function '%s'.", ident);
-                if (o->kind != FUNCTION_TYPE && o->kind != NATIVE_TYPE)
+                if (o->type != FUNCTION_TYPE && o->type != NATIVE_TYPE)
                     return die(vm, "%s is not a callable.", ident);
-                Object* args[20];
+                JnObject* args[20];
                 size_t len = 0;
                 for (int i = count - 1; i >= 0; --i)
                 {
                     args[i] = pop(vm);
                 }
-                switch (o->kind)
+                switch (o->type)
                 {
                     case NATIVE_TYPE: {
-                        a = o->o_nativefn->fn(args, (size_t)count);
+                        a = o->native_fn->fn(args, (size_t)count);
                         if (a == NULL)
                             return die(vm, "SystemError: got NULL");
                         push(vm, a);
@@ -563,26 +641,26 @@ InterpretResult vm_run(VM* vm)
                     }
                     case FUNCTION_TYPE: {
                         //  TODO
-                        ObjFunction* fn = o->fn;
-                        if (count != fn->arity)
-                            return die(
-                                vm, 
-                                "function '%s' expected %d args but got %d",
-                                fn->name, fn->arity, count
-                            );
-                        if (vm->frame_count >= _FRAME_MAX)
-                            return die(vm, "Stack Overflow");
-                        CallFrame* current = &vm->frames[vm->frame_count++];
-                        current->fn = fn;
-                        current->ip = vm->ip;
-                        current->env = vm->env;
-                        env_t* local = init_env(vm->env);
-                        for (int i = 0; i < fn->arity; i++)
-                        {
-                            set_env(local, fn->params[i], args[i], false, false);
-                        }
-                        vm->env = local;
-                        vm->ip = fn->chuck->code;
+                        // ObjFunction* fn = o->fn;
+                        // if (count != fn->arity)
+                        //     return die(
+                        //         vm, 
+                        //         "function '%s' expected %d args but got %d",
+                        //         fn->name, fn->arity, count
+                        //     );
+                        // if (vm->frame_count >= _FRAME_MAX)
+                        //     return die(vm, "Stack Overflow");
+                        // CallFrame* current = &vm->frames[vm->frame_count++];
+                        // current->fn = fn;
+                        // current->ip = vm->ip;
+                        // current->env = vm->env;
+                        // env_t* local = init_env(vm->env);
+                        // for (int i = 0; i < fn->arity; i++)
+                        // {
+                        //     set_env(local, fn->params[i], args[i], false, false);
+                        // }
+                        // vm->env = local;
+                        // vm->ip = fn->chuck->code;
                         break;
                     }
                     default: 
@@ -613,7 +691,7 @@ InterpretResult vm_run(VM* vm)
             case OP_ERROR:
                 return INTERPRET_RUNTIME_ERROR;
             default:
-                err(vm, "System error.");
+                return die(vm, "System error.");
         }
     }
     #undef READ_BYTE
@@ -783,7 +861,7 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_ENUM: 
         ident = node->enum_stmt.ident;
-        Object* enumObj = obj_enum(ident, node->enum_stmt.fields, node->enum_stmt.count);
+        JnObject* enumObj = obj_enum(ident, node->enum_stmt.fields, node->enum_stmt.count);
         idx = add_constant(chuck, enumObj);
         write_chuck(chuck, OP_CONSTANT);
         write_chuck(chuck, idx);
@@ -834,7 +912,7 @@ void compile(AST* node, Chuck* chuck)
         // write_chuck(&fn_chuck, OP_CONSTANT);
         // write_chuck(&fn_chuck, idx);
         write_chuck(&fn_chuck, OP_END);
-        Object* objFn = obj_function(
+        JnObject* objFn = obj_function(
             &fn_chuck,
             node->fn_node.params,
             node->fn_node.count,

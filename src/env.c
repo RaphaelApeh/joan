@@ -13,10 +13,10 @@ env_t* init_env(env_t* parent)
     return e;
 }
 
-void set_env(env_t* env, char* key, Object* obj, bool is_const, bool is_public)
+void set_env(env_t* env, char* key, JnObject* obj, bool is_const, bool is_public)
 {
     if (NULL == env || NULL == obj) return;
-    // Object* e;
+    // JnObject* e;
     // if (e = get_env(env, key) != NULL)
     //     *e = *obj;
     if (env->count >= env->capacity)
@@ -51,7 +51,7 @@ entry_t* get_envEntry(env_t* env, char* key)
     return NULL;
 }
 
-Object* get_env(env_t* env, char* key)
+JnObject* get_env(env_t* env, char* key)
 {
     if (NULL == env) return NULL;
     // size_t id = hash(key) * env->capacity;

@@ -3,200 +3,170 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "chuck.h"
 #include "object.h"
 #include "helper.h"
+#include "vm.h"
 
-
-Object NoneObj = {0};
-Object TrueObj = {0};
+JnObject NoneObj = {0};
 
 static InternEntry* intern_pool[INTER_SIZE];
 
-static inline bool ObjIntCmp(Object* key1, Object* key2)
+static inline bool ObjIntCmp(JnObject* key1, JnObject* key2)
 {
     double k1 = tonumber(key1), k2 = tonumber(key2);
     return k1 == k2;
 }
 
-static inline bool ObjStrCmp(Object* key1, Object* key2)
+static inline bool ObjStrCmp(JnObject* key1, JnObject* key2)
 {
     return key1->str->hash == key2->str->hash;
 }
 
-static inline bool ObjectBoolCmp(Object* key1, Object* key2)
+static inline bool ObjectBoolCmp(JnObject* key1, JnObject* key2)
 {
-    return key1->o_bool == key2->o_bool;
+    // return key1->bool8 == key2->bool2;
 }
 
-static bool objEqual(Object* obj1, Object* obj2)
+static bool jn_obj_equal(JnObject* obj1, JnObject* obj2)
 {
-    if (obj1->kind != obj2->kind)
-        return false;
-    switch (obj1->kind)
-    {
-        case INT_TYPE:  return obj1->o_int == obj2->o_int;
-        case BOOL_TYPE: return obj1->o_bool == obj2->o_bool;
-        case STR_TYPE: return obj1->str->hash == obj2->str->hash;
-        default: return false;
-    }
+    // if (obj1->type != obj2->type)
+    //     return false;
+    // switch (obj1->type)
+    // {
+    //     case INT_TYPE:  return obj1->int32 == obj2->int32;
+    //     case BOOL_TYPE: return obj1->bool8 == obj2->bool8;
+    //     case FLOAT_TYPE: return obj1->float32 == obj2->float32;
+    //     case STR_TYPE: return obj1->str->hash == obj2->str->hash;
+    //     default: return false;
+    // }
 }
 
-static uint64_t hashObject(Object* obj)
+static uint64_t hash_object(JnObject* obj)
 {
-    switch (obj->kind)
-    {
-        case INT_TYPE:
-            return (uint64_t)obj->o_int;
-        case BOOL_TYPE:
-            return obj->o_bool;
-        case FLOAT_TYPE:
-            return obj->o_float;
-        case STR_TYPE:
-            return obj->str->hash;
-        default:
-            printf("Unsupported Type\n");
-            return 0;
-    }
+    // switch (obj->type)
+    // {
+    //     case INT_TYPE:
+    //         return (uint64_t)obj->int32;
+    //     case BOOL_TYPE:
+    //         return obj->bool8;
+    //     case FLOAT_TYPE:
+    //         return obj->float32;
+    //     case STR_TYPE:
+    //         return obj->str->hash;
+    //     default:
+    //         printf("Unsupported Type\n");
+    //         return 0;
+    // }
 }
 
-Object* obj_new(ObjectType kind)
+JnObject* jn_obj_new(JnTypeObject type)
 {
-    Object* obj = malloc(sizeof(Object));
-    obj->kind = kind;
+    JnObject* obj = malloc(sizeof(JnObject));
+    memset(obj, 0, sizeof(*obj));
+    obj->type = type;
     return obj;
 }
 
-Object* obj_int(long o_int)
+JnObject* jn_obj_int(long int32)
 {
-    if (o_int <= 0)
+    if (int32 <= 0)
     {
-        NoneObj.kind = INT_TYPE;
-        NoneObj.o_int = o_int;
+        NoneObj.type = INT_TYPE;
+        NoneObj.int32 = int32;
         return &NoneObj;
     }
-    Object* obj = obj_new(INT_TYPE);
-    obj->o_int = o_int;
+    JnObject* obj = obj_new(INT_TYPE);
+    obj->int32 = int32;
     return obj;
 }
 
-Object* obj_string(char* str)
+JnObject* jn_obj_string(char* str)
 {
-    Object* obj = obj_new(STR_TYPE);
-    ObjString* strObj = malloc(sizeof(ObjString));
-    *strObj = STR_OBJ(str); // TODO
-    // strObj->str = strdup(str);
-    // strObj->hash = djb2_hash(str);
-    // strObj->len = strlen(str);
+    JnObject* obj = obj_new(STR_TYPE);
+    JnStringObject* strObj = malloc(sizeof(JnStringObject));
+    *strObj = JNSTR_OBJ(str);
     obj->str = strObj;
     return obj;
 }
 
-Object* obj_bool(bool o_bool)
+JnObject* jn_obj_bool(bool bool8)
 {
-    Object* obj = obj_new(BOOL_TYPE);
-    obj->o_bool = o_bool;
+    JnObject* obj = obj_new(BOOL_TYPE);
+    obj->bool8 = bool8;
     return obj;
 }
 
-Object* obj_float(double o_float)
+JnObject* jn_obj_float(double float32)
 {
-    Object* obj = obj_new(FLOAT_TYPE);
-    obj->o_float = o_float;
+    JnObject* obj = obj_new(FLOAT_TYPE);
+    obj->float32 = float32;
     return obj;
 }
 
-void SetObject(Object* hm, Object* key, Object* value)
+JnObject* jn_obj_hashmap(J_DArray_Obj* jd_obj)
 {
-    if (NULL == hm || NULL == key || NULL == value)
-        return;
-    if (hm->hashmap->size > hm->hashmap->capacity)
-        RESIZE_DOBJ(hm->hashmap);
-    uint64_t hash = hashObject(key);
-    hm->hashmap->items[hm->hashmap->size++] = HM_OBJ(key, value);
-}
-ObjHM* GetObject(Object* hm, Object* obj)
-{
-    for (int i = 0; i < hm->hashmap->size; ++i)
-    {
-        ObjHM* ele  = hm->hashmap->items[i];
-        if (objEqual(ele->key, obj) && ele->hash == hashObject(obj))
-            return ele;
-    }
-    return NULL;
-}
-
-void SetHmObject(Object* hm, Object* key, Object* value)
-{
-    ObjHM* obj_hm;
-    if (hm == NULL || key == NULL || value == NULL)
-        return;
-    if (hm->kind != HASHMAP_TYPE)
-        return;
-    if ((obj_hm = GetObject(hm, key)) != NULL)
-    {
-        obj_hm->value = value;
-        return;
-    }
-    if (hm->hashmap->size >= hm->hashmap->capacity)
-        RESIZE_DOBJ(hm->hashmap);
-    hm->hashmap->items[hm->hashmap->size++] = HM_OBJ(key, value);
-}
-
-ObjHM* HM_OBJ(Object* key, Object* value)
-{
-    ObjHM* hm = malloc(sizeof(ObjHM));
-    hm->key = key;
-    hm->value = value;
-    hm->hash = hashObject(key);
-    return hm;
-}
-
-ObjField* FieldObj(char* field_name, Object* field_value)
-{
-    ObjField* obj = malloc(sizeof(ObjField));
-    obj->field_name = strdup(field_name);
-    obj->field_value = field_value;
+    JnObject* obj = obj_new(HASHMAP_TYPE);
+    // obj->hashmap = jd_obj;
     return obj;
 }
 
-
-Object* obj_enum(char* ident, char** fields, int count)
+void hashmap_set(JnObject* hm, JnObject* key, JnObject* value)
 {
-    J_DArray_Obj* jd_obj = malloc(sizeof(J_DArray_Obj));
-    jd_obj->size = 0;
-    jd_obj->capacity = count;
-    jd_obj->items = malloc(sizeof(ObjHM *) * count);
-    for (int i = 0; i < count; ++i)
-    {
-        jd_obj->items[jd_obj->size++] = FieldObj(fields[i], obj_int(i));
-    }
-    Object* enumObj = obj_new(ENUM_TYPE);
-    enumObj->JEnum = malloc(sizeof(JEnumObj));
-    enumObj->JEnum->fields = jd_obj;
-    enumObj->JEnum->ident = ident;
-    return enumObj;
+    // if (NULL == hm || NULL == key || NULL == value)
+    //     return;
+    // ObjHM* obj = hashmap_get(hm, key);
+    // if (obj != NULL)
+    // {
+    //     obj->value = value;
+    //     return;
+    // }
+    // if (hm->hashmap->size >= hm->hashmap->capacity)
+    // {
+    //     hm->hashmap->capacity *= 2;
+    //     RESIZE_DOBJ(hm->hashmap);
+    // }
+    // hm->hashmap->items[hm->hashmap->size++] = hashmap_init(key, value);
 }
 
-Object* obj_none(void)
+// ObjHM* hashmap_get(JnObject* hm, JnObject* obj)
+// {
+//     for (int i = 0; i < hm->hashmap->size; ++i)
+//     {
+//         ObjHM* ele  = hm->hashmap->items[i];
+//         if (jn_obj_equal(ele->key, obj) && ele->hash == hash_object(obj))
+//             return ele;
+//     }
+//     return NULL;
+// }
+
+// ObjHM* hashmap_init(JnObject* key, JnObject* value)
+// {
+//     ObjHM* hm = malloc(sizeof(ObjHM));
+//     hm->key = key;
+//     hm->value = value;
+//     hm->hash = hash_object(key);
+//     return hm;
+// }
+
+
+JnObject* jn_obj_none(void)
 {
-    //Probably not the best way to do it.
-    NoneObj.kind = NONE_TYPE;
-    NoneObj.o_int = 0;
+    NoneObj.type = NONE_TYPE;
+    NoneObj.int32 = 0;
     return &NoneObj;
 }
 
-Object* internObject(Object* obj)
+JnObject* jn_intern_obj(JnObject* obj)
 {
-    if (obj->kind == ENUM_TYPE || obj->kind == FUNCTION_TYPE || obj->kind == HASHMAP_TYPE || obj->kind == NATIVE_TYPE || obj->kind == NONE_TYPE)
+    if (obj->type == ENUM_TYPE || obj->type == FUNCTION_TYPE || obj->type == HASHMAP_TYPE || obj->type == NATIVE_TYPE || obj->type == NONE_TYPE)
         return obj;
-    uint64_t hash = hashObject(obj);
+    uint64_t hash = hash_object(obj);
     size_t idx = hash % INTER_SIZE;
     InternEntry* entry = intern_pool[idx];
     
     while(entry)
     {
-        if (objEqual(entry->obj, obj))
+        if (jn_obj_equal(entry->obj, obj))
         {
             return entry->obj;
         }
@@ -210,10 +180,10 @@ Object* internObject(Object* obj)
     return obj;
 }
 
-Object* obj_function(Chuck* chuck, char** params, int arity, char* name)
+JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name)
 {
-    Object* obj = obj_new(FUNCTION_TYPE);
-    ObjFunction* fn = malloc(sizeof(ObjFunction));
+    JnObject* obj = obj_new(FUNCTION_TYPE);
+    JnFunctionObject* fn = malloc(sizeof(JnFunctionObject));
     fn->arity = arity;
     fn->chuck = chuck;
     fn->name = name;
@@ -222,81 +192,63 @@ Object* obj_function(Chuck* chuck, char** params, int arity, char* name)
     return obj;
 }
 
-array_t* init_array(void)
+static void print_array(JnObject* obj)
 {
-    array_t* arr = malloc(sizeof(arr));
-    arr->count = 0;
-    arr->capacity = 100;
-    arr->items = malloc(sizeof(Object *) * 100);
-    return arr;
-}
-
-void array_add(array_t* arr, Object* obj)
-{
-    if (arr->count >= arr->capacity)
-    {
-        arr->capacity *= 2;
-        arr->items = realloc(arr->items, sizeof(Object *) * arr->capacity);
-    }
-    arr->items[arr->count++] = obj;
-}
-static void print_array(Object* obj)
-{
-    if (NULL == obj && obj->kind != ARRAY_TYPE)
+    if (NULL == obj && obj->type != ARRAY_TYPE)
         return;
     fprintf(stderr, "[");
-    for (size_t i = 0; i < obj->o_array->count; i++)
+    for (size_t i = 0; i < obj->arr->size; i++)
     {
-        print_object(obj->o_array->items[i]);
-        if (i < obj->o_array->count - 1)
+        print_JnObject(obj->arr->items[i]);
+        if (i < obj->arr->size - 1)
             fprintf(stderr, ", ");
     }
     fprintf(stderr, "]");
 }
 
-static void print_hashmap(Object* obj)
+static void print_hashmap(JnObject* obj)
 {
     fprintf(stderr, "#{");
-    for (int i = 0; i < obj->hashmap->size; ++i)
-    {
-        ObjHM* hm = obj->hashmap->items[i];
-        print_object(hm->key);
-        putchar(':');
-        print_object(hm->value);
-        if (i < obj->hashmap->size - 1)
-            fprintf(stderr, ", ");
-    }
+    // for (int i = 0; i < obj->hashmap->size; ++i)
+    // {
+    //     ObjHM* hm = obj->hashmap->items[i];
+    //     print_object(hm->key);
+    //     putchar(':');
+    //     print_object(hm->value);
+    //     if (i < obj->hashmap->size - 1)
+    //         fprintf(stderr, ", ");
+    // }
     putchar('}');
 }
 
-IterObject* ObjectIter(unsigned int capacity)
-{
-    IterObject* iter = malloc(sizeof(IterObject));
-    if (capacity <= 0)
-    {
-        capacity = 100;
-    }
-    iter->items = malloc(sizeof(Object *) * capacity);
-    iter->capacity = 100;
-    iter->count = 0;
-    return iter;
-}
+// Jn* ObjectIter(unsigned int capacity)
+// {
+//     IterJnObject* iter = malloc(sizeof(IterObject));
+//     if (capacity <= 0)
+//     {
+//         capacity = 100;
+//     }
+//     iter->items = malloc(sizeof(Object *) * capacity);
+//     iter->capacity = 100;
+//     iter->count = 0;
+//     return iter;
+// }
 
-void print_object(Object* obj)
+void print_JnObject(JnObject* obj)
 {
     if (NULL == obj) return;
     
-    switch (obj->kind)
+    switch (obj->type)
     {
         case INT_TYPE:
-            fprintf(stderr, "%llu", obj->o_int); break;
+            fprintf(stderr, "%llu", obj->int32); break;
         case STR_TYPE:
             fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->chars : "None");
             break;
         case BOOL_TYPE:
-            fprintf(stderr, (obj->o_bool) ? "true": "false"); break;
+            fprintf(stderr, (obj->bool8) ? "true": "false"); break;
         case FLOAT_TYPE:
-            fprintf(stderr, "%.15g", obj->o_float); break;
+            fprintf(stderr, "%.15g", obj->float32); break;
         case ARRAY_TYPE:
             print_array(obj);
             break;
@@ -307,7 +259,7 @@ void print_object(Object* obj)
             fprintf(stderr, "None");
             break;
         case ENUM_TYPE:
-            fprintf(stderr, "<Enum '%s' fields(%d) >", obj->JEnum->ident, obj->JEnum->fields->size);
+            fprintf(stderr, "<Enum>");
             break;
         case FUNCTION_TYPE:
             //TODO
@@ -316,7 +268,7 @@ void print_object(Object* obj)
             fprintf(stderr, "<iter <%llu> at %p>", obj->iter->count, obj->iter);
             break;
         case NATIVE_TYPE:
-            fprintf(stderr, "<function <%s> at %p>", obj->o_nativefn->fnName, obj->o_nativefn);
+            fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;
         default:
             fprintf(stderr, "undefine");
@@ -324,20 +276,21 @@ void print_object(Object* obj)
     }
 }
 
-bool is_truthy(Object* obj)
+bool is_truthy(JnObject* obj)
 {
     if (!obj) return false;
-    switch (obj->kind)
+    switch (obj->type)
     {
     case BOOL_TYPE:
-        return obj->o_bool;
+        return obj->bool8;
     case INT_TYPE:  
-        return obj->o_int != 0;
+        return obj->int32 != 0;
     case FLOAT_TYPE:
-        return obj->o_float != 0;
+        return obj->float32 != 0;
     case STR_TYPE:
         return obj->str->len != 0;
     case NATIVE_TYPE:
+    case ENUM_TYPE:
     case FUNCTION_TYPE:
         return true;
     default:

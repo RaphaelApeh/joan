@@ -28,19 +28,19 @@ unsigned long fnv_hash(const void* key, uint32_t h)
     return h;
 }
 
-bool isnumber(Object* obj)
+bool isnumber(JnObject* obj)
 {
     if (NULL == obj) return false;
-    if (obj->kind == INT_TYPE || obj->kind == FLOAT_TYPE)
+    if (obj->type == INT_TYPE || obj->type == FLOAT_TYPE)
         return true;
     return false;
 }
 
-double tonumber(Object* obj)
+double tonumber(JnObject* obj)
 {
-    if (obj->kind == INT_TYPE)
-        return (double)obj->o_int;
-    return obj->o_float;
+    if (obj->type == INT_TYPE)
+        return (double)obj->int32;
+    return obj->float32;
 }
 
 void runtime_error(char* msg, ...)

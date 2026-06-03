@@ -71,15 +71,15 @@ typedef struct AST{
     union {
 
         const char* identifier;
-        Object* literal;
+        JnObject* literal;
         struct {
             AST* left;
-            TokenType op;
+            J_TokenType op;
             AST* right;
         } binary;
 
         struct {
-            TokenType op;
+            J_TokenType op;
             AST* right;
         } unary;
         // let x, y, z = 0
@@ -114,7 +114,7 @@ typedef struct AST{
             AST* callie;
             AST* setter;
             char* field;
-            TokenType tok;
+            J_TokenType tok;
             bool is_setter;
             bool is_call;
         } member;
@@ -196,7 +196,7 @@ typedef struct AST{
         struct {
             char* ident;
             AST* value;
-            TokenType op; // +=, -=, ...
+            J_TokenType op; // +=, -=, ...
         } reassign;
 
         struct {
@@ -278,11 +278,11 @@ AST* new_block(Arena* arena);
 
 void add_block(AST* ast, AST* node);
 // LITERAL: -> true, false, None
-AST* ast_literal(Arena* arena, Object* object);
+AST* ast_literal(Arena* arena, JnObject* object);
 
-AST* ast_binary(Arena* arena, AST* lhs, TokenType op, AST* rhs);
+AST* ast_binary(Arena* arena, AST* lhs, J_TokenType op, AST* rhs);
 
-AST* ast_unary(Arena* arena, TokenType op, AST* right);
+AST* ast_unary(Arena* arena, J_TokenType op, AST* right);
 
 AST* ast_println(Arena* arena, AST* out);
 

@@ -7,7 +7,7 @@
 
 #define CHECK_TOK(lex, str) ((strcmp((lex), (str))) == 0)
 
-static bool peekAdvance(lexer* l, char c)
+static bool peek_advance(joan_token_t* l, char c)
 {
     if (peek(l) != c)
         return false;
@@ -15,16 +15,16 @@ static bool peekAdvance(lexer* l, char c)
     return true;
 }
 
-token clean_token(lexer* l)
+joan_token_t clean_token(joan_lexer_t* l)
 {
-    token t;
+    joan_token_t t;
     do {
         t = next_token(l);
     } while (t.type == TOKEN_NEWLINE);
     return t;
 }
 
-token number(lexer* l)
+joan_token_t number(joan_lexer_t* l)
 {
     if (l->curr[0] == '0' && (peek(l) == 'x' || peek(l) == 'X'))
     {
@@ -32,7 +32,7 @@ token number(lexer* l)
         advance(l);
         while(isxdigit(peek(l)))
             advance(l);
-        token _t = make_token(l, TOKEN_INT);
+        joan_token_t _t = make_token(l, TOKEN_INT);
         int* i = malloc(sizeof(int));
         *i = strtol(_t.lexeme, NULL, 16);
         _t.v = i;
@@ -43,20 +43,20 @@ token number(lexer* l)
     {
         advance(l);
         while (isdigit(peek(l))) advance(l);
-        token t = make_token(l, TOKEN_FLOAT);
+        joan_token_t t = make_token(l, TOKEN_FLOAT);
         double* d = malloc(sizeof(double));
         *d = atof(t.lexeme);
         t.v = d;
         return t;
     }
-    token t = make_token(l, TOKEN_INT);
+    joan_token_t t = make_token(l, TOKEN_INT);
     int* i = malloc(sizeof(int));
     *i = atoi(t.lexeme);
     t.v = i;
     return t;
 }
 
-token token_string(lexer* l)
+joan_token_t token_string(joan_lexer_t* l)
 {
     l->start = l->curr;
     char q = l->curr[-1];
@@ -69,7 +69,7 @@ token token_string(lexer* l)
     }
     if (*l->curr == '\0')
     {
-        token t;
+        joan_token_t t;
         t.type = TOKEN_ERROR;
         t.lexeme = "error";
         int* i = malloc(sizeof(int));
@@ -77,7 +77,7 @@ token token_string(lexer* l)
         t.v = i;
         return t;
     }
-    token t = make_token(l, TOKEN_STRING);
+    joan_token_t t = make_token(l, TOKEN_STRING);
     char c = *l->curr++;
     if (q != c)
     {
@@ -86,11 +86,16 @@ token token_string(lexer* l)
     return t;   
 }
 
-token identifier(lexer* l)
+static joan_token_t token_char(joan_lexer_t* l)
+{
+    //TODO
+}
+
+joan_token_t identifier(joan_lexer_t* l)
 {
     while (isalnum(peek(l)) || peek(l) == '_') 
         advance(l);
-    token t = make_token(l, TOKEN_IDENTIFIER);
+    joan_token_t t = make_token(l, TOKEN_IDENTIFIER);
     if (strcmp(t.lexeme, "if") == 0)
         t.type = TOKEN_IF;
     else if (strcmp(t.lexeme, "None") == 0)
@@ -159,9 +164,9 @@ token identifier(lexer* l)
 }
 
 
-token make_token(lexer* l, TokenType type)
+joan_token_t make_token(joan_lexer_t* l, J_TokenType type)
 {
-    token t;
+    joan_token_t t;
     t.type = type;
     int len = l->curr - l->start;
     char* copy = malloc(len + 1);
@@ -176,7 +181,7 @@ token make_token(lexer* l, TokenType type)
     return t;
 }
 
-token make_comment(lexer* l)
+joan_token_t make_comment(joan_lexer_t* l)
 {
     l->curr += 2;
     l->start = l->curr;
@@ -184,7 +189,7 @@ token make_comment(lexer* l)
         advance(l);
     return make_token(l, TOKEN_COMMENT);
 }
-token next_token(lexer* l)
+joan_token_t next_token(joan_lexer_t* l)
 {
     strip_ws(l);
     l->start = l->curr;
@@ -281,7 +286,7 @@ token next_token(lexer* l)
             }
             return make_token(l, TOKEN_GT);
         case '^':
-            if (peekAdvance(l, '='))
+            if (peek_advance(l, '='))
                 return make_token(l, TOKEN_ABITAC);
             return make_token(l, TOKEN_BITAC);
         case '<':
@@ -315,7 +320,7 @@ token next_token(lexer* l)
         case '/':
             if (peek(l) == '/')
                 return make_comment(l);
-            else if (peekAdvance(l, '='))
+            else if (peek_advance(l, '='))
                 return make_token(l, TOKEN_ASLASH);
             return make_token(l, TOKEN_SLASH);
         case '?':
@@ -329,7 +334,7 @@ token next_token(lexer* l)
             {
                 advance(l);
                 return make_token(l, TOKEN_AND);
-            } else if (peekAdvance(l, '='))
+            } else if (peek_advance(l, '='))
                 return make_token(l, TOKEN_ABITAND);
             return make_token(l, TOKEN_BITAND);
         case '|':
@@ -337,7 +342,7 @@ token next_token(lexer* l)
             {
                 advance(l);
                 return make_token(l, TOKEN_OR);
-            } else if (peekAdvance(l, '='))
+            } else if (peek_advance(l, '='))
                 return make_token(l, TOKEN_ABITOR);
             return make_token(l, TOKEN_BITOR);
         case '#':

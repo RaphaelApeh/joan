@@ -1,16 +1,16 @@
-#ifndef ENV_H
-#define ENV_H
+#ifndef JOAN_ENV_H
+#define JOAN_ENV_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
 typedef struct env_t env_t;
-typedef struct Object Object;
+typedef struct JnObject JnObject;
 
 typedef struct
 {
     char* key;
-    Object* value;
+    JnObject* value;
     bool is_const;
     bool is_public;
     bool used;
@@ -25,7 +25,7 @@ typedef struct env_t
 } env_t;
 
 env_t* init_env(env_t* parent);
-void set_env(env_t* env, char* key, Object* obj, bool is_const, bool is_public);
-Object* get_env(env_t* env, char* key);
+void set_env(env_t* env, char* key, JnObject* obj, bool is_const, bool is_public);
+JnObject* get_env(env_t* env, char* key);
 entry_t* get_envEntry(env_t* env, char* key);
 #endif

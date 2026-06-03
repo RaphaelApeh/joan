@@ -4,10 +4,10 @@
 #include <stdio.h>
 #include "builtins/function.h"
 
-static Object* builtin_len(Object** argv, size_t argc);
-static Object* builtin_gets(Object** argv, size_t argc);
-static Object* builtin_put(Object** argv, size_t argc);
-static Object* builtin_id(Object** argv, size_t argc);
+static JnObject* builtin_len(JnObject** argv, size_t argc);
+static JnObject* builtin_gets(JnObject** argv, size_t argc);
+static JnObject* builtin_put(JnObject** argv, size_t argc);
+static JnObject* builtin_id(JnObject** argv, size_t argc);
 
 NativeFunction builtin_functions[] = {
     {.name = "len", .func = builtin_len},
@@ -16,59 +16,59 @@ NativeFunction builtin_functions[] = {
     {.name = "id", .func = builtin_id}
 };
 
-static Object* builtin_len(Object** argv, size_t argc)
+static JnObject* builtin_len(JnObject** argv, size_t argc)
 {
     if ((int)argc > 1 || (int)argc < 1)
         return NULL;
-    if (argv[0]->kind != STR_TYPE && argv[0]->kind != ARRAY_TYPE && argv[0]->kind != ITER_TYPE)
+    if (argv[0]->type != STR_TYPE && argv[0]->type != ARRAY_TYPE && argv[0]->type != ITER_TYPE)
         return NULL;
-    if (argv[0]->kind == STR_TYPE)
-        return obj_int(argv[0]->str->len);
-    else if (argv[0]->kind == ITER_TYPE)
-        return obj_int(argv[0]->iter->count);
-    return obj_int(argv[0]->o_array->count);
+    if (argv[0]->type == STR_TYPE)
+        return jn_obj_int(argv[0]->str->len);
+    else if (argv[0]->type == ITER_TYPE)
+        return jn_obj_int(argv[0]->iter->count);
+    return jn_obj_int(argv[0]->arr->size);
 }
 
-static Object* builtin_gets(Object** argv, size_t argc)
+static JnObject* builtin_gets(JnObject** argv, size_t argc)
 {
     if (argc > 1 || argc < 1)
         return NULL;
-    if (argv[0]->kind != STR_TYPE)
+    if (argv[0]->type != STR_TYPE)
         return NULL;
     fprintf(stderr, "%s", argv[0]->str->chars);
     char buf[1024] = {0};
     char* str = fgets(buf, 1024, stdin);
     str[strlen(str) - 1] = '\0'; // remove "\n" char
-    return obj_string(str);
+    return jn_obj_string(str);
 }
 
-static Object* builtin_put(Object** argv, size_t argc)
+static JnObject* builtin_put(JnObject** argv, size_t argc)
 {
     if (argc > 1 || argc < 1)
         return NULL;
-    print_object(argv[0]);
-    return obj_none(); // must return something
+    print_JnObject(argv[0]);
+    return JN_RETURN_NONE; // must return something
 }
 
-static Object* builtin_id(Object** argv, size_t argc)
+static JnObject* builtin_id(JnObject** argv, size_t argc)
 {
     if (argc > 1 || argc < 1)
         return NULL;
     uintptr_t ptr = (uintptr_t)argv[0];
-    return internObject(obj_int((long)ptr));
+    return jn_intern_obj(jn_obj_int((long)ptr));
 }
 
 void set_functions(env_t* env)
 {
     int count = (int) sizeof(builtin_functions) / sizeof(builtin_functions[0]);
-    Object* obj;
+    JnObject* obj;
     for(int i = 0; i < count; i++)
     {
         NativeFunction fn = builtin_functions[i];
-        obj = obj_new(NATIVE_TYPE);
-        obj->o_nativefn = malloc(sizeof(NativeObject));
-        obj->o_nativefn->fnName = fn.name;
-        obj->o_nativefn->fn = fn.func;
+        obj = jn_obj_new(NATIVE_TYPE);
+        obj->native_fn = malloc(sizeof(JnNativeObject));
+        obj->native_fn->fnName = fn.name;
+        obj->native_fn->fn = fn.func;
         set_env(env, fn.name, obj, true, false);
     }
 }

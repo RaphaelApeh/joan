@@ -4,9 +4,9 @@
 #include "lexer.h"
 #include "parser.h"
 #include "vm.h"
-#include "chuck.h"
 #include "arena.h"
 #include "builtins/function.h"
+#include "opcode.h"
 
 char* read_file(const char* filename)
 {
@@ -53,17 +53,17 @@ int main(int argc, char** argv)
     }
     char* filename = argv[1];
     char* filecontent = read_file(filename);
-    lexer l;
+    joan_lexer_t l;
     Arena arena;
     arena_init(&arena);
-    init_lexer(&l, filecontent);
-    parser* p = init_parser(&l);
+    J_init_lexer(&l, filecontent);
+    joan_parser_t* p = jn_init_parser(&l);
     advance_parser(p);
     struct Chuck chuck;
     chuck.env = p->env;
     p->arena = &arena;
     chuck_init(&chuck);
-    VM vm = {0};
+    JnVM vm = {0};
     vm.p = p;
     vm.frame_count = 0;
     while(p->curr.type != TOKEN_EOF)

@@ -9,7 +9,7 @@ typedef struct VM VM;
 struct GCObject{
     GCObject* next;
     bool marked;
-    ObjectType kind;
+    JnTypeObject kind;
 };
 
 typedef struct{
@@ -19,9 +19,9 @@ typedef struct{
 } GC;
 
 
-void* gc_alloc(VM* vm, size_t size, ObjectType kind);
+void* gc_alloc(VM* vm, size_t size, JnTypeObject kind);
 void mark_gcobj(GCObject* gcobj);
-void mark_object(Object* obj);
+void mark_object(JnObject* obj);
 void mark_roots(VM* vm);
 void sweep(VM* vm);
 void gc_collect(VM* vm);

@@ -4,14 +4,14 @@
 #include "eval.h"
 #include "helper.h"
 
-#define eval_bin(l, r, op) obj_float(tonumber((l)) op tonumber((r)))
+#define eval_bin(l, r, op) jn_obj_float(tonumber((l)) op tonumber((r)))
 
-#define eval_bin_int(l, r, op) obj_int((int)tonumber((l)) op (int)tonumber((r)))
+#define eval_bin_int(l, r, op) jn_obj_int((int)tonumber((l)) op (int)tonumber((r)))
 
-#define eval_bin_bool(l, r, op) obj_bool(tonumber((l)) op tonumber((r)))
+#define eval_bin_bool(l, r, op) jn_obj_bool(tonumber((l)) op tonumber((r)))
 
 
-Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
+JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
 {
     bool is_true = false;
     if (NULL == lhs || NULL == rhs)
@@ -19,31 +19,31 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
     
     if (op == EVAL_IS)
     {
-        if (!is_truthy(lhs) && rhs->kind == NONE_TYPE)
+        if (!is_truthy(lhs) && rhs->type == NONE_TYPE)
             is_true = true;
         else if (lhs == rhs)
             is_true = true;
-        return obj_bool(is_true);
+        return jn_obj_bool(is_true);
     }else if (op == EVAL_AND)
     {
         if (is_truthy(lhs) && is_truthy(rhs))
             is_true = true;
-        return obj_bool(is_true);
+        return jn_obj_bool(is_true);
     } else if (op == EVAL_OR)
     {
         if (is_truthy(lhs) || is_truthy(rhs))
             is_true = true;
-        return obj_bool(is_true);   
+        return jn_obj_bool(is_true);   
     }
     if (isnumber(lhs) && isnumber(rhs))
     {
-        ObjectType ot;
+        JnTypeObject ot;
         switch (op)
         {
             case EVAL_ADD:
-                ot = lhs->kind;
+                ot = lhs->type;
                 if (ot == INT_TYPE)
-                    return obj_int((int)(tonumber(lhs) + tonumber(rhs)));
+                    return jn_obj_int((int)(tonumber(lhs) + tonumber(rhs)));
                 return eval_bin(lhs, rhs, +);
             case EVAL_MUL:
                 return eval_bin(lhs, rhs, *);
@@ -80,37 +80,37 @@ Object* eval_binary(Object* lhs, Object* rhs, BinaryOp op)
         }
     }
     
-    if (lhs->kind == STR_TYPE && rhs->kind == STR_TYPE)
+    if (lhs->type == STR_TYPE && rhs->type == STR_TYPE)
     {
         char* str = NULL;
         switch (op)
         {
             case EVAL_ADD:
                 str = strcat(lhs->str->chars, rhs->str->chars);
-                return obj_string(str);
+                return jn_obj_string(str);
             case EVAL_IS:
             case EVAL_EQUAL:
-                return obj_bool(
+                return jn_obj_bool(
                     lhs->str->hash == rhs->str->hash
                 );
             case EVAL_IN:
-                return obj_bool(strstr(lhs->str->chars, rhs->str->chars) == NULL);
+                return jn_obj_bool(strstr(lhs->str->chars, rhs->str->chars) == NULL);
             case EVAL_NOTEQUAL:
-                return obj_bool(
+                return jn_obj_bool(
                     lhs->str->hash != rhs->str->hash
                 );
             default:
                 goto end;
         }
     }
-    if (lhs->kind == BOOL_TYPE && rhs->kind == BOOL_TYPE)
+    if (lhs->type == BOOL_TYPE && rhs->type == BOOL_TYPE)
     {
         switch (op)
         {
         case EVAL_EQUAL:
-            return obj_bool(lhs->o_bool == rhs->o_bool);
+            return jn_obj_bool(lhs->bool8 == rhs->bool8);
         case EVAL_NOTEQUAL:
-            return obj_bool(lhs->o_bool != rhs->o_bool);
+            return jn_obj_bool(lhs->bool8 != rhs->bool8);
         default:
             goto end;
         }

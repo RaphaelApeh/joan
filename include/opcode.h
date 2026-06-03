@@ -1,5 +1,5 @@
-#ifndef CHUCK_H
-#define CHUCK_H
+#ifndef JN_OP_CODE_H
+#define JN_OP_CODE_H
 #include <stdint.h>
 #include "object.h"
 
@@ -74,41 +74,6 @@ typedef enum{
 
     OP_ERROR_MSG,
     OP_ERROR,
-}OPCode;
-
-typedef struct Chuck{
-    uint8_t* code;
-    size_t count;
-    size_t capacity;
-
-    Object** constants;
-    int constants_count;
-    int constants_capacity;
-
-    char** idents;
-    size_t ident_count;
-    size_t ident_capacity;
-
-    env_t* env;
-} Chuck;
-
-
-void chuck_init(Chuck* chuck);
-
-// Helper functions
-
-int add_ident(Chuck* chuck, char* ident);
-
-void write_chuck(Chuck* chuck, uint8_t byte);
-
-int add_constant(Chuck* chuck, Object* object);
-
-int current_offset(Chuck* chuck);
-
-int emit_jump(Chuck* chuck, uint8_t instrction);
-
-void patch_jump(Chuck* chuck, int offset);
-
-void emit_loop(Chuck* chuck, int loop_start);
+} OPCode;
 
 #endif

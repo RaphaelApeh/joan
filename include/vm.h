@@ -1,5 +1,5 @@
-#ifndef VM_H
-#define VM_H
+#ifndef JOAN_VM_H
+#define JOAN_VM_H
 #include <stdint.h>
 //#include "gc.h"
 #include "object.h"
@@ -13,6 +13,23 @@
 typedef struct Chuck Chuck;
 typedef struct AST AST;
 
+typedef struct Chuck{
+    uint8_t* code;
+    size_t count;
+    size_t capacity;
+
+    JnObject** constants;
+    int constants_count;
+    int constants_capacity;
+
+    char** idents;
+    size_t ident_count;
+    size_t ident_capacity;
+
+    env_t* env;
+} Chuck;
+
+
 typedef enum 
 {
     INTERPRET_OK,
@@ -20,19 +37,19 @@ typedef enum
 } InterpretResult;
 
 typedef struct {
-    ObjFunction* fn;
+    JnFunctionObject* fn;
     uint8_t* ip;
     env_t* env;
 } CallFrame;
 
-typedef struct VM{
+typedef struct JnVM{
     Chuck* chuck;
     uint8_t* ip;
 
-    Object* stack[_STACK_MAX];
-    Object** sp;
+    JnObject* stack[_STACK_MAX];
+    JnObject** sp;
 
-    parser* p;
+    joan_parser_t* p;
 
     env_t* global;
     env_t* env;
@@ -41,7 +58,7 @@ typedef struct VM{
     int frame_count;
 
     //GC gc;
-} VM;
+} JnVM;
 
 typedef struct {
     int loop_offset;
@@ -55,9 +72,17 @@ typedef struct {
     int returns[_LOOP_MAX];
     int return_count;
 } LoopContext;
+// Jn_progrm_t rt;
+// jn_program_init(&rt);
+// jn_exec_program("println \"Hello \" ");
+// jn_program_close(&rt);
+void jn_program_init(void* rt);
+int Jn_exec_program(char* restrict source);
+void jn_program_close(void* rt);
 
+void chuck_init(Chuck* chuck);
 void compile(AST* node, Chuck* chuck);
 
- InterpretResult vm_run(VM* vm);
+InterpretResult vm_run(JnVM* vm);
 
 #endif

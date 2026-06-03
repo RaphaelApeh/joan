@@ -4,23 +4,18 @@
 
 #include <stdbool.h>
 
-typedef struct lexer{
+typedef struct joan_lexer_t{
     char* start;
     char* curr;
     size_t line;
     size_t column;
-} lexer;
+} joan_lexer_t;
 
-void strip_ws(lexer* l);
-
-void init_lexer(lexer* l, char* source);
-
-char peek(lexer* l);
-
-char peek_next(lexer* l);
-
-bool at_end(lexer* l);
-
-char advance(lexer* l);
+void J_init_lexer(joan_lexer_t* l, char* source);
+void strip_ws(joan_lexer_t * l);
+char peek_next(joan_lexer_t* l);
+char peek(joan_lexer_t* l);
+char advance(joan_lexer_t* l);
+bool at_end(joan_lexer_t* l);
 
 #endif

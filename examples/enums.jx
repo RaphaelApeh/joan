@@ -1,10 +1,1 @@
-enum Token {
-    TOKEN_EOF,
-    TOKEN_INT,
-    TOKEN_FLOAT,
-    TOKEN_STRING,
-    TOKEN_EQUAL
-}
-
-println "Hello WOrld"
-println Token::TOKEN_STRING = 2 // Error
+println "Hello"

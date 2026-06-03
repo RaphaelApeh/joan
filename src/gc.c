@@ -3,7 +3,7 @@
 #include "gc.h"
 
 
-void* gc_alloc(VM* vm, size_t size, ObjectType kind);
+void* gc_alloc(VM* vm, size_t size, JnTypeObject kind);
 //{
     // GCObject* gcb = malloc(sizeof(gcb));
     // gcb->marked = false;
@@ -28,7 +28,7 @@ void mark_gcobj(GCObject* gcobj);
 //         break;
 //     }
 // }
-void mark_object(Object* obj);
+void mark_object(JnObject* obj);
 void mark_roots(VM* vm);
 void sweep(VM* vm);
 void gc_collect(VM* vm);

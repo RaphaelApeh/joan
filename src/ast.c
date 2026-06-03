@@ -39,7 +39,7 @@ void add_block(AST* ast, AST* node)
 }
 
 
-AST* ast_literal(Arena* arena, Object* object)
+AST* ast_literal(Arena* arena, JnObject* object)
 {
     AST* ast = ast_create(arena, AST_LITERAL);
     ast->literal = object;
@@ -53,7 +53,7 @@ AST* ast_identifier(Arena* arena, const char* identifier)
     return ast;
 }
 
-AST* ast_unary(Arena* arena, TokenType op, AST* right)
+AST* ast_unary(Arena* arena, J_TokenType op, AST* right)
 {
     AST* ast = ast_create(arena, AST_UNARY);
     ast->unary.op = op;
@@ -61,7 +61,7 @@ AST* ast_unary(Arena* arena, TokenType op, AST* right)
     return ast;
 }
 
-AST* ast_binary(Arena* arena, AST* lhs, TokenType op, AST* rhs)
+AST* ast_binary(Arena* arena, AST* lhs, J_TokenType op, AST* rhs)
 {
     AST* ast = ast_create(arena, AST_BINARY);
     ast->binary.left = lhs;
