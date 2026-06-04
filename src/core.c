@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "Joan.h"
 #include "opcode.h"
+#include "ast.h"
 
 
 typedef struct J_Context {
@@ -44,16 +45,16 @@ JN_API void Jn_program_init(void)
     Arena arena;
     arena_init(&arena);
     struct Chuck chuck;
+    JnVM vm = {0};
     chuck_init(&chuck);
     memset(&Jn_globalState, 0, sizeof(J_State));
     J_State* state = &Jn_globalState;
+    state->vm = vm;
     state->running = true;
     state->object_capacity = 1000;
-    state->vm.chuck = chuck;
     state->object_count = 0;
     state->alloc_fn = alloc_object;
     state->next_gc = 1024 * 1024;
-    state->parser = NULL; // for now
     state->arena = &arena;
     state->globals = init_env(NULL); // Jn_global_init(NULL)
     state->objects = malloc(sizeof(JnObject* ) * state->object_capacity);
@@ -62,6 +63,7 @@ JN_API void Jn_program_init(void)
     assert(state->globals && "Global not set...");
     assert(state->arena && "Arena not set...");
     chuck.env = state->globals;
+    state->vm.chuck = &chuck;
     Jnvm_init(&state->vm, &chuck);
     assert(state->vm.global != NULL);
 }
@@ -76,17 +78,19 @@ JN_API int Jn_exec_program(char* source)
     joan_parser_t* p = jn_init_parser(&l);
     state->parser = p;
     p->arena = state->arena;
-    advance_parser(p);
+    state->vm.p = p;
+    state->vm.env = state->globals;
+    state->vm.global = state->globals;
+    state->vm.chuck->count = 0;
     assert(p->arena && "Arena not set ...");
     assert(state->parser && "Parser not set ...");
-    advance_parser(p); // start reading tokens
+    assert(state->vm.chuck && "VM Chuck is NULL ....");
     while(p->curr.type != TOKEN_EOF)
     {
         AST* stmt = parse_stmt(p);
         compile(stmt, state->vm.chuck);
     }
     write_chuck(state->vm.chuck, OP_END);
-    // set_functions(state->globals);
     InterpretResult i = vm_run(&state->vm);
     if (i == INTERPRET_RUNTIME_ERROR)
         return -1;
@@ -95,6 +99,7 @@ JN_API int Jn_exec_program(char* source)
 
 JN_API void Jn_program_close(void)
 {
+    printf("Hello World 3\n");
     J_State* state = &Jn_globalState;
     assert(!state->running && "Program has already stopped."); // TOD: better msg
     state->running = false;

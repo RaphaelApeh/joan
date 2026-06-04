@@ -417,6 +417,7 @@ InterpretResult vm_run(JnVM* vm)
                 push(vm, jn_intern_obj(o));
                 break;
             case OP_PRINTLN:
+                printf("Hello from println\n");
                 JnObject* out = pop(vm);
                 print_JnObject(out);
                 putchar('\n');
@@ -703,6 +704,7 @@ void compile(AST* node, Chuck* chuck)
         write_chuck(chuck, OP_SCOPE_EXIT);
         break;
     case AST_PRINTLN:
+        printf("HELLO HEHEHE.\n");
         compile(node->println.out, chuck);
         write_chuck(chuck, OP_PRINTLN);
         break;

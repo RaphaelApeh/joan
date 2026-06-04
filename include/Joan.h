@@ -37,12 +37,17 @@ typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
+typedef struct JN_Args JN_Args;
 
 extern J_State Jn_globalState;
 
 // Register native function
 JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
 
+// Load builtin function
+JN_API void Jn_load_Cfunctions(void);
+// Call user-define functions
+JN_API JnObject* Jn_call_fn(char* fn_name, JN_Args* args);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(void);
 JN_API int Jn_exec_program(char* source);

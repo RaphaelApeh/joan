@@ -48,7 +48,7 @@ void usage(void)
 
 int main(int argc, char** argv)
 {
-    char* filename = argv[0];
+    char* filename = argv[1];
     char* source = read_file(filename);
     Jn_program_init();
     Jn_exec_program(source);

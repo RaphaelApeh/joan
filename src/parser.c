@@ -66,6 +66,7 @@ joan_parser_t* jn_init_parser(joan_lexer_t* l)
     joan_parser_t* p = malloc(sizeof(joan_parser_t));
     p->l = l;
     p->next = clean_token(l);
+    advance_parser_c(p);
     return p;
 }
 
