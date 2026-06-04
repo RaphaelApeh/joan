@@ -24,7 +24,6 @@ typedef enum{
 
 typedef struct joan_parser_t{
     joan_lexer_t* l;
-    env_t* env;
     Arena* arena;
     joan_token_t curr;
     joan_token_t next;

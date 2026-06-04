@@ -72,14 +72,8 @@ typedef struct {
     int returns[_LOOP_MAX];
     int return_count;
 } LoopContext;
-// Jn_progrm_t rt;
-// jn_program_init(&rt);
-// jn_exec_program("println \"Hello \" ");
-// jn_program_close(&rt);
-void jn_program_init(void* rt);
-int Jn_exec_program(char* restrict source);
-void jn_program_close(void* rt);
 
+void Jnvm_init(JnVM* vm, Chuck* chuck);
 void chuck_init(Chuck* chuck);
 void compile(AST* node, Chuck* chuck);
 

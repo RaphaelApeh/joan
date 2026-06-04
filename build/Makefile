@@ -207,6 +207,30 @@ src/builtins/function.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.s
 .PHONY : src/builtins/function.c.s
 
+src/core.obj: src/core.c.obj
+.PHONY : src/core.obj
+
+# target to build an object file
+src/core.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.obj
+.PHONY : src/core.c.obj
+
+src/core.i: src/core.c.i
+.PHONY : src/core.i
+
+# target to preprocess a source file
+src/core.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.i
+.PHONY : src/core.c.i
+
+src/core.s: src/core.c.s
+.PHONY : src/core.s
+
+# target to generate assembly for a file
+src/core.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.s
+.PHONY : src/core.c.s
+
 src/emit.obj: src/emit.c.obj
 .PHONY : src/emit.obj
 
@@ -423,6 +447,30 @@ src/parser.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parser.c.s
 .PHONY : src/parser.c.s
 
+src/repl.obj: src/repl.c.obj
+.PHONY : src/repl.obj
+
+# target to build an object file
+src/repl.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.obj
+.PHONY : src/repl.c.obj
+
+src/repl.i: src/repl.c.i
+.PHONY : src/repl.i
+
+# target to preprocess a source file
+src/repl.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.i
+.PHONY : src/repl.c.i
+
+src/repl.s: src/repl.c.s
+.PHONY : src/repl.s
+
+# target to generate assembly for a file
+src/repl.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.s
+.PHONY : src/repl.c.s
+
 src/token.obj: src/token.c.obj
 .PHONY : src/token.obj
 
@@ -490,6 +538,9 @@ help:
 	@echo ... src/builtins/function.obj
 	@echo ... src/builtins/function.i
 	@echo ... src/builtins/function.s
+	@echo ... src/core.obj
+	@echo ... src/core.i
+	@echo ... src/core.s
 	@echo ... src/emit.obj
 	@echo ... src/emit.i
 	@echo ... src/emit.s
@@ -517,6 +568,9 @@ help:
 	@echo ... src/parser.obj
 	@echo ... src/parser.i
 	@echo ... src/parser.s
+	@echo ... src/repl.obj
+	@echo ... src/repl.i
+	@echo ... src/repl.s
 	@echo ... src/token.obj
 	@echo ... src/token.i
 	@echo ... src/token.s

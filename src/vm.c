@@ -15,6 +15,16 @@
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
 
+
+void Jnvm_init(JnVM* vm, Chuck* chuck)
+{
+    vm->frame_count = 0;
+    vm->ip = chuck->code;
+    vm->sp = vm->stack;
+    vm->global = chuck->env;
+    vm->env = vm->global;
+}
+
 void chuck_init(Chuck* chuck)
 {
     chuck->count = 0;

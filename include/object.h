@@ -96,6 +96,7 @@ typedef struct JnObject{
         JnFloatObject float32;
         JnBoolObject bool8;
     };
+    JnObject* next;
     JnTypeObject type;
 } JnObject;
 
