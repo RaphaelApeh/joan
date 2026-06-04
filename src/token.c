@@ -7,7 +7,7 @@
 
 #define CHECK_TOK(lex, str) ((strcmp((lex), (str))) == 0)
 
-static bool peek_advance(joan_token_t* l, char c)
+static bool peek_advance(joan_lexer_t* l, char c)
 {
     if (peek(l) != c)
         return false;

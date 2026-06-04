@@ -106,7 +106,7 @@ JnObject* jn_obj_string(char* str);
 JnObject* jn_obj_none(void);
 JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_float(double o_float);
-JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name);
+JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
 
 // JnObject* obj_enum(char* ident, char** fields, int count);
 

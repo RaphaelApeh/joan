@@ -2,12 +2,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <assert.h>
 #include "vm.h"
 #include "opcode.h"
 #include "ast.h"
 #include "object.h"
 #include "helper.h"
 #include "eval.h"
+#include "emit.h"
 
 
 static LoopContext loop_stack[256];
@@ -22,81 +24,12 @@ void chuck_init(Chuck* chuck)
     chuck->constants_count = 0;
     chuck->constants_capacity = 100;
     chuck->code = malloc(sizeof(uint8_t) * chuck->capacity);
-    chuck->constants = malloc(sizeof(Object *) * chuck->constants_capacity);
+    assert(chuck->code != NULL);
+    chuck->constants = malloc(sizeof(JnObject *) * chuck->constants_capacity);
+    assert(chuck->constants != NULL);
     chuck->idents = malloc(sizeof(char *) * chuck->ident_capacity);
+    assert(chuck->idents != NULL);
 }
-
-
-int add_ident(Chuck* chuck, char* ident)
-{
-    if (NULL == chuck) return -1;
-    if (chuck->ident_count >= chuck->ident_capacity)
-    {
-        chuck->ident_capacity *= 2;
-        chuck->idents = realloc(chuck->idents, sizeof(char *) * chuck->ident_capacity);
-    }
-    chuck->idents[chuck->ident_count] = ident;
-    return chuck->ident_count++;
-}
-
-static void write_chuck(Chuck* chuck, uint8_t byte)
-{
-    if (NULL == chuck)
-        return;
-    if (chuck->count >= chuck->capacity)
-    {
-        chuck->capacity *= 2;
-        chuck->code = realloc(
-            chuck->code, chuck->capacity
-        );
-    }
-    chuck->code[chuck->count++] = byte;
-}
-
-static int add_constant(Chuck* chuck, JnObject* object)
-{
-    if (NULL == chuck)
-        return -1;
-    if (chuck->constants_count >= chuck->constants_capacity)
-    {
-        chuck->capacity *= 2;
-        chuck->constants = realloc(
-            chuck->constants,
-            sizeof(Object *) * chuck->capacity
-        );
-    }
-    chuck->constants[chuck->constants_count] = object;
-    return chuck->constants_count++;
-}
-
-static int current_offset(Chuck* chuck)
-{
-    return chuck->count;
-}
-
-static int emit_jump(Chuck* chuck, uint8_t instrction)
-{
-    write_chuck(chuck, instrction);
-    write_chuck(chuck, 0xff);
-    write_chuck(chuck, 0xff);
-    return chuck->count - 2;
-}
-
-static void patch_jump(Chuck* chuck, int offset)
-{
-    int jump = chuck->count - offset - 2;
-    chuck->code[offset] = (jump >> 8) & 0xff;
-    chuck->code[offset + 1] = jump & 0xff;
-}
-
-static void emit_loop(Chuck* chuck, int loop_start)
-{
-    write_chuck(chuck, OP_LOOP);
-    int offset = chuck->count - loop_start + 2;
-    write_chuck(chuck, (offset >> 8) & 0xff);
-    write_chuck(chuck, offset & 0xff);
-}
-
 
 static InterpretResult die(JnVM* vm, const char* msg, ...)
 {
@@ -138,12 +71,12 @@ InterpretResult vm_run(JnVM* vm)
         {
             case OP_CONSTANT:
                 o = READ_CONST();
-                push(vm, internObject(o));
+                push(vm, jn_intern_obj(o));
                 break;
             case OP_ADD:
                 a = pop(vm);
                 b = pop(vm);
-                a = internObject(eval_binary(b, a, EVAL_ADD));
+                a = jn_intern_obj(eval_binary(b, a, EVAL_ADD));
                 if (NULL == a)
                     return die(vm, "Invalid binary");
                 push(vm, a);
@@ -272,7 +205,7 @@ InterpretResult vm_run(JnVM* vm)
                     arr->items[i] = pop(vm);
                     arr->size++;
                 }
-                o = obj_new(ARRAY_TYPE);
+                o = jn_obj_new(ARRAY_TYPE);
                 o->arr = arr;
                 push(vm, o);
                 break;
@@ -285,7 +218,7 @@ InterpretResult vm_run(JnVM* vm)
                 //     iter->items[i] = pop(vm);
                 //     iter->count++;
                 // }
-                // o = obj_new(ITER_TYPE);
+                // o = jn_obj_new(ITER_TYPE);
                 // o->iter = iter;
                 // push(vm, o);
                 break;
@@ -302,7 +235,7 @@ InterpretResult vm_run(JnVM* vm)
                 //     jd_obj->items[i] = hashmap_init(key, value);
                 //     jd_obj->size++;
                 // }
-                // JnObject* obj = obj_hashmap(jd_obj);
+                // JnObject* obj = jn_obj_hashmap(jd_obj);
                 // push(vm, obj);
                 break;
             case OP_REASSIGN:
@@ -331,7 +264,7 @@ InterpretResult vm_run(JnVM* vm)
                         *o = *b; // TODO
                         break;
                     case TOKEN_EQUAL:
-                        internObject(o);
+                        jn_intern_obj(o);
                         *o = *a; //TODO
                         break;
                     case TOKEN_ASTAR:
@@ -407,21 +340,21 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_AND:
                 b = pop(vm); a = pop(vm);
-                a = internObject(eval_binary(a, b, EVAL_AND));
+                a = jn_intern_obj(eval_binary(a, b, EVAL_AND));
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
                 push(vm, a);
                 break;
             case OP_OR:
                 b = pop(vm); a = pop(vm);
-                a = internObject(eval_binary(a, b, EVAL_OR));
+                a = jn_intern_obj(eval_binary(a, b, EVAL_OR));
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
                 push(vm, a);
                 break;
             case OP_NOT:
                 o = pop(vm);
-                push(vm, obj_bool(!is_truthy(o)));
+                push(vm, jn_obj_bool(!is_truthy(o)));
                 break;
             case OP_ASSERT:
                 o = pop(vm);
@@ -443,7 +376,7 @@ InterpretResult vm_run(JnVM* vm)
                     default:
                         return die(vm, "Got an invalid member token %d\n", op);
                 }
-                push(vm, obj_none()); // for now
+                push(vm, jn_obj_none()); // for now
                 break;
             case OP_RANGE:
                 // Object *b = pop(vm), *a = pop(vm);
@@ -460,9 +393,9 @@ InterpretResult vm_run(JnVM* vm)
                 // iter = ObjectIter(b->int32);
                 // for (int i = start; i < end; ++i)
                 // {
-                //     pushItem(iter, obj_int(i));
+                //     pushItem(iter, jn_obj_int(i));
                 // }
-                // o = obj_new(ITER_TYPE);
+                // o = jn_obj_new(ITER_TYPE);
                 // o->iter = iter;
                 // push(vm, o);
                 break;
@@ -471,11 +404,11 @@ InterpretResult vm_run(JnVM* vm)
                 o = get_env(vm->env, ident);
                 if (NULL == o)
                     return die(vm, "undefine variable '%s'.", ident);
-                push(vm, internObject(o));
+                push(vm, jn_intern_obj(o));
                 break;
             case OP_PRINTLN:
                 JnObject* out = pop(vm);
-                print_object(out);
+                print_JnObject(out);
                 putchar('\n');
                 break;
             case OP_NEGATE:
@@ -532,7 +465,7 @@ InterpretResult vm_run(JnVM* vm)
                         char* str = malloc(2);
                         str[0] = array->str->chars[index];
                         str[1] = '\0';
-                        o = obj_string(str);
+                        o = jn_obj_string(str);
                         push(vm, o);
                         break;
                     case ITER_TYPE:
@@ -860,16 +793,17 @@ void compile(AST* node, Chuck* chuck)
         }
         break;
     case AST_ENUM: 
-        ident = node->enum_stmt.ident;
-        JnObject* enumObj = obj_enum(ident, node->enum_stmt.fields, node->enum_stmt.count);
-        idx = add_constant(chuck, enumObj);
-        write_chuck(chuck, OP_CONSTANT);
-        write_chuck(chuck, idx);
+        // TODO
+        // ident = node->enum_stmt.ident;
+        // JnObject* enumObj = obj_enum(ident, node->enum_stmt.fields, node->enum_stmt.count);
+        // idx = add_constant(chuck, enumObj);
+        // write_chuck(chuck, OP_CONSTANT);
+        // write_chuck(chuck, idx);
 
-        id = add_ident(chuck, ident);
-        write_chuck(chuck, OP_SET_GLOBAL);
-        write_chuck(chuck, id);
-        write_chuck(chuck, 1);
+        // id = add_ident(chuck, ident);
+        // write_chuck(chuck, OP_SET_GLOBAL);
+        // write_chuck(chuck, id);
+        // write_chuck(chuck, 1);
         break;
     case AST_INLINE_IF:
         compile(node->inline_if_stmt.cond, chuck);
@@ -904,28 +838,28 @@ void compile(AST* node, Chuck* chuck)
 
         break;
     case AST_FUNCTION: 
-        Chuck fn_chuck;
-        fn_chuck.env = chuck->env;
-        chuck_init(&fn_chuck);
-        compile(node->fn_node.block, &fn_chuck);
-        // idx = add_constant(&fn_chuck, obj_none());
-        // write_chuck(&fn_chuck, OP_CONSTANT);
-        // write_chuck(&fn_chuck, idx);
-        write_chuck(&fn_chuck, OP_END);
-        JnObject* objFn = obj_function(
-            &fn_chuck,
-            node->fn_node.params,
-            node->fn_node.count,
-            node->fn_node.name
-        );
-        idx = add_constant(chuck, objFn);
-        write_chuck(chuck, OP_CONSTANT);
-        write_chuck(chuck, idx);
+        // Chuck fn_chuck;
+        // fn_chuck.env = chuck->env;
+        // chuck_init(&fn_chuck);
+        // compile(node->fn_node.block, &fn_chuck);
+        // // idx = add_constant(&fn_chuck, obj_none());
+        // // write_chuck(&fn_chuck, OP_CONSTANT);
+        // // write_chuck(&fn_chuck, idx);
+        // write_chuck(&fn_chuck, OP_END);
+        // JnObject* objFn = jn_obj_function(
+        //     &fn_chuck,
+        //     node->fn_node.params,
+        //     node->fn_node.count,
+        //     node->fn_node.name
+        // );
+        // idx = add_constant(chuck, objFn);
+        // write_chuck(chuck, OP_CONSTANT);
+        // write_chuck(chuck, idx);
 
-        id = add_ident(chuck, node->fn_node.name);
-        write_chuck(chuck, OP_SET_GLOBAL);
-        write_chuck(chuck, id);
-        write_chuck(chuck, 1);
+        // id = add_ident(chuck, node->fn_node.name);
+        // write_chuck(chuck, OP_SET_GLOBAL);
+        // write_chuck(chuck, id);
+        // write_chuck(chuck, 1);
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);

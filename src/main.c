@@ -7,6 +7,7 @@
 #include "arena.h"
 #include "builtins/function.h"
 #include "opcode.h"
+#include "emit.h"
 
 char* read_file(const char* filename)
 {

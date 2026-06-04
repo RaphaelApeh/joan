@@ -555,13 +555,13 @@ static AST* parse_assert(joan_parser_t* p)
 
 AST* parse_value(joan_parser_t* p)
 {
-    token t = p->curr;
+    joan_token_t t = p->curr;
     AST* ast = NULL;
     switch (t.type)
     {
         case TOKEN_INT:
             int i = *((int *) t.v);
-            Object* v = obj_int(i);
+             JnObject* v =  jn_obj_int(i);
             advance_parser_c(p);
             return ast_literal(p->arena, v);
         case TOKEN_LPARN:
@@ -578,13 +578,13 @@ AST* parse_value(joan_parser_t* p)
         case TOKEN_FLOAT:
             double d = *((double *) t.v);
             advance_parser_c(p);
-            return ast_literal(p->arena, obj_float(d));
+            return ast_literal(p->arena,  jn_obj_float(d));
         case TOKEN_HASH:
             advance_parser_c(p);
             if (check(p, TOKEN_LBRACE))
                 return parse_hashmap(p);
         case TOKEN_STRING:
-            ast = ast_literal(p->arena, obj_string(t.lexeme));
+            ast = ast_literal(p->arena,  jn_obj_string(t.lexeme));
             advance_parser_c(p);
             return ast;
         case TOKEN_RETURN:
@@ -620,15 +620,15 @@ AST* parse_value(joan_parser_t* p)
             ast->unary.right = parse_value(p);
             return ast;
         case TOKEN_TRUE:
-            ast = ast_literal(p->arena, obj_bool(true));
+            ast = ast_literal(p->arena,  jn_obj_bool(true));
             advance_parser_c(p);
             return ast;
         case TOKEN_NONE:
-            ast = ast_literal(p->arena, obj_none());
+            ast = ast_literal(p->arena,  jn_obj_none());
             advance_parser_c(p);
             return ast;
         case TOKEN_FALSE:
-            ast = ast_literal(p->arena, obj_bool(false));
+            ast = ast_literal(p->arena,  jn_obj_bool(false));
             advance_parser_c(p);
             return ast;
         case TOKEN_LBRACKET:

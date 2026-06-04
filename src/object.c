@@ -75,14 +75,14 @@ JnObject* jn_obj_int(long int32)
         NoneObj.int32 = int32;
         return &NoneObj;
     }
-    JnObject* obj = obj_new(INT_TYPE);
+    JnObject* obj =  jn_obj_new(INT_TYPE);
     obj->int32 = int32;
     return obj;
 }
 
 JnObject* jn_obj_string(char* str)
 {
-    JnObject* obj = obj_new(STR_TYPE);
+    JnObject* obj =  jn_obj_new(STR_TYPE);
     JnStringObject* strObj = malloc(sizeof(JnStringObject));
     *strObj = JNSTR_OBJ(str);
     obj->str = strObj;
@@ -91,21 +91,21 @@ JnObject* jn_obj_string(char* str)
 
 JnObject* jn_obj_bool(bool bool8)
 {
-    JnObject* obj = obj_new(BOOL_TYPE);
+    JnObject* obj =  jn_obj_new(BOOL_TYPE);
     obj->bool8 = bool8;
     return obj;
 }
 
 JnObject* jn_obj_float(double float32)
 {
-    JnObject* obj = obj_new(FLOAT_TYPE);
+    JnObject* obj =  jn_obj_new(FLOAT_TYPE);
     obj->float32 = float32;
     return obj;
 }
 
 JnObject* jn_obj_hashmap(J_DArray_Obj* jd_obj)
 {
-    JnObject* obj = obj_new(HASHMAP_TYPE);
+    JnObject* obj =  jn_obj_new(HASHMAP_TYPE);
     // obj->hashmap = jd_obj;
     return obj;
 }
@@ -182,7 +182,7 @@ JnObject* jn_intern_obj(JnObject* obj)
 
 JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name)
 {
-    JnObject* obj = obj_new(FUNCTION_TYPE);
+    JnObject* obj =  jn_obj_new(FUNCTION_TYPE);
     JnFunctionObject* fn = malloc(sizeof(JnFunctionObject));
     fn->arity = arity;
     fn->chuck = chuck;

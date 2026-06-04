@@ -195,7 +195,7 @@ AST* ast_instance(const char* ident, param_t* param)
     return ast;
 }
 
-AST* ast_error(Arena* arena, parser* p, const char* msg)
+AST* ast_error(Arena* arena, joan_parser_t* p, const char* msg)
 {
     AST* ast = ast_create(arena, AST_ERROR);
     ast->error_msg = msg;

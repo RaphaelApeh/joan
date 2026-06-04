@@ -15,7 +15,7 @@ typedef struct klass_t klass_t;
 typedef struct case_t case_t;
 typedef struct case_o case_o;
 typedef struct elseif elseif;
-typedef struct parser parser;
+typedef struct joan_parser_t joan_parser_t;
 typedef struct attr_t attr_t;
 typedef struct AST AST;
 
@@ -321,6 +321,6 @@ AST* ast_struct(Arena* arena, const char* ident, attr_t* attr);
 //AST* ast_class(const char* ident, attr_t* attr, klass_t* base);
 
 //ERROR
-AST* ast_error(Arena* arena, parser* p, const char* msg);
+AST* ast_error(Arena* arena, joan_parser_t* p, const char* msg);
 
 #endif
