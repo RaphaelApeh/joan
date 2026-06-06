@@ -38,7 +38,7 @@ typedef struct J_Context J_Context;
 typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct JN_Args JN_Args;
-
+typedef struct Jn_CModule Jn_CModule;
 extern J_State Jn_globalState;
 
 // Register native function

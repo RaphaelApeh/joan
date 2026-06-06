@@ -42,29 +42,28 @@ static void* alloc_object(size_t size, JnTypeObject type)
 }
 JN_API void Jn_program_init(void)
 {
-    Arena arena;
-    arena_init(&arena);
-    struct Chuck chuck;
-    JnVM vm = {0};
-    chuck_init(&chuck);
     memset(&Jn_globalState, 0, sizeof(J_State));
     J_State* state = &Jn_globalState;
-    state->vm = vm;
+    state->vm = (JnVM){0};
+    state->arena = malloc(sizeof(Arena));
+    assert(state->arena);
+    arena_init(state->arena);
+    state->vm.chuck = malloc(sizeof(struct Chuck));
+    assert(state->vm.chuck != NULL);
+    chuck_init(state->vm.chuck);
     state->running = true;
     state->object_capacity = 1000;
     state->object_count = 0;
     state->alloc_fn = alloc_object;
     state->next_gc = 1024 * 1024;
-    state->arena = &arena;
     state->globals = init_env(NULL); // Jn_global_init(NULL)
     state->objects = malloc(sizeof(JnObject* ) * state->object_capacity);
     assert(state->running && "Something went wrong"); // TODO
     assert(state->objects != NULL && "malloc failed.");
     assert(state->globals && "Global not set...");
     assert(state->arena && "Arena not set...");
-    chuck.env = state->globals;
-    state->vm.chuck = &chuck;
-    Jnvm_init(&state->vm, &chuck);
+    state->vm.chuck->env = state->globals;
+    Jnvm_init(&state->vm, state->vm.chuck);
     assert(state->vm.global != NULL);
 }
 
@@ -99,9 +98,8 @@ JN_API int Jn_exec_program(char* source)
 
 JN_API void Jn_program_close(void)
 {
-    printf("Hello World 3\n");
     J_State* state = &Jn_globalState;
-    assert(!state->running && "Program has already stopped."); // TOD: better msg
+    assert(state->running && "Program has already stopped."); // TOD: better msg
     state->running = false;
     for (int i = 0; i < state->object_count; i++)
         free(state->objects[i]); // TODO JnObjectFree(obj)
