@@ -8,10 +8,6 @@
 #define JOAN_H
 
 #include <stdio.h>
-#include "vm.h"
-#include "object.h"
-#include "emit.h"
-#include "env.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -33,6 +29,25 @@ extern "C" {
     #define JN_API
 #endif
 
+// Object Type
+typedef enum{
+    NONE_TYPE = 0,
+    STR_TYPE,
+    INT_TYPE,
+    BOOL_TYPE,
+    FLOAT_TYPE,
+    ARRAY_TYPE,
+    HASHMAP_TYPE,
+    FUNCTION_TYPE,
+    NATIVE_TYPE,
+    ITER_TYPE,
+    INSTANCE_TYPE,
+    MODULE_TYPE,
+    ENUM_TYPE,
+} JnTypeObject;
+
+typedef struct JnObject JnObject;
+typedef struct JnVM JnVM;
 typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);

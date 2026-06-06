@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include "Joan.h"
 #include "opcode.h"
+#include "object.h"
+#include "vm.h"
+#include "emit.h"
 #include "ast.h"
 
 

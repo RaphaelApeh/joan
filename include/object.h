@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include "Joan.h"
 #include "helper.h"
 #include "env.h"
 
@@ -48,22 +49,6 @@ typedef struct {
     JnObject* value;
     uint64_t hash;
 } JnHashmapObject;
-
-typedef enum{
-    NONE_TYPE = 0,
-    STR_TYPE,
-    INT_TYPE,
-    BOOL_TYPE,
-    FLOAT_TYPE,
-    ARRAY_TYPE,
-    HASHMAP_TYPE,
-    FUNCTION_TYPE,
-    NATIVE_TYPE,
-    ITER_TYPE,
-    INSTANCE_TYPE,
-    MODULE_TYPE,
-    ENUM_TYPE,
-} JnTypeObject;
 
 typedef struct {
     Chuck* chuck;
