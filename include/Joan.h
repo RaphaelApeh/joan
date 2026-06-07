@@ -56,6 +56,8 @@ typedef struct JN_Args JN_Args;
 typedef struct Jn_CModule Jn_CModule;
 extern J_State Jn_globalState;
 
+JN_API void Jn_repl(void);
+
 // Register native function
 JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
 

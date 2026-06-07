@@ -9,11 +9,11 @@ typedef enum {
     C_UNKOWN,
     C_ERROR,
 } CommandType;
+
 struct Command {
     char* filename, error_msg; // Can be NULL
     CommandType type;
 };
 
 struct Command parse_args(char** args, int argc);
-void Jn_repl(void);
 #endif

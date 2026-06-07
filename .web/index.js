@@ -13,12 +13,9 @@ var getAll = function (selector, scope) {
 if (document.getElementsByClassName('demo').length > 0) {
   var i = 0;
   var txt = `
-    Usage: joan [options] [file]
-    Options:
-    -v --version output joan version
-    -h --help output help information
-    Examples:
-       $ joan ./main.jx 
+    >>> let name = "John Doe"
+    >>> println "Hello, {}" << name
+    Hello, John Doe
   `;
   var speed = 60;
 

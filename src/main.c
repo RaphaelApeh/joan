@@ -1,14 +1,8 @@
 #include "Joan.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "repl.h"
 
-// #include "lexer.h"
-// #include "parser.h"
-// #include "vm.h"
-// #include "arena.h"
-// #include "builtins/function.h"
-// #include "opcode.h"
-// #include "emit.h"
 
 char* read_file(const char* filename)
 {
@@ -46,16 +40,35 @@ void usage(void)
     );
 }
 
+void version(void)
+{
+    fprintf(stderr, 
+    "Joan " JOAN_VERSION
+    );
+}
+
 int main(int argc, char** argv)
 {
-    if (argc != 2)
+    char** new_agv = argv + 1;
+    argc -= 1;
+    struct Command c = parse_args(new_agv, argc);
+    switch (c.type)
     {
-        usage(); return 1;
+        case C_HELP:
+            usage(); return 0;
+        case C_VERSION:
+            version(); return 0;
+        case C_REPL:
+            Jn_repl(); return 0;
     }
-    char* filename = argv[1];
-    char* source = read_file(filename);
-    Jn_program_init();
-    Jn_exec_program(source);
-    Jn_program_close();
+    // if (argc != 2)
+    // {
+    //     usage(); return 1;
+    // }
+    // char* filename = argv[1];
+    // char* source = read_file(filename);
+    // Jn_program_init();
+    // Jn_exec_program(source);
+    // Jn_program_close();
     return 0;
 }
