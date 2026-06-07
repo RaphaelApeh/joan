@@ -24,8 +24,6 @@ static JnObject* builtin_len(JnObject** argv, size_t argc)
         return NULL;
     if (argv[0]->type == STR_TYPE)
         return jn_obj_int(argv[0]->str->len);
-    else if (argv[0]->type == ITER_TYPE)
-        return jn_obj_int(argv[0]->iter->count);
     return jn_obj_int(argv[0]->arr->size);
 }
 

@@ -5,7 +5,6 @@ const pi = 3.14
 //pi = None // Error
 x = 10 // OK
 name = "Jane Doe" // OK
-
 println name
 println x
 println pi

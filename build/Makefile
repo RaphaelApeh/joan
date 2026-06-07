@@ -327,6 +327,30 @@ src/gc.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/gc.c.s
 .PHONY : src/gc.c.s
 
+src/hashmap.obj: src/hashmap.c.obj
+.PHONY : src/hashmap.obj
+
+# target to build an object file
+src/hashmap.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/hashmap.c.obj
+.PHONY : src/hashmap.c.obj
+
+src/hashmap.i: src/hashmap.c.i
+.PHONY : src/hashmap.i
+
+# target to preprocess a source file
+src/hashmap.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/hashmap.c.i
+.PHONY : src/hashmap.c.i
+
+src/hashmap.s: src/hashmap.c.s
+.PHONY : src/hashmap.s
+
+# target to generate assembly for a file
+src/hashmap.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/hashmap.c.s
+.PHONY : src/hashmap.c.s
+
 src/helper.obj: src/helper.c.obj
 .PHONY : src/helper.obj
 
@@ -553,6 +577,9 @@ help:
 	@echo ... src/gc.obj
 	@echo ... src/gc.i
 	@echo ... src/gc.s
+	@echo ... src/hashmap.obj
+	@echo ... src/hashmap.i
+	@echo ... src/hashmap.s
 	@echo ... src/helper.obj
 	@echo ... src/helper.i
 	@echo ... src/helper.s

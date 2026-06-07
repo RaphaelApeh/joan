@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include <stdbool.h>
 
 #include "object.h"
@@ -61,9 +62,9 @@ static uint64_t hash_object(JnObject* obj)
 
 JnObject* jn_obj_new(JnTypeObject type)
 {
-    JnObject* obj = malloc(sizeof(JnObject));
-    memset(obj, 0, sizeof(*obj));
-    obj->type = type;
+    J_State* state = Jn_get_state();
+    JnObject* obj = state->alloc_fn(sizeof(JnObject), type);
+    assert(obj != NULL);
     return obj;
 }
 
@@ -265,7 +266,6 @@ void print_JnObject(JnObject* obj)
             //TODO
             break;
         case ITER_TYPE:
-            fprintf(stderr, "<iter <%llu> at %p>", obj->iter->count, obj->iter);
             break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);

@@ -60,15 +60,13 @@ int main(int argc, char** argv)
             version(); return 0;
         case C_REPL:
             Jn_repl(); return 0;
+        case C_RUN:
+            char* filename = argv[0];
+            char* source = read_file(filename);
+            Jn_program_init();
+            Jn_exec_program(source);
+            Jn_program_close();
+            return 0;
     }
-    // if (argc != 2)
-    // {
-    //     usage(); return 1;
-    // }
-    // char* filename = argv[1];
-    // char* source = read_file(filename);
-    // Jn_program_init();
-    // Jn_exec_program(source);
-    // Jn_program_close();
     return 0;
 }

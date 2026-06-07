@@ -8,7 +8,7 @@
 #define JOAN_H
 
 #include <stdio.h>
-
+#include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,7 +29,6 @@ extern "C" {
     #define JN_API
 #endif
 
-// Object Type
 typedef enum{
     NONE_TYPE = 0,
     STR_TYPE,
@@ -46,6 +45,10 @@ typedef enum{
     ENUM_TYPE,
 } JnTypeObject;
 
+typedef struct InternEntry InternEntry;
+typedef struct joan_parser_t joan_parser_t;
+typedef struct env_t env_t;
+typedef struct Arena Arena;
 typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
 typedef struct J_State J_State;
@@ -54,9 +57,112 @@ typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct JN_Args JN_Args;
 typedef struct Jn_CModule Jn_CModule;
+typedef struct Jn_Hashmap Jn_Hashmap;
+typedef struct Jn_HashEntry Jn_HashEntry;
+
+
+#define INTER_SIZE 1024
+
+#define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
+
+#define JN_RETURN_NONE jn_obj_none()
+#define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
+#define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
+#define JN_HASHMAP_INSERT(map, k, v, i) do {    \
+    if ((map) == NULL) {                        \
+        (map) = malloc(sizeof(Jn_Hashmap));      \
+        (map)->capacity = 100;                     \
+        map->buckets = malloc(sizeof(Jn_HashEntry) * (map)->capacity);\
+        (map)->size = 0;                            \
+    }                                                \
+    Jn_hashmap_insert(map, key, value, i);            \
+}while(false)
+
+// State
+
+
+typedef struct J_Context {
+    int error_code;
+} J_Context;
+
+typedef struct J_State
+{
+    JnVM* vm;
+    J_Context* cxt;
+    Arena* arena;
+    joan_parser_t* parser;
+    JnObject** objects;
+    size_t object_count;
+    size_t object_capacity;
+    InternEntry* intern_pool[INTER_SIZE];
+    JnObject_Alloc alloc_fn;
+    env_t* globals;
+    size_t bytes_allocated;
+    size_t next_gc;
+    bool running;
+} J_State;
+
+
+// Object Type
+typedef struct Chuck Chuck;
+typedef JnObject* (* NativeFn) (JnObject** argv, size_t argc);
+typedef JnObject* (* MethodFn) (JnObject* self, JnObject** argv, size_t argc);
+
+typedef struct {
+    char* chars;
+    unsigned long hash;
+    long len;
+} JnStringObject;
+
+typedef struct {
+    NativeFn fn;
+    char* fnName;
+} JnNativeObject;
+
+
+typedef struct {
+    Chuck* chuck;
+    char** params;
+    int arity;
+    char* name;
+} JnFunctionObject;
+
+typedef struct {
+    JnObject** items;
+    size_t size;
+    size_t capacity;
+} JnArrayObject;
+
+typedef long long JnIntObject;
+typedef double JnFloatObject;
+typedef bool JnBoolObject;
+
 extern J_State Jn_globalState;
 
+// Object
+
+typedef struct JnObject{
+    union
+    {
+        JnStringObject* str;
+        JnArrayObject* arr;
+        JnFunctionObject* fn;
+        // JnIterObject* iter; TODO
+        Jn_Hashmap* hashmap;
+        JnNativeObject* native_fn;
+        JnIntObject int32;
+        JnFloatObject float32;
+        JnBoolObject bool8;
+    };
+    JnTypeObject type;
+} JnObject;
+
+
 JN_API void Jn_repl(void);
+
+
+// Helpers
+unsigned long djb2_hash(unsigned char* str);
 
 // Register native function
 JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
@@ -65,6 +171,8 @@ JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
 JN_API void Jn_load_Cfunctions(void);
 // Call user-define functions
 JN_API JnObject* Jn_call_fn(char* fn_name, JN_Args* args);
+JN_API J_State* Jn_get_state(void);
+JN_API J_Context* Jn_get_context(void);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(void);
 JN_API int Jn_exec_program(char* source);
@@ -74,6 +182,19 @@ JN_API void Jn_execute_main(char* filepath);
 JN_API int Jn_exec_from_file(FILE* fptr);
 
 JN_API void Jn_program_close(void);
+
+// Object functions
+JnObject* jn_obj_new(JnTypeObject type);
+JnObject* jn_obj_int(long o_int);
+JnObject* jn_obj_string(char* str);
+JnObject* jn_obj_none(void);
+JnObject* jn_obj_bool(bool o_bool);
+JnObject* jn_obj_float(double o_float);
+JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
+//Hashmap Get
+Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
+void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);
+void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value);
 
 #ifdef __cplusplus
 }

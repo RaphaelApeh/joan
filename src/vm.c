@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <assert.h>
+#include "Joan.h"
 #include "vm.h"
 #include "opcode.h"
 #include "ast.h"
@@ -479,10 +480,10 @@ InterpretResult vm_run(JnVM* vm)
                         push(vm, o);
                         break;
                     case ITER_TYPE:
-                        if (index < 0 || index >= array->iter->count)
-                            return die(vm, "pos is > or < array length");
-                        o = array->iter->items[index];
-                        push(vm, o);
+                        // if (index < 0 || index >= array->iter->count)
+                        //     return die(vm, "pos is > or < array length");
+                        // o = array->iter->items[index];
+                        // push(vm, o);
                         break;
                     case HASHMAP_TYPE:
                     // ObjHM* hm = hashmap_get(array, pos);
