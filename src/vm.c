@@ -58,7 +58,7 @@ static InterpretResult die(JnVM* vm, const char* msg, ...)
 
 static void push(JnVM* vm, JnObject* object)
 {
-    if (NULL == object) return;
+    assert(object != NULL);
     *vm->sp++ = object;
 }
 
@@ -212,11 +212,10 @@ InterpretResult vm_run(JnVM* vm)
                 JnArrayObject* arr = NULL;
                 for (int i = count - 1; i >= 0; --i)
                 {
-                    //TODO
-                    arr->items[i] = pop(vm);
-                    arr->size++;
+                    JN_SET_ARRAY(arr, pop(vm), i);
                 }
-                o = jn_obj_new(ARRAY_TYPE);
+                assert(arr != NULL);
+                o = JN_OBJECT(ARRAY_TYPE);
                 o->arr = arr;
                 push(vm, o);
                 break;
@@ -234,20 +233,17 @@ InterpretResult vm_run(JnVM* vm)
                 // push(vm, o);
                 break;
             case OP_HM:
-                // count = READ_BYTE();
-                // J_DArray_Obj* jd_obj = malloc(sizeof(J_DArray_Obj));
-                // jd_obj->size = 0;
-                // jd_obj->capacity = count;
-                // jd_obj->items = malloc(sizeof(ObjHM *) * count);
-                // for (int i = count - 1; i >= 0; --i)
-                // {
-                //     value = pop(vm); key = pop(vm);
-                //     printf("value = %d; key = %d\n", value->type, key->type);
-                //     jd_obj->items[i] = hashmap_init(key, value);
-                //     jd_obj->size++;
-                // }
-                // JnObject* obj = jn_obj_hashmap(jd_obj);
-                // push(vm, obj);
+                count = READ_BYTE();
+                Jn_Hashmap* map = NULL;
+                for (int i = count - 1; i >= 0; --i)
+                {
+                    value = pop(vm); key = pop(vm);
+                    JN_HASHMAP_INSERT(map, key, value, i);
+                }
+                assert(map != NULL);
+                JnObject* obj = JN_OBJECT(HASHMAP_TYPE);
+                obj->hashmap = map;
+                push(vm, obj);
                 break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
@@ -454,20 +450,19 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_INDEX:
                 array = pop(vm);
-                pos = pop(vm);
-                if (!array || !pos)
+                JnObject* idx_key = pop(vm);
+                if (!array || !idx_key)
                     return die(vm, "None value array or pos.");
-                if (array->type != ARRAY_TYPE && array->type != STR_TYPE && array->type != ITER_TYPE && array->type != HASHMAP_TYPE)
-                    return die(vm, "Invalid type for array or pos.");
-                if (array->type == ARRAY_TYPE && pos->type != INT_TYPE)
+                if (array->type == ARRAY_TYPE && idx_key->type != INT_TYPE)
                     return die(vm, "pos is not an int");
-                int index = pos->int32;
+                int index = idx_key->int32;
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
-                        if (index < 0 || pos->int32 >= array->arr->size)
+                        if (index < 0 || index >= array->arr->size)
                             return die(vm, "pos is > or < array length");
-                        o = array->arr->items[pos->int32];
+                        o = JN_GET_ARRAY(array->arr, index);
+                        if (o == NULL) return die(vm, "Invalid array index.");
                         push(vm, o);
                         break;
                     case STR_TYPE:
@@ -486,21 +481,18 @@ InterpretResult vm_run(JnVM* vm)
                         // push(vm, o);
                         break;
                     case HASHMAP_TYPE:
-                    // ObjHM* hm = hashmap_get(array, pos);
-                    // if (NULL == hm)
-                    //     return die(vm, "index error");
-                    // push(vm, hm->value); 
+                    Jn_HashEntry* entry = JN_HASHMAP_GET((array->hashmap), idx_key);
+                    if (entry == NULL)
+                        return die(vm, "invalid key.");
+                    push(vm, entry->value);
                     break;
                     default:
-                        return die(vm, "Got an invaild array type");
+                        return die(vm, "Expected an iterable but got '%s'.", "TODO");
                 }
                 break;
             case OP_SET_INDEX:
                 value = pop(vm); array = pop(vm); pos = pop(vm);
                 index = pos->int32;
-                
-                if (array->type != HASHMAP_TYPE && pos->type != INT_TYPE)
-                    return die(vm, "Expected an 'int' type");
                 if (array->type != HASHMAP_TYPE && index < 0)
                     return die(vm, "Got an negative index value.");
                 
@@ -522,10 +514,7 @@ InterpretResult vm_run(JnVM* vm)
                         array->str->chars[index] = value->str->chars[0];
                         break;
                     case HASHMAP_TYPE:
-                        // ObjHM* hm = hashmap_get(array, pos);
-                        // if (NULL == hm)
-                        //     return die(vm, "index error");
-                        // hm->value = value;
+                        JN_HASMAP_PUT(array->hashmap, pos, value);
                         break;
                     case ITER_TYPE:
                         return die(vm, "Iter object does not support index setting.");
@@ -998,7 +987,9 @@ void compile(AST* node, Chuck* chuck)
         {
             compile(node->index.value, chuck);
             write_chuck(chuck, OP_SET_INDEX);
-        } else write_chuck(chuck, OP_INDEX);
+            break;
+        } 
+        write_chuck(chuck, OP_INDEX);
         break;
     default:
         break;

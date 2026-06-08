@@ -4,17 +4,6 @@
 #include "Joan.h"
 #include "object.h"
 
-typedef struct Jn_HashEntry {
-    JnObject* key;
-    JnObject* value;
-    uint64_t hash;
-} Jn_HashEntry;
-
-typedef struct Jn_Hashmap{
-    Jn_HashEntry* buckets;
-    size_t size, capacity;
-} Jn_Hashmap;
-
 
 static uint64_t hash_object(JnObject* obj)
 {
@@ -102,5 +91,5 @@ void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx)
 
 void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value)
 {
-    insert_hash_entry(map, key, value);
+    get_or_insert_hash_entry(map, key, value);
 }

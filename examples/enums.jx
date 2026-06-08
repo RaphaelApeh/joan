@@ -1,1 +1,10 @@
-println None is not None
+let x = 4
+
+match x {
+    2 + 2 => {
+        println "Hello World"
+    }
+    else => {
+        println "Hello World"
+    }
+}

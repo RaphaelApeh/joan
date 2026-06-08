@@ -8,6 +8,7 @@
 #define JOAN_H
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
@@ -57,14 +58,14 @@ typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct JN_Args JN_Args;
 typedef struct Jn_CModule Jn_CModule;
-typedef struct Jn_Hashmap Jn_Hashmap;
-typedef struct Jn_HashEntry Jn_HashEntry;
 
 
 #define INTER_SIZE 1024
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
+#define JN_OBJECT(type) jn_obj_new(type)
+#define JN_IS_ITERABLE(obj) (obj)->type == ARRAY_TYPE || (obj)->type == STR_TYPE || (obj)->type == ITER_TYPE || (obj)->type == HASHMAP_TYPE
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
@@ -78,6 +79,22 @@ typedef struct Jn_HashEntry Jn_HashEntry;
     Jn_hashmap_insert(map, key, value, i);            \
 }while(false)
 
+#define JN_SET_ARRAY(arr, obj, i) do{                  \
+    if ((arr) == NULL){                                 \
+        (arr) = malloc(sizeof(JnArrayObject));          \
+        (arr)->capacity = 100;                          \
+        (arr)->size = 0;                                \
+        (arr)->items = malloc(sizeof(JnObject *) * (arr)->capacity);    \
+    }                                                   \
+    if ((i) >= (arr)->capacity){                                  \
+        (arr)->capacity *= 2;                             \
+        (arr)->items = realloc((arr)->items, sizeof(JnObject* ) * (arr)->capacity);   \
+    }                                                     \
+    (arr)->items[(i)] = (obj);                                 \
+    (arr)->size++;                                         \
+} while(false)
+
+#define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 // State
 
 
@@ -132,6 +149,17 @@ typedef struct {
     size_t size;
     size_t capacity;
 } JnArrayObject;
+
+typedef struct Jn_HashEntry {
+    JnObject* key;
+    JnObject* value;
+    uint64_t hash;
+} Jn_HashEntry;
+
+typedef struct Jn_Hashmap{
+    Jn_HashEntry* buckets;
+    size_t size, capacity;
+} Jn_Hashmap;
 
 typedef long long JnIntObject;
 typedef double JnFloatObject;
@@ -191,6 +219,8 @@ JnObject* jn_obj_none(void);
 JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
+JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
+
 //Hashmap Get
 Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
 void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);

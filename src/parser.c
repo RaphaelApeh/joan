@@ -234,6 +234,7 @@ static AST* parse_match(joan_parser_t* p)
     {
         if (match(p, TOKEN_ELSE))
         {
+            match(p, TOKEN_EXR);
             if (match(p, TOKEN_THEN))
                 else_stmt = parse_expr(p);
             else if (check(p, TOKEN_LBRACE))

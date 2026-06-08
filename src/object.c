@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
-
+#include "Joan.h"
 #include "object.h"
 #include "helper.h"
 #include "vm.h"
@@ -12,53 +12,6 @@ JnObject NoneObj = {0};
 
 static InternEntry* intern_pool[INTER_SIZE];
 
-static inline bool ObjIntCmp(JnObject* key1, JnObject* key2)
-{
-    double k1 = tonumber(key1), k2 = tonumber(key2);
-    return k1 == k2;
-}
-
-static inline bool ObjStrCmp(JnObject* key1, JnObject* key2)
-{
-    return key1->str->hash == key2->str->hash;
-}
-
-static inline bool ObjectBoolCmp(JnObject* key1, JnObject* key2)
-{
-    // return key1->bool8 == key2->bool2;
-}
-
-static bool jn_obj_equal(JnObject* obj1, JnObject* obj2)
-{
-    // if (obj1->type != obj2->type)
-    //     return false;
-    // switch (obj1->type)
-    // {
-    //     case INT_TYPE:  return obj1->int32 == obj2->int32;
-    //     case BOOL_TYPE: return obj1->bool8 == obj2->bool8;
-    //     case FLOAT_TYPE: return obj1->float32 == obj2->float32;
-    //     case STR_TYPE: return obj1->str->hash == obj2->str->hash;
-    //     default: return false;
-    // }
-}
-
-static uint64_t hash_object(JnObject* obj)
-{
-    // switch (obj->type)
-    // {
-    //     case INT_TYPE:
-    //         return (uint64_t)obj->int32;
-    //     case BOOL_TYPE:
-    //         return obj->bool8;
-    //     case FLOAT_TYPE:
-    //         return obj->float32;
-    //     case STR_TYPE:
-    //         return obj->str->hash;
-    //     default:
-    //         printf("Unsupported Type\n");
-    //         return 0;
-    // }
-}
 
 JnObject* jn_obj_new(JnTypeObject type)
 {
@@ -104,57 +57,29 @@ JnObject* jn_obj_float(double float32)
     return obj;
 }
 
-JnObject* jn_obj_hashmap(J_DArray_Obj* jd_obj)
-{
-    JnObject* obj =  jn_obj_new(HASHMAP_TYPE);
-    // obj->hashmap = jd_obj;
-    return obj;
-}
-
-void hashmap_set(JnObject* hm, JnObject* key, JnObject* value)
-{
-    // if (NULL == hm || NULL == key || NULL == value)
-    //     return;
-    // ObjHM* obj = hashmap_get(hm, key);
-    // if (obj != NULL)
-    // {
-    //     obj->value = value;
-    //     return;
-    // }
-    // if (hm->hashmap->size >= hm->hashmap->capacity)
-    // {
-    //     hm->hashmap->capacity *= 2;
-    //     RESIZE_DOBJ(hm->hashmap);
-    // }
-    // hm->hashmap->items[hm->hashmap->size++] = hashmap_init(key, value);
-}
-
-// ObjHM* hashmap_get(JnObject* hm, JnObject* obj)
-// {
-//     for (int i = 0; i < hm->hashmap->size; ++i)
-//     {
-//         ObjHM* ele  = hm->hashmap->items[i];
-//         if (jn_obj_equal(ele->key, obj) && ele->hash == hash_object(obj))
-//             return ele;
-//     }
-//     return NULL;
-// }
-
-// ObjHM* hashmap_init(JnObject* key, JnObject* value)
-// {
-//     ObjHM* hm = malloc(sizeof(ObjHM));
-//     hm->key = key;
-//     hm->value = value;
-//     hm->hash = hash_object(key);
-//     return hm;
-// }
-
 
 JnObject* jn_obj_none(void)
 {
     NoneObj.type = NONE_TYPE;
     NoneObj.int32 = 0;
     return &NoneObj;
+}
+
+static uint64_t hash_object(JnObject* obj)
+{
+    switch (obj->type)
+    {
+        case INT_TYPE:
+            return (uint64_t)obj->int32;
+        case BOOL_TYPE:
+            return obj->bool8;
+        case FLOAT_TYPE:
+            return obj->float32;
+        case STR_TYPE:
+            return obj->str->hash;
+        default:
+            return 0;
+    }
 }
 
 JnObject* jn_intern_obj(JnObject* obj)
@@ -167,7 +92,7 @@ JnObject* jn_intern_obj(JnObject* obj)
     
     while(entry)
     {
-        if (jn_obj_equal(entry->obj, obj))
+        if (hash_object(entry->obj) == hash_object(obj))//(jn_obj_equal(entry->obj, obj))
         {
             return entry->obj;
         }
@@ -193,10 +118,19 @@ JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name)
     return obj;
 }
 
+JnObject* jn_obj_array_get(JnArrayObject* arr, int idx)
+{
+    assert(arr != NULL);
+    if (idx < 0)
+        return NULL;
+    if (idx >= arr->size)
+        return NULL;
+    return arr->items[idx];
+}
+
 static void print_array(JnObject* obj)
 {
-    if (NULL == obj && obj->type != ARRAY_TYPE)
-        return;
+    assert(obj != NULL);
     fprintf(stderr, "[");
     for (size_t i = 0; i < obj->arr->size; i++)
     {
@@ -210,30 +144,17 @@ static void print_array(JnObject* obj)
 static void print_hashmap(JnObject* obj)
 {
     fprintf(stderr, "#{");
-    // for (int i = 0; i < obj->hashmap->size; ++i)
-    // {
-    //     ObjHM* hm = obj->hashmap->items[i];
-    //     print_object(hm->key);
-    //     putchar(':');
-    //     print_object(hm->value);
-    //     if (i < obj->hashmap->size - 1)
-    //         fprintf(stderr, ", ");
-    // }
+    for (int i = 0; i < obj->hashmap->size; ++i)
+    {
+        Jn_HashEntry* hm = &obj->hashmap->buckets[i];
+        print_JnObject(hm->key);
+        putchar(':');
+        print_JnObject(hm->value);
+        if (i < obj->hashmap->size - 1)
+            fprintf(stderr, ", ");
+    }
     putchar('}');
 }
-
-// Jn* ObjectIter(unsigned int capacity)
-// {
-//     IterJnObject* iter = malloc(sizeof(IterObject));
-//     if (capacity <= 0)
-//     {
-//         capacity = 100;
-//     }
-//     iter->items = malloc(sizeof(Object *) * capacity);
-//     iter->capacity = 100;
-//     iter->count = 0;
-//     return iter;
-// }
 
 void print_JnObject(JnObject* obj)
 {

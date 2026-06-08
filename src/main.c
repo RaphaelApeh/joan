@@ -49,9 +49,9 @@ void version(void)
 
 int main(int argc, char** argv)
 {
-    char** new_agv = argv + 1;
+    char** new_argv = argv + 1;
     argc -= 1;
-    struct Command c = parse_args(new_agv, argc);
+    struct Command c = parse_args(new_argv, argc);
     switch (c.type)
     {
         case C_HELP:
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
         case C_REPL:
             Jn_repl(); return 0;
         case C_RUN:
-            char* filename = argv[0];
+            char* filename = new_argv[0];
             char* source = read_file(filename);
             Jn_program_init();
             Jn_exec_program(source);

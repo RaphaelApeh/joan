@@ -17,7 +17,7 @@ static void* alloc_object(size_t size, JnTypeObject type)
     assert(obj != NULL);
     memset(obj, 0, size);
     obj->type = type;
-    state->objects[state->object_count] = obj;
+    state->objects[state->object_count++] = obj;
     state->bytes_allocated += size;
     return obj;
 }
