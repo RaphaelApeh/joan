@@ -81,7 +81,6 @@ void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx)
         map->buckets =  realloc(map->buckets, sizeof(Jn_HashEntry) * map->capacity);
     }
     assert(map->buckets != NULL);
-    size_t old_size = map->size;
     map->buckets[idx] = (Jn_HashEntry){
         .key = key, .value = value, .hash = hash_object(key)
     };
