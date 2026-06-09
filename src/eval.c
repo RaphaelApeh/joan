@@ -31,6 +31,32 @@ static uint64_t hash_object(JnObject* obj)
     }
 }
 
+// TODO
+
+static char buffer[100];
+static int buf_count = 0;
+
+static char* format_string(char* fmt, JnObject* obj)
+{
+    static char* str;
+    while(*fmt)
+    {
+        char tmp = *(fmt + 1);
+        if (*fmt == '{' && tmp == '}')
+        {
+            fmt += 2;
+            // TODO: add int, float, bool, e.t.c support
+           strcat(buffer, obj->str->chars);
+           buf_count += obj->str->len;
+        }
+        else buffer[buf_count++] = *fmt++;
+    }
+    str = strdup(buffer);
+    buf_count = 0;
+    buffer[0] = 0;
+    return str;
+}
+
 JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
 {
     bool is_true = false;
@@ -126,7 +152,12 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
                 goto end;
         }
     }
-    
+    if (JN_IS_STRING(lhs) && op == EVAL_LSHIFT)
+    {
+        // TODO: add support for multiple objects.
+        char* s = format_string(lhs->str->chars, rhs);
+        return JN_RETURN_STRING(s);
+    }
     if (lhs->type == STR_TYPE && rhs->type == STR_TYPE)
     {
         char* str = NULL;

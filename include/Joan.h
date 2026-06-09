@@ -68,6 +68,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
+#define JN_RETURN_STRING(s) jn_obj_string(s)
 #define _JN_CHECK_TYPE(obj, t) (obj)->type == (t)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)

@@ -1,4 +1,12 @@
-// for loop
-let hm = #{"a": [true, false, None]}
+arr := [32, 54, None, false]
 
-println hm["a"][0]
+// With index
+for i, x in arr {
+	println "{} at {}" << (x, i)
+}
+
+// Without index
+
+for x in arr {
+	println x
+}
