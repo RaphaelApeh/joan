@@ -1,10 +1,14 @@
-let x = 4
+enum Log {
+    ERROR = 1,
+    WARNING = 2,
+    SUCCESS = 3
+}
 
-match x {
-    2 + 2 => {
-        println "Hello World"
-    }
-    else => {
-        println "Hello World"
-    }
+let level = Log::ERROR
+
+match level {
+    Log::SUCCESS => then println "Success....."
+    Log::ERROR => println "Error ......"
+    Log::WARNING => then println "Warning ......"
+    else  then println "Invalid Log ........."
 }

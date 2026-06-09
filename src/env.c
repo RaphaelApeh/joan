@@ -1,7 +1,9 @@
 #include <string.h>
 #include <stdlib.h>
+#include "Joan.h"
 #include "env.h"
 #include "object.h"
+#include "helper.h"
 
 env_t* init_env(env_t* parent)
 {
@@ -16,9 +18,6 @@ env_t* init_env(env_t* parent)
 void set_env(env_t* env, char* key, JnObject* obj, bool is_const, bool is_public)
 {
     if (NULL == env || NULL == obj) return;
-    // JnObject* e;
-    // if (e = get_env(env, key) != NULL)
-    //     *e = *obj;
     if (env->count >= env->capacity)
     {
         env->capacity *= 2;
@@ -30,12 +29,6 @@ void set_env(env_t* env, char* key, JnObject* obj, bool is_const, bool is_public
     env->entries[env->count].is_public = is_public;
     env->entries[env->count].is_const = is_const;
     env->count++;
-    // int id = hash(key) % env->capacity;
-    // while(env->entries[id].used && strcmp(env->entries[id].key, key) != 0)
-    //         id = (id + 1) % env->capacity;
-    // env->entries[id].used = true;
-    // strcpy(env->entries[id].key, key);
-    // env->entries[id].value = obj;
 }
 
 entry_t* get_envEntry(env_t* env, char* key)
@@ -54,13 +47,11 @@ entry_t* get_envEntry(env_t* env, char* key)
 JnObject* get_env(env_t* env, char* key)
 {
     if (NULL == env) return NULL;
-    // size_t id = hash(key) * env->capacity;
     while(env)
     {
         for (size_t i = 0; i < env->count; i++)
             if (strcmp(env->entries[i].key, key) == 0)
                 return env->entries[i].value;
-            // id = (id + 1) % env->capacity;
         env = env->parent;
     }
     return NULL;

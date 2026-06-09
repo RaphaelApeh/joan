@@ -58,15 +58,26 @@ typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct JN_Args JN_Args;
 typedef struct Jn_CModule Jn_CModule;
-
+typedef struct Jn_environ_T Jn_environ_T;
+typedef struct Jn_environ Jn_environ;
 
 #define INTER_SIZE 1024
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define JN_OBJECT(type) jn_obj_new(type)
-#define JN_IS_ITERABLE(obj) (obj)->type == ARRAY_TYPE || (obj)->type == STR_TYPE || (obj)->type == ITER_TYPE || (obj)->type == HASHMAP_TYPE
 #define JN_RETURN_NONE jn_obj_none()
+#define JN_RETURN_BOOL(b) jn_obj_bool((b))
+#define _JN_CHECK_TYPE(obj, t) (obj)->type == (t)
+#define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
+#define JN_TO_BOOL(obj) is_truthy(obj)
+#define JN_IS_INT(obj) _JN_CHECK_TYPE(obj, INT_TYPE)
+#define JN_IS_STRING(obj) _JN_CHECK_TYPE(obj, STR_TYPE)
+#define JN_IS_FLOAT(obj) _JN_CHECK_TYPE(obj, FLOAT_TYPE)
+#define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, ARRAY_TYPE)
+#define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
+#define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
+#define JN_IS_ITERABLE(obj) JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_ITER(obj)
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
 #define JN_HASHMAP_INSERT(map, k, v, i) do {    \
@@ -119,6 +130,11 @@ typedef struct J_State
     bool running;
 } J_State;
 
+struct JN_Args
+{
+    JnObject** objects;
+    size_t count;
+};
 
 // Object Type
 typedef struct Chuck Chuck;
@@ -195,6 +211,9 @@ unsigned long djb2_hash(unsigned char* str);
 // Register native function
 JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
 
+JN_API void Jn_environ_insert(char* name, JnObject* obj);
+JN_API Jn_environ_T* Jn_environ_get(char* name);
+
 // Load builtin function
 JN_API void Jn_load_Cfunctions(void);
 // Call user-define functions
@@ -220,6 +239,7 @@ JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
+bool is_truthy(JnObject* obj);
 
 //Hashmap Get
 Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);

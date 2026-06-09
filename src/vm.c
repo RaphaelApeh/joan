@@ -338,6 +338,12 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_IN);
                 push(vm, a);
                 break;
+            case OP_NOT_IN:
+                a = pop(vm);
+                b = pop(vm);
+                a = eval_binary(b, a, EVAL_NOT_IN);
+                push(vm, a);
+                break;
             case OP_IS:
                 b = pop(vm); a = pop(vm);
                 a = eval_binary(a, b, EVAL_IS);
@@ -453,21 +459,23 @@ InterpretResult vm_run(JnVM* vm)
                 JnObject* idx_key = pop(vm);
                 if (!array || !idx_key)
                     return die(vm, "None value array or pos.");
-                if (array->type == ARRAY_TYPE && idx_key->type != INT_TYPE)
+                if (JN_IS_ARRAY(array) && idx_key->type != INT_TYPE)
                     return die(vm, "pos is not an int");
                 int index = idx_key->int32;
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
-                        if (index < 0 || index >= array->arr->size)
-                            return die(vm, "pos is > or < array length");
                         o = JN_GET_ARRAY(array->arr, index);
                         if (o == NULL) return die(vm, "Invalid array index.");
                         push(vm, o);
                         break;
                     case STR_TYPE:
-                        if (index < 0 || index >= array->str->len)
-                            return INTERPRET_RUNTIME_ERROR;
+                        if (index < 0)
+                        {
+                            index += array->str->len;
+                        }
+                        if (index >= array->str->len)
+                            return die(vm, "invalid index got %d.", index);
                         char* str = malloc(2);
                         str[0] = array->str->chars[index];
                         str[1] = '\0';
@@ -774,6 +782,9 @@ void compile(AST* node, Chuck* chuck)
                 break;
             case TOKEN_IN:
                 write_chuck(chuck, OP_IN);
+                break;
+            case TOKEN_NOT_IN:
+                write_chuck(chuck, OP_NOT_IN);
                 break;
             case TOKEN_SLASH:
                 write_chuck(chuck, OP_DIV);

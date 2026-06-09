@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "Joan.h"
 #include "builtins/function.h"
 
 static JnObject* builtin_len(JnObject** argv, size_t argc);
@@ -56,7 +57,8 @@ static JnObject* builtin_id(JnObject** argv, size_t argc)
     return jn_intern_obj(jn_obj_int((long)ptr));
 }
 
-void set_functions(env_t* env)
+
+JN_API void Jn_load_Cfunctions(void)
 {
     int count = (int) sizeof(builtin_functions) / sizeof(builtin_functions[0]);
     JnObject* obj;
@@ -67,6 +69,6 @@ void set_functions(env_t* env)
         obj->native_fn = malloc(sizeof(JnNativeObject));
         obj->native_fn->fnName = fn.name;
         obj->native_fn->fn = fn.func;
-        set_env(env, fn.name, obj, true, false);
+        // set_env(env, fn.name, obj, true, false);
     }
 }

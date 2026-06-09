@@ -35,6 +35,22 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
             is_true = true;
         return jn_obj_bool(is_true);   
     }
+    if (JN_IS_ITERABLE(rhs) && (op == EVAL_IN || op == EVAL_NOT_IN))
+    {
+        switch (rhs->type)
+        {
+            case ARRAY_TYPE: break; // TODO
+            case ITER_TYPE: break; // TODO
+            case HASHMAP_TYPE: {
+                bool tmp;
+                if (op == EVAL_IN)
+                    tmp = JN_HASHMAP_GET(rhs->hashmap, lhs) != NULL;
+                else
+                    tmp = JN_HASHMAP_GET(rhs->hashmap, lhs) == NULL;
+                return JN_RETURN_BOOL(tmp);
+            }
+        }
+    }
     if (isnumber(lhs) && isnumber(rhs))
     {
         JnTypeObject ot;

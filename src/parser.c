@@ -107,6 +107,7 @@ precedence get_prec(J_TokenType type)
     case TOKEN_AND:
         return PREC_AND;
     
+    case TOKEN_NOT_IN:
     case TOKEN_IN:
         return PREC_IN;
 

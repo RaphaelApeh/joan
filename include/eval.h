@@ -18,6 +18,7 @@ typedef enum{
     EVAL_BOR, // |
     EVAL_BAC, // ^
     EVAL_IN,
+    EVAL_NOT_IN, // not in
     EVAL_OR,
     EVAL_AND,
     EVAL_IS,

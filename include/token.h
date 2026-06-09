@@ -82,6 +82,7 @@ typedef enum {
     TOKEN_IS,
     TOKEN_IN,
     TOKEN_NOT,
+    TOKEN_NOT_IN,
     TOKEN_AND,
 
     TOKEN_FN,

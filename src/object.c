@@ -122,7 +122,9 @@ JnObject* jn_obj_array_get(JnArrayObject* arr, int idx)
 {
     assert(arr != NULL);
     if (idx < 0)
-        return NULL;
+    {
+        idx += arr->size;
+    }
     if (idx >= arr->size)
         return NULL;
     return arr->items[idx];

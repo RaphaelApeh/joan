@@ -13,7 +13,7 @@
     "languages": [{
       "id": "joan",
       "aliases": ["Joan", "joan"],
-      "extensions": [".jt", "jx"],
+      "extensions": ["jt", "jx"],
       "icon": {"dark": "./images/logo.png", "light": "./images/logo.png"},
       "configuration": "./language-configuration.json"
     }],

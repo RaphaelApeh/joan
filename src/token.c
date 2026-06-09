@@ -93,6 +93,7 @@ static joan_token_t token_char(joan_lexer_t* l)
 
 joan_token_t identifier(joan_lexer_t* l)
 {
+    joan_token_t tmp;
     while (isalnum(peek(l)) || peek(l) == '_') 
         advance(l);
     joan_token_t t = make_token(l, TOKEN_IDENTIFIER);
@@ -119,7 +120,13 @@ joan_token_t identifier(joan_lexer_t* l)
     else if (strcmp(t.lexeme, "let") == 0)
         t.type = TOKEN_LET;
     else if (strcmp(t.lexeme, "not") == 0)
-        t.type = TOKEN_NOT;
+    {
+        tmp = next_token(l);
+        if (tmp.type == TOKEN_IN)
+            t.type = TOKEN_NOT_IN;
+        else
+            t.type = TOKEN_NOT;
+    }
     else if (strcmp(t.lexeme, "of") == 0)
         t.type = TOKEN_OF;
     else if (strcmp(t.lexeme, "using") == 0)

@@ -1,0 +1,4 @@
+// for loop
+let hm = #{"a": [true, false, None]}
+
+println hm["a"][0]

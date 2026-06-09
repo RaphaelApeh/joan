@@ -6,4 +6,3 @@ typedef struct {
     char* name;
 } NativeFunction;
 
-void set_functions(env_t* env);

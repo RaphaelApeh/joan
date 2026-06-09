@@ -1,3 +1,9 @@
 let hm = #{'a': 1, 1: 12, 23.2: false}
 hm[`a`] = 3
-println hm
+println  "a" in hm // true
+println "invalid" in hm // false
+println "invalid" not in hm // true
+// Example
+if "a" in hm {
+    println hm["a"]
+}
