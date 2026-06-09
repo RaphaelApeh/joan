@@ -501,15 +501,15 @@ InterpretResult vm_run(JnVM* vm)
             case OP_SET_INDEX:
                 value = pop(vm); array = pop(vm); pos = pop(vm);
                 index = pos->int32;
-                if (array->type != HASHMAP_TYPE && index < 0)
-                    return die(vm, "Got an negative index value.");
-                
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
+                        if (index < 0)
+                        {
+                            index += array->arr->size;
+                        }
                         if (index >= array->arr->size)
                             return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->arr->size, index);
-                        array->arr->items[index]->type = value->type;
                         array->arr->items[index] = value;
                         break;
                     case STR_TYPE:
@@ -979,7 +979,13 @@ void compile(AST* node, Chuck* chuck)
     case AST_REASSIGN:
         compile(node->reassign.value, chuck);
         id = add_ident(chuck, node->reassign.ident);
-        // if (!id) break;
+        if (node->reassign.op == TOKEN_WALRUS)
+        {
+            write_chuck(chuck, OP_SET_GLOBAL);
+            write_chuck(chuck, id);
+            write_chuck(chuck, 1);
+            break;
+        }
         write_chuck(chuck, OP_REASSIGN);
         write_chuck(chuck, id);
         write_chuck(chuck, node->reassign.op);

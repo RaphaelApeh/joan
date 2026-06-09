@@ -1,2 +1,3 @@
-let ar = "Hello"
-println ar[-1]
+arr := [1, 2, 3, 4, 5]
+arr[4] = None
+println arr

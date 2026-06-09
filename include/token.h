@@ -61,6 +61,7 @@ typedef enum {
     TOKEN_RSHIFT,
     TOKEN_LSHIFT,
     TOKEN_COLON, // :
+    TOKEN_WALRUS, // :=
     TOKEN_QUESTION, // ?
     TOKEN_PERCENTAGE, // %
     TOKEN_SETTER,

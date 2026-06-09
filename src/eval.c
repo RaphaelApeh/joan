@@ -10,6 +10,26 @@
 
 #define eval_bin_bool(l, r, op) jn_obj_bool(tonumber((l)) op tonumber((r)))
 
+// TODO
+
+static uint64_t hash_object(JnObject* obj)
+{
+    switch (obj->type)
+    {
+        case INT_TYPE:
+            return (uint64_t)obj->int32;
+        case BOOL_TYPE:
+            return obj->bool8;
+        case FLOAT_TYPE:
+            return obj->float32;
+        case STR_TYPE:
+            return obj->str->hash;
+        case NONE_TYPE:
+            return 0;
+        default:
+            return 0;
+    }
+}
 
 JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
 {
@@ -39,7 +59,18 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
     {
         switch (rhs->type)
         {
-            case ARRAY_TYPE: break; // TODO
+            case ARRAY_TYPE: {
+                is_true = false;
+                for (int i = 0; i < rhs->arr->size; ++i)
+                {
+                    if (hash_object(rhs->arr->items[i]) == hash_object(lhs))
+                    {
+                        is_true = true;
+                        break;
+                    }
+                }
+                return JN_RETURN_BOOL(op == EVAL_IN ? is_true : !is_true);
+            }
             case ITER_TYPE: break; // TODO
             case HASHMAP_TYPE: {
                 bool tmp;

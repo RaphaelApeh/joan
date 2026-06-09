@@ -42,6 +42,7 @@ static bool is_assign_token(J_TokenType type)
         case TOKEN_ABITAC:
         case TOKEN_ABITAND:
         case TOKEN_ABITOR:
+        case TOKEN_WALRUS:
             return true;
         default:
             return false;
@@ -192,8 +193,9 @@ static AST* parse_if(joan_parser_t* p)
     
     AST* elsenode = NULL;
     elseif* elseifs = elseif_init();
-    while(match(p, TOKEN_ELSEIF))
+    while(match(p, TOKEN_ELSEIF) || (match(p, TOKEN_ELSE) && check(p, TOKEN_IF)))
     {
+        match(p, TOKEN_IF);
         AST* cond = parse_expr(p);
         AST* childblock;
         if (check(p, TOKEN_LBRACE))

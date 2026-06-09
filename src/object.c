@@ -92,7 +92,7 @@ JnObject* jn_intern_obj(JnObject* obj)
     
     while(entry)
     {
-        if (hash_object(entry->obj) == hash_object(obj))//(jn_obj_equal(entry->obj, obj))
+        if (entry->obj->type == obj->type && hash_object(entry->obj) == hash_object(obj))//(jn_obj_equal(entry->obj, obj))
         {
             return entry->obj;
         }
