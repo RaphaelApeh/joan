@@ -67,8 +67,11 @@ typedef struct Jn_environ Jn_environ;
 
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_RETURN_NONE jn_obj_none()
+#define JN_RETURN_INT(i) jn_obj_int(i)
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
 #define JN_RETURN_STRING(s) jn_obj_string(s)
+#define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
+#define JN_OBJECT_VALUE(obj) // TODO 
 #define _JN_CHECK_TYPE(obj, t) (obj)->type == (t)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
@@ -240,6 +243,7 @@ JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
+char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
 
 //Hashmap Get

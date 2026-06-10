@@ -158,6 +158,31 @@ static void print_hashmap(JnObject* obj)
     putchar('}');
 }
 
+
+char* Jn_object_cstring(JnObject* obj)
+{
+    assert(obj != NULL);
+    static char buffer[0xff];
+    switch (obj->type)
+    {
+        case INT_TYPE:
+            snprintf(buffer, sizeof(buffer), "%lld", obj->int32);
+            goto buf;
+        case STR_TYPE:
+            return strdup(obj->str->chars);
+        case FLOAT_TYPE:
+            snprintf(buffer, sizeof(buffer), "%.15g", obj->float32);
+            goto buf;
+        case BOOL_TYPE:
+            snprintf(buffer, sizeof(buffer), "%s", obj->bool8 ? "true": "false");
+            goto buf;
+        default:
+            return strdup("<error>"); // TODO
+    }
+    buf:
+        return strdup(buffer);
+}
+
 void print_JnObject(JnObject* obj)
 {
     if (NULL == obj) return;

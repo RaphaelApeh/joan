@@ -1,6 +1,8 @@
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "eval.h"
 #include "helper.h"
 
@@ -31,29 +33,32 @@ static uint64_t hash_object(JnObject* obj)
     }
 }
 
-// TODO
-
-static char buffer[100];
-static int buf_count = 0;
-
 static char* format_string(char* fmt, JnObject* obj)
 {
-    static char* str;
+    int len = 0;
+    int capacity = 256;
+    char* str = malloc(sizeof(capacity));
     while(*fmt)
     {
         char tmp = *(fmt + 1);
         if (*fmt == '{' && tmp == '}')
         {
             fmt += 2;
-            // TODO: add int, float, bool, e.t.c support
-           strcat(buffer, obj->str->chars);
-           buf_count += obj->str->len;
+            char* s = JN_OBJECT_CSTRING(obj);
+            assert(s != NULL);
+            int n = strlen(s);
+            while (len + n + 1 >= capacity)
+            {
+                capacity *= 2;
+                str = realloc(str, n);
+            }
+            memcpy(str + len, s, n);
+            len += n;
+            free(s);
         }
-        else buffer[buf_count++] = *fmt++;
+        else str[len++] = *fmt++;
     }
-    str = strdup(buffer);
-    buf_count = 0;
-    buffer[0] = 0;
+    str[len] = '\0';
     return str;
 }
 
