@@ -928,6 +928,13 @@ void compile(AST* node, Chuck* chuck)
         jump = emit_jump(chuck, OP_JUMP);
         loop->continues[loop->continue_count++] = jump;
         break;
+    
+    case AST_FOR: {
+        write_chuck(chuck, OP_SCOPE_ENTER);
+        // TODO
+        write_chuck(chuck, OP_SCOPE_EXIT);
+        break;
+    }
     case AST_LOOP:
         LoopContext* loop_p = &loop_stack[loop_depth++];
         

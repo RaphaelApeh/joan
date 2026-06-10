@@ -234,7 +234,7 @@ typedef struct AST{
         struct {
             AST* iter;
             AST* block;
-            const char* ident;
+            char* ident, *index;
         } for_node;
 
         struct {

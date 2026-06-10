@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 
@@ -25,7 +26,6 @@ static bool match(joan_parser_t* p, J_TokenType type)
     advance_parser_c(p);
     return true;
 }
-
 
 static bool is_assign_token(J_TokenType type)
 {
@@ -359,8 +359,47 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
 static AST* parse_for(joan_parser_t* p)
 {
    advance_parser_c(p); // for
-   
+   if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected an identifier.");
+    char* idx = GET_LEX(p);
+    char* ident = NULL;
+    if (match(p, TOKEN_COMMA))
+    {
+        if (!check(p, TOKEN_IDENTIFIER))
+            return parse_error(p, "Expected an identifier.");
+        ident = GET_LEX(p);
+    }
+
+    if (!check(p, TOKEN_IN))
+        return parse_error(p, "Expected an 'in' operator.");
+    
+    advance_parser_c(p);
+    AST* iter = parse_expr(p);
+    AST* block = NULL;
+    if (match(p, TOKEN_THEN))
+        block = parse_expr(p);
+    else if (check(p, TOKEN_LBRACE))
+        block = parse_block(p);
+    else
+        return parse_error(p, "forloop expected a block");
+    assert(block != NULL);
+    AST* ast = ast_create(p->arena, AST_FOR);
+    ast->for_node.iter = iter;
+    ast->for_node.block = block;
+    // idea:
+    // for i, x in [1, 2, 3, 4, 5] -> i = index, x is the value
+    // for i in [1, 2, 3, 4, 5] -> i = value
+    if (NULL == ident)
+    {
+        ast->for_node.ident = idx;
+        ast->for_node.index = NULL;
+    } else {
+        ast->for_node.ident = ident;
+        ast->for_node.index = idx;
+    }
+    return ast;
 }
+
 static AST* parse_member(joan_parser_t* p, AST* obj)
 {
     // ::<field>, .<field>
@@ -689,6 +728,8 @@ AST* parse_stmt(joan_parser_t* p)
             return parse_match(p);
         case TOKEN_IF:
             return parse_if(p);
+        case TOKEN_FOR:
+            return parse_for(p);
         case TOKEN_FN:
             return parse_fn(p);
         case TOKEN_LOOP:
