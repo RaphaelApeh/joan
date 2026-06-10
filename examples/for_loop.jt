@@ -2,7 +2,7 @@ arr := [32, 54, None, false]
 
 // With index
 for i, x in arr {
-	println "{} at {}" << (x, i)
+	println "{}" << x
 }
 
 // Without index

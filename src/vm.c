@@ -932,6 +932,8 @@ void compile(AST* node, Chuck* chuck)
     case AST_FOR: {
         write_chuck(chuck, OP_SCOPE_ENTER);
         // TODO
+        printf(node->for_node.ident);
+        printf(node->for_node.index != NULL ? node->for_node.index : "None");
         write_chuck(chuck, OP_SCOPE_EXIT);
         break;
     }

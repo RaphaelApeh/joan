@@ -363,17 +363,18 @@ static AST* parse_for(joan_parser_t* p)
         return parse_error(p, "Expected an identifier.");
     char* idx = GET_LEX(p);
     char* ident = NULL;
+    advance_parser_c(p);
     if (match(p, TOKEN_COMMA))
     {
         if (!check(p, TOKEN_IDENTIFIER))
             return parse_error(p, "Expected an identifier.");
         ident = GET_LEX(p);
+        advance_parser_c(p);
     }
 
-    if (!check(p, TOKEN_IN))
+    if (!match(p, TOKEN_IN))
         return parse_error(p, "Expected an 'in' operator.");
     
-    advance_parser_c(p);
     AST* iter = parse_expr(p);
     AST* block = NULL;
     if (match(p, TOKEN_THEN))
