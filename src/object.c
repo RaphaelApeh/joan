@@ -199,7 +199,7 @@ void print_JnObject(JnObject* obj)
     switch (obj->type)
     {
         case INT_TYPE:
-            fprintf(stderr, "%llu", obj->int32); break;
+            fprintf(stderr, "%lld", obj->int32); break;
         case STR_TYPE:
             fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->chars : "None");
             break;

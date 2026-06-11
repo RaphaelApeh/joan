@@ -91,10 +91,14 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
         switch (rhs->type)
         {
             case ARRAY_TYPE: {
+                // Not the best way to do it.
                 is_true = false;
                 for (int i = 0; i < rhs->arr->size; ++i)
                 {
-                    if (hash_object(rhs->arr->items[i]) == hash_object(lhs))
+                    if (
+                        rhs->arr->items[i]->type == lhs->type && 
+                        hash_object(rhs->arr->items[i]) == hash_object(lhs)
+                    )
                     {
                         is_true = true;
                         break;
