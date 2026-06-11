@@ -435,20 +435,28 @@ static AST* parse_enum(joan_parser_t* p)
     
     char* ident = GET_LEX(p);
     advance_parser_c(p);
+    match(p, TOKEN_EXR);
     if (!match(p, TOKEN_LBRACE))
         return parse_error(p, "Expected an '{' but got '%s'.", GET_LEX(p));
     
     int len = 0;
-    char* fields[10] = {0}; // TODO
+    size_t capacity = 100;
+    char** fields = malloc(sizeof(char *) * capacity);
     while (!match(p, TOKEN_RBRACE))
     {
         if (!check(p, TOKEN_IDENTIFIER))
             return parse_error(p, "Expected an identifier.");
+        if (len >= capacity)
+        {
+            capacity *= 2;
+            fields = realloc(fields, sizeof(char *) * capacity);
+        }
         fields[len++] = GET_LEX(p);
         advance_parser_c(p);
         if (match(p, TOKEN_COMMA))
             continue;
     }
+    fields[len] = NULL;
     AST* ast = ast_create(p->arena, AST_ENUM);
     ast->enum_stmt.ident = ident;
     ast->enum_stmt.fields = fields;

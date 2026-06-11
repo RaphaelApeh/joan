@@ -9,6 +9,16 @@
 
 J_State Jn_globalState;
 
+
+// Main allocation function
+static void* Jn_alloc(size_t size)
+{
+    void* m = malloc(size);
+    assert(m != NULL);
+    memset(m, 0, size);
+    return m;
+}
+
 static void* alloc_object(size_t size, JnTypeObject type)
 {
     assert(Jn_globalState.running && "Program not initialized.");
@@ -52,6 +62,7 @@ JN_API void Jn_program_init(void)
     state->running = true;
     state->object_capacity = 1000;
     state->object_count = 0;
+    state->parser = NULL;
     state->alloc_fn = alloc_object;
     state->next_gc = 1024 * 1024;
     state->globals = init_env(NULL); // Jn_global_init(NULL)
@@ -78,7 +89,6 @@ JN_API int Jn_exec_program(char* source)
     state->vm->p = p;
     state->vm->env = state->globals;
     state->vm->global = state->globals;
-    state->vm->chuck->count = 0;
     assert(p->arena && "Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");
@@ -94,6 +104,24 @@ JN_API int Jn_exec_program(char* source)
     return 0;
 }
 
+JN_API int Jn_exec_REPL(char* source)
+{
+    if (!source) return -1;
+    int exrt = Jn_exec_program(source);
+    if (exrt < 0)
+        return exrt;
+    J_State* state = Jn_get_state();
+    if (state->vm->sp > state->vm->stack)
+    {
+        JnObject* obj = (JnObject *)state->vm->sp[-1];
+        if (obj == NULL) return 0;
+        print_JnObject(obj);
+        putchar('\n');
+        state->vm->sp[-1] = NULL;
+    }
+    return 0;
+}
+
 JN_API void Jn_program_close(void)
 {
     J_State* state = &Jn_globalState;
@@ -102,7 +130,10 @@ JN_API void Jn_program_close(void)
     for (int i = 0; i < state->object_count; i++)
         free(state->objects[i]); // TODO JnObjectFree(obj)
     free(state->objects);
+    free(state->globals);
     arena_free(state->arena);
     free(state->globals);
     free(state->parser);
+    free(state->vm->chuck);
+    free(state->vm);
 }

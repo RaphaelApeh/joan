@@ -83,7 +83,7 @@ JN_API void Jn_repl(void)
             case OK:
                 if (is_stmt) break;
             case COMPLETE:
-                Jn_exec_program(buffer);
+                Jn_exec_REPL(buffer);
                 buffer[0] = 0;
                 buffer_count = 0;
                 is_stmt = 0;

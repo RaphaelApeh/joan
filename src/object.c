@@ -10,7 +10,7 @@
 
 JnObject NoneObj = {0};
 
-static InternEntry* intern_pool[INTER_SIZE];
+static InternEntry* intern_pool[JN_INTER_SIZE];
 
 
 JnObject* jn_obj_new(JnTypeObject type)
@@ -87,12 +87,12 @@ JnObject* jn_intern_obj(JnObject* obj)
     if (obj->type == ENUM_TYPE || obj->type == FUNCTION_TYPE || obj->type == HASHMAP_TYPE || obj->type == NATIVE_TYPE || obj->type == NONE_TYPE)
         return obj;
     uint64_t hash = hash_object(obj);
-    size_t idx = hash % INTER_SIZE;
+    size_t idx = hash % JN_INTER_SIZE;
     InternEntry* entry = intern_pool[idx];
     
     while(entry)
     {
-        if (entry->obj->type == obj->type && hash_object(entry->obj) == hash_object(obj))//(jn_obj_equal(entry->obj, obj))
+        if (entry->obj->type == obj->type && hash_object(entry->obj) == hash_object(obj))
         {
             return entry->obj;
         }
@@ -116,6 +116,15 @@ JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name)
     fn->params = params;
     obj->fn = fn;
     return obj;
+}
+
+JnObject* jn_obj_enum(Jn_Hashmap* map, char** fields, int count)
+{
+    assert(map != NULL);
+    for (int i = 0; i < count; ++i)
+    {
+        // TODO
+    }
 }
 
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx)

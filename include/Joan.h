@@ -7,12 +7,13 @@
 #ifndef JOAN_H
 #define JOAN_H
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 6
@@ -21,7 +22,7 @@ extern "C" {
 #define JOAN_VERSION "0.6.2"
 
 #ifdef _WIN32
-    #ifdef RB_BUILD_DLL
+    #ifdef JN_BUILD_DLL
     #define JN_API __declspec(dllexport)
     #else
     #define JN_API
@@ -61,7 +62,10 @@ typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_T Jn_environ_T;
 typedef struct Jn_environ Jn_environ;
 
-#define INTER_SIZE 1024
+// Object internal pool
+#define JN_INTER_SIZE 1024
+// max JnObject object store
+#define JN_MAX_OBJECT 0x15062005
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
@@ -114,7 +118,10 @@ typedef struct Jn_environ Jn_environ;
 
 
 typedef struct J_Context {
-    int error_code;
+    void* (*alloc) (size_t size);
+    size_t alloc_count;
+    char* filename;
+    int cur_line, column;
 } J_Context;
 
 typedef struct J_State
@@ -126,7 +133,7 @@ typedef struct J_State
     JnObject** objects;
     size_t object_count;
     size_t object_capacity;
-    InternEntry* intern_pool[INTER_SIZE];
+    InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     env_t* globals;
     size_t bytes_allocated;
@@ -181,6 +188,11 @@ typedef struct Jn_Hashmap{
     size_t size, capacity;
 } Jn_Hashmap;
 
+typedef struct {
+    Jn_Hashmap* map; // store all values in a hashmap
+    const char* ident;
+} Jn_Enum;
+
 typedef long long JnIntObject;
 typedef double JnFloatObject;
 typedef bool JnBoolObject;
@@ -198,6 +210,7 @@ typedef struct JnObject{
         // JnIterObject* iter; TODO
         Jn_Hashmap* hashmap;
         JnNativeObject* native_fn;
+        Jn_Enum* enum_n;
         JnIntObject int32;
         JnFloatObject float32;
         JnBoolObject bool8;
@@ -227,6 +240,7 @@ JN_API J_Context* Jn_get_context(void);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(void);
 JN_API int Jn_exec_program(char* source);
+JN_API int Jn_exec_REPL(char* source);
 // Main Execution function
 JN_API void Jn_execute_main(char* filepath);
 // Execute for FILE ptr.
