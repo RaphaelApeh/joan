@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "repl.h"
+#include "env.h"
 
 
 char* read_file(const char* filename)
@@ -34,9 +35,11 @@ void usage(void)
     "Usage: joan [options] [file]\n"
     "Options: \n"
     "-v --version output joan version\n"
+    "-r  execute a program and run on repl\n"
     "-h --help output help information\n\n"
     "Examples: \n"
-    "\t$ joan ./main.jt\n"    
+    "\t$ joan ./main.jt\n"
+    "\t$ joan -r ./main.jt\n"
     );
 }
 
@@ -51,22 +54,40 @@ int main(int argc, char** argv)
 {
     char** new_argv = argv + 1;
     argc -= 1;
+    char* filename = NULL;
+    char* source = NULL;
     struct Command c = parse_args(new_argv, argc);
+
     switch (c.type)
     {
+        case C_ERROR:
+            usage(); return -1;
         case C_HELP:
             usage(); return 0;
         case C_VERSION:
             version(); return 0;
         case C_REPL:
-            Jn_repl(); return 0;
+        {
+            _JN_INIT_PROGRAM  = true;
+            Jn_repl(); 
+            return 0;
+        }
+        case C_RUN_REPL:
+            filename = new_argv[1];
+            if (!filename) return -1;
+            source = read_file(filename);
+            Jn_program_init();
+            Jn_exec_program(source);
+            Jn_repl();
+            Jn_program_close();
+            return 0;
         case C_RUN:
-            char* filename = new_argv[0];
-            char* source = read_file(filename);
+            filename = new_argv[0];
+            source = read_file(filename);
             Jn_program_init();
             Jn_exec_program(source);
             Jn_program_close();
             return 0;
     }
-    return 0;
+    return -1;
 }

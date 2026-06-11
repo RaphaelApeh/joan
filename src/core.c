@@ -8,7 +8,7 @@
 #include "ast.h"
 
 J_State Jn_globalState;
-
+static bool __set = false;
 
 // Main allocation function
 static void* Jn_alloc(size_t size)
@@ -49,8 +49,10 @@ JN_API J_Context* Jn_get_context(void)
 
 JN_API void Jn_program_init(void)
 {
+    assert(!__set && "program is already initialize.");
     memset(&Jn_globalState, 0, sizeof(J_State));
     J_State* state = &Jn_globalState;
+    __set = true;
     state->vm = malloc(sizeof(JnVM));
     assert(state->vm != NULL);
     state->arena = malloc(sizeof(Arena));
@@ -101,6 +103,7 @@ JN_API int Jn_exec_program(char* source)
     InterpretResult i = vm_run(state->vm);
     if (i == INTERPRET_RUNTIME_ERROR)
         return -1;
+    state->globals = state->vm->env;
     return 0;
 }
 

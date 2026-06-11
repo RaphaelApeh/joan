@@ -193,7 +193,7 @@ static AST* parse_if(joan_parser_t* p)
     
     AST* elsenode = NULL;
     elseif* elseifs = elseif_init();
-    while(match(p, TOKEN_ELSEIF) || (match(p, TOKEN_ELSE) && check(p, TOKEN_IF)))
+    while(match(p, TOKEN_ELSEIF))
     {
         match(p, TOKEN_IF);
         AST* cond = parse_expr(p);
