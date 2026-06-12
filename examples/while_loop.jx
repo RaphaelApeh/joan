@@ -1,5 +1,10 @@
-let x = 0
-while x < 10 {
-    x += 1
-    println x
+let x = false
+let count = 0
+while !x {
+    println count
+    count += 1
+    if count == 10 {
+        x = true
+    }
 }
+println "Done"

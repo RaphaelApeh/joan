@@ -62,6 +62,8 @@ static void push(JnVM* vm, JnObject* object)
     *vm->sp++ = object;
 }
 
+static JnObject* vm_peek(JnVM* vm, int d) {return vm->sp[-1 - d];}
+
 static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
 static JnObject *a, *b, *key, *value, *array, *pos;
@@ -550,7 +552,8 @@ InterpretResult vm_run(JnVM* vm)
             case OP_JUMP_IF_FALSE:
                 offset = (READ_BYTE() << 8);
                 offset |= READ_BYTE();
-                o = pop(vm);
+                o = vm_peek(vm, 0);
+                if (!o) break;
                 if (!is_truthy(o))
                     vm->ip += offset;
                 break;
