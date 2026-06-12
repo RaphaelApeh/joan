@@ -34,6 +34,7 @@ extern "C" {
 typedef enum{
     NONE_TYPE = 0,
     STR_TYPE,
+    CHAR_TYPE,
     INT_TYPE,
     BOOL_TYPE,
     FLOAT_TYPE,
@@ -65,17 +66,23 @@ typedef struct Jn_environ Jn_environ;
 // Object internal pool
 #define JN_INTER_SIZE 1024
 // max JnObject object store
-#define JN_MAX_OBJECT 0x15062005
+#define JN_MAX_OBJECT 0x14062005
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_RETURN_NONE jn_obj_none()
-#define JN_RETURN_INT(i) jn_obj_int(i)
+#define JN_RETURN_INT(i) jn_obj_int((i))
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
-#define JN_RETURN_STRING(s) jn_obj_string(s)
+#define JN_RETURN_STRING(s) jn_obj_string((s))
+#define JN_RETURN_CHAR(c) jn_obj_char((c))
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
 #define JN_OBJECT_VALUE(obj) // TODO 
+#define JN_AS_CHAR(obj) (obj)->j_char
+#define JN_AS_STRING(obj) (obj)->str
+#define JN_AS_INT(obj) (obj)->int32
+#define JN_AS_FLOAT(obj) (obj)->float32
+#define JN_AS_ARRAY(obj) (obj)->arr
 #define _JN_CHECK_TYPE(obj, t) (obj)->type == (t)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
@@ -177,6 +184,11 @@ typedef struct {
     size_t capacity;
 } JnArrayObject;
 
+typedef struct {
+    JnObject* obj;
+    int index;
+} JnIterObject;
+
 typedef struct Jn_HashEntry {
     JnObject* key;
     JnObject* value;
@@ -196,6 +208,7 @@ typedef struct {
 typedef long long JnIntObject;
 typedef double JnFloatObject;
 typedef bool JnBoolObject;
+typedef char JnCharObject;
 
 extern J_State Jn_globalState;
 
@@ -207,13 +220,14 @@ typedef struct JnObject{
         JnStringObject* str;
         JnArrayObject* arr;
         JnFunctionObject* fn;
-        // JnIterObject* iter; TODO
+        JnIterObject* iter;
         Jn_Hashmap* hashmap;
         JnNativeObject* native_fn;
         Jn_Enum* enum_n;
         JnIntObject int32;
         JnFloatObject float32;
         JnBoolObject bool8;
+        JnCharObject j_char;
     };
     JnTypeObject type;
 } JnObject;
@@ -252,6 +266,7 @@ JN_API void Jn_program_close(void);
 JnObject* jn_obj_new(JnTypeObject type);
 JnObject* jn_obj_int(long o_int);
 JnObject* jn_obj_string(char* str);
+JnObject* jn_obj_char(char c);
 JnObject* jn_obj_none(void);
 JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_float(double o_float);

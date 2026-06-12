@@ -31,7 +31,7 @@ unsigned long fnv_hash(const void* key, uint32_t h)
 bool isnumber(JnObject* obj)
 {
     if (NULL == obj) return false;
-    if (obj->type == INT_TYPE || obj->type == FLOAT_TYPE)
+    if (obj->type == INT_TYPE || obj->type == FLOAT_TYPE || _JN_CHECK_TYPE(obj, CHAR_TYPE))
         return true;
     return false;
 }
@@ -40,6 +40,8 @@ double tonumber(JnObject* obj)
 {
     if (obj->type == INT_TYPE)
         return (double)obj->int32;
+    if (obj->type == CHAR_TYPE)
+        return (double)JN_AS_CHAR(obj);
     return obj->float32;
 }
 

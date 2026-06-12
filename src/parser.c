@@ -639,6 +639,18 @@ AST* parse_value(joan_parser_t* p)
             ast = ast_literal(p->arena,  jn_obj_string(t.lexeme));
             advance_parser_c(p);
             return ast;
+        case TOKEN_CHAR:
+            int c;
+            if ((c = strlen(t.lexeme)) > 1 ||
+                c < 1    
+            )
+                return parse_error(p, "invalid char literal.");
+            ast = ast_literal(
+                p->arena,
+                JN_RETURN_CHAR(*t.lexeme) 
+            );
+            advance_parser_c(p);
+            return ast;
         case TOKEN_RETURN:
             advance_parser_c(p);
             ast = ast_create(p->arena, AST_RETURN);
@@ -695,6 +707,9 @@ AST* parse_value(joan_parser_t* p)
             if (!check(p, TOKEN_NEWLINE))
                 out = parse_expr(p);
             return ast_println(p->arena, out);
+        }
+        case TOKEN_ERROR: {
+            return parse_error(p, t.lexeme);
         }
         default:
             return parse_error(p, "Error: Got an invalid expression '%s'.", t.lexeme);

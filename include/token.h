@@ -11,6 +11,7 @@ typedef enum {
     TOKEN_INT,
     TOKEN_FLOAT,
     TOKEN_STRING,
+    TOKEN_CHAR,
     TOKEN_IDENTIFIER,
     
     TOKEN_LPARN,

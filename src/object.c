@@ -43,6 +43,13 @@ JnObject* jn_obj_string(char* str)
     return obj;
 }
 
+JnObject* jn_obj_char(char c)
+{
+    JnObject* obj =  jn_obj_new(CHAR_TYPE);
+    obj->j_char = c;
+    return obj;
+}
+
 JnObject* jn_obj_bool(bool bool8)
 {
     JnObject* obj =  jn_obj_new(BOOL_TYPE);
@@ -77,6 +84,8 @@ static uint64_t hash_object(JnObject* obj)
             return obj->float32;
         case STR_TYPE:
             return obj->str->hash;
+        case CHAR_TYPE:
+            return ( int )obj->j_char;
         default:
             return 0;
     }
@@ -185,6 +194,9 @@ char* Jn_object_cstring(JnObject* obj)
         case BOOL_TYPE:
             snprintf(buffer, sizeof(buffer), "%s", obj->bool8 ? "true": "false");
             goto buf;
+        case CHAR_TYPE:
+            snprintf(buffer, sizeof(buffer), "%c", JN_AS_CHAR(obj));
+            goto buf;
         default:
             return strdup("<error>"); // TODO
     }
@@ -200,6 +212,8 @@ void print_JnObject(JnObject* obj)
     {
         case INT_TYPE:
             fprintf(stderr, "%lld", obj->int32); break;
+        case CHAR_TYPE:
+            fprintf(stderr, "%c", obj->j_char); break;
         case STR_TYPE:
             fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->chars : "None");
             break;

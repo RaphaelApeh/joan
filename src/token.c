@@ -1,5 +1,6 @@
 #include <strings.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "token.h"
@@ -26,15 +27,17 @@ joan_token_t clean_token(joan_lexer_t* l)
 
 joan_token_t number(joan_lexer_t* l)
 {
-    if (l->curr[0] == '0' && (peek(l) == 'x' || peek(l) == 'X'))
+    if (l->start[0] == '0' && (peek(l) == 'x' || peek(l) == 'X'))
     {
         advance(l);
-        advance(l);
+        if (!isxdigit(peek(l)))
+            return make_token(l, TOKEN_ERROR);
+        
         while(isxdigit(peek(l)))
             advance(l);
         joan_token_t _t = make_token(l, TOKEN_INT);
-        int* i = malloc(sizeof(int));
-        *i = strtol(_t.lexeme, NULL, 16);
+        long* i = malloc(sizeof(long));
+        *i = strtol(_t.lexeme, NULL, 0);
         _t.v = i;
         return _t;
     }
@@ -45,13 +48,15 @@ joan_token_t number(joan_lexer_t* l)
         while (isdigit(peek(l))) advance(l);
         joan_token_t t = make_token(l, TOKEN_FLOAT);
         double* d = malloc(sizeof(double));
-        *d = atof(t.lexeme);
+        // *d = atof(t.lexeme);
+        *d = strtod(t.lexeme, NULL);
         t.v = d;
         return t;
     }
     joan_token_t t = make_token(l, TOKEN_INT);
     int* i = malloc(sizeof(int));
-    *i = atoi(t.lexeme);
+    // *i = atoi(t.lexeme);
+    *i = strtol(t.lexeme, NULL, 10);
     t.v = i;
     return t;
 }
@@ -71,7 +76,7 @@ joan_token_t token_string(joan_lexer_t* l)
     {
         joan_token_t t;
         t.type = TOKEN_ERROR;
-        t.lexeme = "error";
+        t.lexeme = "unterminated string literal.";
         int* i = malloc(sizeof(int));
         *i = -1;
         t.v = i;
@@ -80,15 +85,36 @@ joan_token_t token_string(joan_lexer_t* l)
     joan_token_t t = make_token(l, TOKEN_STRING);
     char c = *l->curr++;
     if (q != c)
-    {
-        // TODO
-    }
+        return make_token(l, TOKEN_ERROR);
     return t;   
 }
 
 static joan_token_t token_char(joan_lexer_t* l)
 {
-    //TODO
+    l->start = l->curr;
+    char q = '\'';
+    while (*l->curr && *l->curr != q)
+    {
+        if (*l->curr == '\\' && *l->curr)
+            l->curr += 2;
+        else
+            l->curr++;
+    }
+    if (*l->curr == '\0')
+    {
+        joan_token_t t;
+        t.type = TOKEN_ERROR;
+        t.lexeme = "unterminated char literal.";
+        int* i = malloc(sizeof(int));
+        *i = -1;
+        t.v = i;
+        return t;
+    }
+    joan_token_t t = make_token(l, TOKEN_CHAR);
+    char c = *l->curr++;
+    if (q != c)
+        return make_token(l, TOKEN_ERROR);
+    return t;
 }
 
 joan_token_t identifier(joan_lexer_t* l)
@@ -204,8 +230,9 @@ joan_token_t next_token(joan_lexer_t* l)
     char c = advance(l);
     if (
         isdigit(c) || 
-        (c == '.' && isdigit(isdigit(peek(l))))
-    ) return number(l);
+        ( c == '.' && isdigit(peek(l)) )
+    )
+    return number(l);
     if (isalnum(c) || c == '_') return identifier(l);
     switch (c)
     {
@@ -239,7 +266,7 @@ joan_token_t next_token(joan_lexer_t* l)
         case '"':
             return token_string(l);
         case '\'':
-            return token_string(l);
+            return token_char(l);
         case '`':
             return token_string(l);
         case '.':

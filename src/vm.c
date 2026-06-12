@@ -552,7 +552,7 @@ InterpretResult vm_run(JnVM* vm)
             case OP_JUMP_IF_FALSE:
                 offset = (READ_BYTE() << 8);
                 offset |= READ_BYTE();
-                o = vm_peek(vm, 0);
+                o = pop(vm);//vm_peek(vm, 0);
                 if (!o) break;
                 if (!is_truthy(o))
                     vm->ip += offset;
@@ -979,8 +979,6 @@ void compile(AST* node, Chuck* chuck)
         {
             patch_jump(chuck, loop->continues[i]);
         }
-
-        emit_loop(chuck, loop->loop_offset);
         
         for (int i = 0; i < loop->break_count; i++)
         {
