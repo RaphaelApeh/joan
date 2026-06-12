@@ -74,6 +74,7 @@ InterpretResult vm_run(JnVM* vm)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
     #define READ_IDENT() (vm->chuck->idents[READ_BYTE()])
     int count;
+    JnObject* tmp;
     JnObject* o = NULL;
     char* ident;
     uint16_t offset;
@@ -564,14 +565,15 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_GET_ITER:
                 JnObject* iter = pop(vm);
-                printf("%d\n", iter->type);
-                if (!JN_IS_ARRAY(iter))
+                if (!JN_IS_ITERABLE(iter))
                     return die(vm, "object is not iterable.");
                 push(vm, JN_ITER_INIT(iter));
                 break;
             case OP_ITER_NEXT:
                 JnObject* iter_obj = pop(vm);
                 assert(JN_IS_ITER(iter_obj));
+                if (!_JN_CHECK_TYPE(iter_obj, ITER_TYPE))
+                    return die(vm, "Expected an iter type.");
                 JnIterObject* _iter = JN_AS_ITER(iter_obj);
                 JnObject* target = _iter->obj;
                 assert(target != NULL);
@@ -583,10 +585,22 @@ InterpretResult vm_run(JnVM* vm)
                         push(vm, JN_RETURN_BOOL(false));
                         break;
                     }
-                    push(vm, JN_AS_ARRAY(target)->items[_iter->index++]);
+                    tmp = JN_AS_ARRAY(target)->items[_iter->index++];
+                    assert(obj != NULL);
+                    push(vm, JN_RETURN_INT(_iter->index++));
+                    push(vm, tmp);
                     push(vm, JN_RETURN_BOOL(true));
                     break;
-                
+                case HASHMAP_TYPE:
+                    if (_iter->index >= JN_AS_HM(target)->size)
+                    {
+                        push(vm, JN_RETURN_BOOL(false));
+                        break;
+                    }
+                    tmp = target->hashmap->buckets[_iter->index++].key;
+                    push(vm, tmp);
+                    push(vm, JN_RETURN_BOOL(false));
+                    break;
                 default:
                     break;
                 }
@@ -962,29 +976,58 @@ void compile(AST* node, Chuck* chuck)
         break;
     
     case AST_FOR: {
+
+        LoopContext* loop_for = &loop_stack[loop_depth++];
+        
+        offset = current_offset(chuck);
+        loop_for->loop_offset = offset;
+        loop_for->break_count = 0;
+        loop_for->continue_count = 0;
+
         write_chuck(chuck, OP_SCOPE_ENTER);
         compile(node->for_node.iter, chuck);
         write_chuck(chuck, OP_GET_ITER);
-        
+        // push iter object to __iter variable
         int iter_slot = add_ident(chuck, "__iter");
         write_chuck(chuck, OP_SET_GLOBAL);
         write_chuck(chuck, iter_slot);
-        write_chuck(chuck, 1);
+        write_chuck(chuck, 0);
         
-        loop_start = current_offset(chuck);
+        loop_start = offset;
         write_chuck(chuck, OP_GET_GLOBAL);
         write_chuck(chuck, iter_slot);
 
         write_chuck(chuck, OP_ITER_NEXT);
 
         exit_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        
         int var_id = add_ident(chuck, node->for_node.ident);
         write_chuck(chuck, OP_SET_GLOBAL);
         write_chuck(chuck, var_id);
         write_chuck(chuck, 0);
+
+        if (node->for_node.index != NULL)
+        {
+            int idx = add_ident(chuck, node->for_node.index);
+            write_chuck(chuck, OP_SET_GLOBAL);
+            write_chuck(chuck, idx);
+            write_chuck(chuck, 0);
+        } else
+            write_chuck(chuck, OP_POP);
         compile(node->for_node.block, chuck);
         emit_loop(chuck, loop_start);
         patch_jump(chuck, exit_jmp);
+        
+        for (int i = 0; i < loop_for->continue_count; i++)
+        {
+            patch_jump(chuck, loop_for->continues[i]);
+        }
+
+        for (int i = 0; i < loop_for->break_count; i++)
+        {
+            patch_jump(chuck, loop_for->breaks[i]);
+        }
+        loop_depth--;
         write_chuck(chuck, OP_SCOPE_EXIT);
         break;
     }
@@ -1041,7 +1084,7 @@ void compile(AST* node, Chuck* chuck)
         {
             write_chuck(chuck, OP_SET_GLOBAL);
             write_chuck(chuck, id);
-            write_chuck(chuck, 0); // not constant
+            write_chuck(chuck, 1); //TODO: For some reason if set to false it crashes lol.
             break;
         }
         write_chuck(chuck, OP_REASSIGN);

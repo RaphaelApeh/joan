@@ -1,1 +1,5 @@
-for x in [1, 2, 3] then println x
+arr := ["Hello", 33.2, 0xff]
+for key in arr{
+    println key
+}
+println "Done"

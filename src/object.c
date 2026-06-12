@@ -72,13 +72,14 @@ JnObject* jn_obj_none(void)
     return &NoneObj;
 }
 
-JnObject* jn_obj_iter(JnObject* iter)
+JnObject* jn_obj_iter(JnObject* obj)
 {
-    JnObject* obj = jn_obj_new(ITER_TYPE);
-    JnIterObject* i = malloc(sizeof(JnIterObject)); // TODO
-    i->obj = iter;
-    i->index = 0;
-    return obj;
+    JnObject* new_obj = jn_obj_new(ITER_TYPE);
+    JnIterObject* iter = malloc(sizeof(JnIterObject)); // TODO
+    iter->obj = obj;
+    iter->index = 0;
+    new_obj->iter = iter;
+    return new_obj;
 }
 
 static uint64_t hash_object(JnObject* obj)

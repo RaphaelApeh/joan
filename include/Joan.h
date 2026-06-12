@@ -84,7 +84,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_FLOAT(obj) (obj)->float32
 #define JN_AS_ARRAY(obj) (obj)->arr
 #define JN_AS_ITER(obj) (obj)->iter
-#define _JN_CHECK_TYPE(obj, t) (obj)->type == (t)
+#define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
 #define JN_IS_INT(obj) _JN_CHECK_TYPE(obj, INT_TYPE)
@@ -93,7 +93,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, ARRAY_TYPE)
 #define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
 #define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
-#define JN_IS_ITERABLE(obj) JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_ITER(obj)
+#define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_ITER(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
 #define JN_HASHMAP_INSERT(map, k, v, i) do {    \
@@ -122,7 +122,7 @@ typedef struct Jn_environ Jn_environ;
 } while(false)
 
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
-
+#define JN_AS_HM(obj) obj->hashmap
 #define JN_ITER_INIT(obj) jn_obj_iter(obj)
 // State
 
