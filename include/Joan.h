@@ -83,6 +83,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_INT(obj) (obj)->int32
 #define JN_AS_FLOAT(obj) (obj)->float32
 #define JN_AS_ARRAY(obj) (obj)->arr
+#define JN_AS_ITER(obj) (obj)->iter
 #define _JN_CHECK_TYPE(obj, t) (obj)->type == (t)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
@@ -121,6 +122,8 @@ typedef struct Jn_environ Jn_environ;
 } while(false)
 
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
+
+#define JN_ITER_INIT(obj) jn_obj_iter(obj)
 // State
 
 
@@ -270,6 +273,7 @@ JnObject* jn_obj_char(char c);
 JnObject* jn_obj_none(void);
 JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_float(double o_float);
+JnObject* jn_obj_iter(JnObject* iter);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 char* Jn_object_cstring(JnObject* obj);

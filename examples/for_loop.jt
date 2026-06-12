@@ -1,12 +1,1 @@
-arr := [32, 54, None, false]
-
-// With index
-for i, x in arr {
-	println "{}" << x
-}
-
-// Without index
-
-for x in arr {
-	println x
-}
+for x in [1, 2, 3] then println x

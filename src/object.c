@@ -72,6 +72,15 @@ JnObject* jn_obj_none(void)
     return &NoneObj;
 }
 
+JnObject* jn_obj_iter(JnObject* iter)
+{
+    JnObject* obj = jn_obj_new(ITER_TYPE);
+    JnIterObject* i = malloc(sizeof(JnIterObject)); // TODO
+    i->obj = iter;
+    i->index = 0;
+    return obj;
+}
+
 static uint64_t hash_object(JnObject* obj)
 {
     switch (obj->type)

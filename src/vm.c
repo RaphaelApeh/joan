@@ -562,6 +562,35 @@ InterpretResult vm_run(JnVM* vm)
                 offset |= READ_BYTE();
                 vm->ip -= offset;
                 break;
+            case OP_GET_ITER:
+                JnObject* iter = pop(vm);
+                printf("%d\n", iter->type);
+                if (!JN_IS_ARRAY(iter))
+                    return die(vm, "object is not iterable.");
+                push(vm, JN_ITER_INIT(iter));
+                break;
+            case OP_ITER_NEXT:
+                JnObject* iter_obj = pop(vm);
+                assert(JN_IS_ITER(iter_obj));
+                JnIterObject* _iter = JN_AS_ITER(iter_obj);
+                JnObject* target = _iter->obj;
+                assert(target != NULL);
+                switch (target->type)
+                {
+                case ARRAY_TYPE:
+                    if (_iter->index >= JN_AS_ARRAY(target)->size)
+                    {
+                        push(vm, JN_RETURN_BOOL(false));
+                        break;
+                    }
+                    push(vm, JN_AS_ARRAY(target)->items[_iter->index++]);
+                    push(vm, JN_RETURN_BOOL(true));
+                    break;
+                
+                default:
+                    break;
+                }
+                break;
             case OP_CALL:{
                 count = READ_BYTE(); o = pop(vm);
                 if (NULL == o)
@@ -644,7 +673,7 @@ InterpretResult vm_run(JnVM* vm)
 
 void compile(AST* node, Chuck* chuck)
 {
-    int id, idx, jump, offset;
+    int id, idx, jump, offset, loop_start, exit_jmp;
     LoopContext* loop;
     switch (node->type)
     {
@@ -934,9 +963,28 @@ void compile(AST* node, Chuck* chuck)
     
     case AST_FOR: {
         write_chuck(chuck, OP_SCOPE_ENTER);
-        // TODO
-        printf(node->for_node.ident);
-        printf(node->for_node.index != NULL ? node->for_node.index : "None");
+        compile(node->for_node.iter, chuck);
+        write_chuck(chuck, OP_GET_ITER);
+        
+        int iter_slot = add_ident(chuck, "__iter");
+        write_chuck(chuck, OP_SET_GLOBAL);
+        write_chuck(chuck, iter_slot);
+        write_chuck(chuck, 1);
+        
+        loop_start = current_offset(chuck);
+        write_chuck(chuck, OP_GET_GLOBAL);
+        write_chuck(chuck, iter_slot);
+
+        write_chuck(chuck, OP_ITER_NEXT);
+
+        exit_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        int var_id = add_ident(chuck, node->for_node.ident);
+        write_chuck(chuck, OP_SET_GLOBAL);
+        write_chuck(chuck, var_id);
+        write_chuck(chuck, 0);
+        compile(node->for_node.block, chuck);
+        emit_loop(chuck, loop_start);
+        patch_jump(chuck, exit_jmp);
         write_chuck(chuck, OP_SCOPE_EXIT);
         break;
     }
@@ -993,7 +1041,7 @@ void compile(AST* node, Chuck* chuck)
         {
             write_chuck(chuck, OP_SET_GLOBAL);
             write_chuck(chuck, id);
-            write_chuck(chuck, 1);
+            write_chuck(chuck, 0); // not constant
             break;
         }
         write_chuck(chuck, OP_REASSIGN);
