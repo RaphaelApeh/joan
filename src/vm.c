@@ -585,9 +585,9 @@ InterpretResult vm_run(JnVM* vm)
                         push(vm, JN_RETURN_BOOL(false));
                         break;
                     }
+                    push(vm, JN_RETURN_INT(_iter->index));
                     tmp = JN_AS_ARRAY(target)->items[_iter->index++];
                     assert(obj != NULL);
-                    push(vm, JN_RETURN_INT(_iter->index++));
                     push(vm, tmp);
                     push(vm, JN_RETURN_BOOL(true));
                     break;
@@ -597,9 +597,10 @@ InterpretResult vm_run(JnVM* vm)
                         push(vm, JN_RETURN_BOOL(false));
                         break;
                     }
+                    push(vm, JN_RETURN_INT(_iter->index));
                     tmp = target->hashmap->buckets[_iter->index++].key;
                     push(vm, tmp);
-                    push(vm, JN_RETURN_BOOL(false));
+                    push(vm, JN_RETURN_BOOL(true));
                     break;
                 default:
                     break;
