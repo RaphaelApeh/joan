@@ -96,6 +96,8 @@ static uint64_t hash_object(JnObject* obj)
             return obj->str->hash;
         case CHAR_TYPE:
             return ( int )obj->j_char;
+        case ITER_TYPE:
+            return hash_object(obj->iter->obj);
         default:
             return 0;
     }
@@ -125,13 +127,14 @@ JnObject* jn_intern_obj(JnObject* obj)
     return obj;
 }
 
-JnObject* obj_function(Chuck* chuck, char** params, int arity, char* name)
+JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name)
 {
     JnObject* obj =  jn_obj_new(FUNCTION_TYPE);
     JnFunctionObject* fn = malloc(sizeof(JnFunctionObject));
     fn->arity = arity;
     fn->chuck = chuck;
     fn->name = name;
+    fn->is_lambda = name == NULL;
     fn->params = params;
     obj->fn = fn;
     return obj;
@@ -244,7 +247,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "<Enum>");
             break;
         case FUNCTION_TYPE:
-            //TODO
+            fprintf(stdout, "<function '%s' args=%d>", obj->fn->name != NULL ? obj->fn->name : "<lambda>", obj->fn->arity);
             break;
         case ITER_TYPE:
             break;

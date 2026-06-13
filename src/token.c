@@ -16,6 +16,11 @@ static bool peek_advance(joan_lexer_t* l, char c)
     return true;
 }
 
+static bool equal(char* src, char* src2)
+{
+    return strcmp(src, src2) == 0;
+}
+
 joan_token_t clean_token(joan_lexer_t* l)
 {
     joan_token_t t;
@@ -193,6 +198,8 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_MATCH;
     else if (strcmp(t.lexeme, "println") == 0)
         t.type = TOKEN_PRINTLN;
+    else if (equal(t.lexeme, "lambda"))
+        t.type = TOKEN_LAMBDA;
     return t;
 }
 

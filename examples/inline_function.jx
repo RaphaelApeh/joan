@@ -1,2 +1,2 @@
-const max = lambda a, b: a @if a > b else b
-println max(12, 3)
+add := lambda a, b: a + b
+println add

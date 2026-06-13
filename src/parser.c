@@ -605,6 +605,39 @@ static AST* parse_assert(joan_parser_t* p)
     return ast;
 }
 
+static AST* parse_lambda(joan_parser_t* p)
+{
+    /*
+    Inline function
+    Example:
+        add := lambda a, b: a + b
+        add(32, 12)
+    */
+    advance_parser_c(p); // lambda
+    int len = 0, cap = 20;
+    char** args = malloc(sizeof(char *) * cap);
+    do {
+        if (match(p, TOKEN_COLON))  break;
+        if (!check(p, TOKEN_IDENTIFIER)) return parse_error(p, "lambda expect an identifer but got %s.", GET_LEX(p));
+        if (len >= cap)
+        {
+            cap *= 2;
+            args = realloc(args, sizeof(char *) * cap);
+        }
+        args[len++] = GET_LEX(p);
+        advance_parser_c(p);
+        if (match(p, TOKEN_COMMA)) continue;
+        if (match(p, TOKEN_COLON)) break;
+    } while(true);
+    args[len] = NULL;
+    AST* expr = parse_expr(p);
+    AST* ast = ast_create(p->arena, AST_LAMBDA);
+    ast->lambda_node.count = len;
+    ast->lambda_node.expr = expr;
+    ast->lambda_node.args = args;
+    return ast;
+}
+
 AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
@@ -697,10 +730,8 @@ AST* parse_value(joan_parser_t* p)
             return ast;
         case TOKEN_LBRACKET:
             return parse_array(p);
-        // case TOKEN_MINUS:
-        //     advance_parser_c(p);
-        //     ast = parse_value(p);
-        //     return ast_unary(TOKEN_MINUS, ast);
+        case TOKEN_LAMBDA:
+            return parse_lambda(p);
         case TOKEN_PRINTLN: {
             advance_parser_c(p);
             AST* out = NULL;

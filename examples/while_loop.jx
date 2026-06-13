@@ -7,4 +7,9 @@ while !x {
         x = true
     }
 }
+
+while true {
+    println "Hello World"
+    break
+}
 println "Done"

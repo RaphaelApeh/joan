@@ -49,6 +49,7 @@ typedef enum{
     AST_INLINE_IF,
     AST_BLOCK,
     AST_FOR,
+    AST_LAMBDA,
     AST_FUNCTION,
     AST_CALL,
     AST_TUPLE,
@@ -241,6 +242,12 @@ typedef struct AST{
             AST* cond;
             AST* block;
         } while_node;
+
+        struct {
+            AST* expr;
+            char** args;
+            int count;
+        } lambda_node;
 
         struct {
             AST* lib;

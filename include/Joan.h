@@ -176,9 +176,10 @@ typedef struct {
 
 typedef struct {
     Chuck* chuck;
+    env_t* env;
     char** params;
-    int arity;
     char* name;
+    int arity, is_lambda;
 } JnFunctionObject;
 
 typedef struct {
@@ -257,6 +258,7 @@ JN_API J_Context* Jn_get_context(void);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(void);
 JN_API int Jn_exec_program(char* source);
+JN_API int Jn_exec_string(char* str);
 JN_API int Jn_exec_REPL(char* source);
 // Main Execution function
 JN_API void Jn_execute_main(char* filepath);

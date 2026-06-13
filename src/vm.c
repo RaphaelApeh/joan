@@ -629,26 +629,28 @@ InterpretResult vm_run(JnVM* vm)
                     }
                     case FUNCTION_TYPE: {
                         //  TODO
-                        // ObjFunction* fn = o->fn;
-                        // if (count != fn->arity)
-                        //     return die(
-                        //         vm, 
-                        //         "function '%s' expected %d args but got %d",
-                        //         fn->name, fn->arity, count
-                        //     );
-                        // if (vm->frame_count >= _FRAME_MAX)
-                        //     return die(vm, "Stack Overflow");
-                        // CallFrame* current = &vm->frames[vm->frame_count++];
-                        // current->fn = fn;
-                        // current->ip = vm->ip;
-                        // current->env = vm->env;
-                        // env_t* local = init_env(vm->env);
-                        // for (int i = 0; i < fn->arity; i++)
-                        // {
-                        //     set_env(local, fn->params[i], args[i], false, false);
-                        // }
-                        // vm->env = local;
-                        // vm->ip = fn->chuck->code;
+                        JnFunctionObject* fn = o->fn;
+                        if (fn->name == NULL)
+                            fn->name = "<lambda>";
+                        if (count != fn->arity)
+                            return die(
+                                vm, 
+                                "function '%s' expected %d args but got %d",
+                                fn->name, fn->arity, count
+                            );
+                        if (vm->frame_count >= _FRAME_MAX)
+                            return die(vm, "Stack Overflow");
+                        CallFrame* current = &vm->frames[vm->frame_count++];
+                        current->fn = fn;
+                        current->ip = vm->ip;
+                        current->env = vm->env;
+                        env_t* local = init_env(fn->env);
+                        for (int i = 0; i < fn->arity; i++)
+                        {
+                            set_env(local, fn->params[i], args[i], false, false);
+                        }
+                        vm->env = local;
+                        vm->ip = fn->chuck->code;
                         break;
                     }
                     default: 
@@ -663,7 +665,9 @@ InterpretResult vm_run(JnVM* vm)
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
+                printf("Hello World1 \n");
                 o = pop(vm);
+                printf("Hello World\n");
                 if (vm->frame_count == 0)
                 {
                     push(vm, o);
@@ -674,6 +678,7 @@ InterpretResult vm_run(JnVM* vm)
                 vm->ip = frame->ip;
                 vm->env = frame->env;
                 free(old);
+                printf("Nice\n");
                 push(vm, o);
                 break;
             case OP_ERROR:
@@ -892,6 +897,26 @@ void compile(AST* node, Chuck* chuck)
         for (int i = 0; i < end_count; ++i)
             patch_jump(chuck, end_jumps[i]);
 
+        break;
+    case AST_LAMBDA:
+        Chuck* lamda_chuck = malloc(sizeof(Chuck));
+        assert(lamda_chuck != NULL);
+        chuck_init(lamda_chuck);
+        lamda_chuck->env = chuck->env;
+        compile(node->lambda_node.expr, lamda_chuck);
+        printf("Hello 1\n");
+        write_chuck(lamda_chuck, OP_RETURN);
+        printf("Hello 2\n");
+        JnObject* lambda_obj = jn_obj_function(
+            lamda_chuck, 
+            node->lambda_node.args, 
+            node->lambda_node.count, 
+            NULL // lambda functions
+        );
+        lambda_obj->fn->env = chuck->env;
+        idx = add_constant(chuck, lambda_obj);
+        write_chuck(chuck, OP_CONSTANT);
+        write_chuck(chuck, idx);
         break;
     case AST_FUNCTION: 
         // Chuck fn_chuck;
