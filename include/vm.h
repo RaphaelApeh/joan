@@ -37,6 +37,7 @@ typedef enum
 } InterpretResult;
 
 typedef struct {
+    JnObject** slots;
     JnFunctionObject* fn;
     uint8_t* ip;
     env_t* env;

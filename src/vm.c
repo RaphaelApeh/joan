@@ -16,6 +16,8 @@
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
 
+static int iter_count = 0;
+static env_t* local;
 
 void Jnvm_init(JnVM* vm, Chuck* chuck)
 {
@@ -587,7 +589,7 @@ InterpretResult vm_run(JnVM* vm)
                     }
                     push(vm, JN_RETURN_INT(_iter->index));
                     tmp = JN_AS_ARRAY(target)->items[_iter->index++];
-                    assert(obj != NULL);
+                    assert(tmp != NULL);
                     push(vm, tmp);
                     push(vm, JN_RETURN_BOOL(true));
                     break;
@@ -644,13 +646,15 @@ InterpretResult vm_run(JnVM* vm)
                         current->fn = fn;
                         current->ip = vm->ip;
                         current->env = vm->env;
-                        env_t* local = init_env(fn->env);
-                        for (int i = 0; i < fn->arity; i++)
+                        local = init_env(fn->env);
+
+                        for (int i = fn->arity - 1; i >= 0; --i)
                         {
                             set_env(local, fn->params[i], args[i], false, false);
                         }
                         vm->env = local;
                         vm->ip = fn->chuck->code;
+
                         break;
                     }
                     default: 
@@ -665,20 +669,17 @@ InterpretResult vm_run(JnVM* vm)
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
-                printf("Hello World1 \n");
                 o = pop(vm);
-                printf("Hello World\n");
                 if (vm->frame_count == 0)
                 {
                     push(vm, o);
                     return INTERPRET_OK;
                 }
                 env_t* old = vm->env;
-                CallFrame* frame = &vm->frames[--vm->frame_count];
+                CallFrame* frame = &vm->frames[vm->frame_count - 1];
                 vm->ip = frame->ip;
                 vm->env = frame->env;
                 free(old);
-                printf("Nice\n");
                 push(vm, o);
                 break;
             case OP_ERROR:
@@ -904,9 +905,8 @@ void compile(AST* node, Chuck* chuck)
         chuck_init(lamda_chuck);
         lamda_chuck->env = chuck->env;
         compile(node->lambda_node.expr, lamda_chuck);
-        printf("Hello 1\n");
         write_chuck(lamda_chuck, OP_RETURN);
-        printf("Hello 2\n");
+        write_chuck(lamda_chuck, OP_END);
         JnObject* lambda_obj = jn_obj_function(
             lamda_chuck, 
             node->lambda_node.args, 
@@ -1014,12 +1014,13 @@ void compile(AST* node, Chuck* chuck)
         compile(node->for_node.iter, chuck);
         write_chuck(chuck, OP_GET_ITER);
         // push iter object to __iter variable
-        int iter_slot = add_ident(chuck, "__iter");
+        char tmp[200];
+        snprintf(tmp, sizeof(tmp), "__iter_%d", iter_count++);
+        int iter_slot = add_ident(chuck, strdup(tmp));
         write_chuck(chuck, OP_SET_GLOBAL);
         write_chuck(chuck, iter_slot);
         write_chuck(chuck, 0);
         
-        loop_start = offset;
         write_chuck(chuck, OP_GET_GLOBAL);
         write_chuck(chuck, iter_slot);
 
@@ -1038,10 +1039,9 @@ void compile(AST* node, Chuck* chuck)
             write_chuck(chuck, OP_SET_GLOBAL);
             write_chuck(chuck, idx);
             write_chuck(chuck, 0);
-        } else
-            write_chuck(chuck, OP_POP);
+        } else write_chuck(chuck, OP_POP);
         compile(node->for_node.block, chuck);
-        emit_loop(chuck, loop_start);
+        emit_loop(chuck, offset);
         patch_jump(chuck, exit_jmp);
         
         for (int i = 0; i < loop_for->continue_count; i++)
@@ -1053,8 +1053,8 @@ void compile(AST* node, Chuck* chuck)
         {
             patch_jump(chuck, loop_for->breaks[i]);
         }
-        loop_depth--;
         write_chuck(chuck, OP_SCOPE_EXIT);
+        loop_depth--;
         break;
     }
     case AST_LOOP:
