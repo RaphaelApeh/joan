@@ -48,6 +48,7 @@ typedef enum{
     ENUM_TYPE,
 } JnTypeObject;
 
+typedef struct GC GC;
 typedef struct InternEntry InternEntry;
 typedef struct joan_parser_t joan_parser_t;
 typedef struct env_t env_t;
@@ -56,11 +57,11 @@ typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
 typedef struct J_State J_State;
 typedef struct J_Context J_Context;
-typedef JnObject* (*Jn_CFunction)(JnObject** argv, size_t argc);
-typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct JN_Args JN_Args;
+typedef JnObject* (*Jn_CFunction)(JN_Args* args);
+typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct Jn_CModule Jn_CModule;
-typedef struct Jn_environ_T Jn_environ_T;
+typedef struct Jn_environ_E Jn_environ_E;
 typedef struct Jn_environ Jn_environ;
 
 // Object internal pool
@@ -137,25 +138,15 @@ typedef struct J_Context {
 typedef struct J_State
 {
     JnVM* vm;
+    GC* gc;
     J_Context* cxt;
     Arena* arena;
     joan_parser_t* parser;
-    JnObject** objects;
-    size_t object_count;
-    size_t object_capacity;
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     env_t* globals;
-    size_t bytes_allocated;
-    size_t next_gc;
     bool running;
 } J_State;
-
-struct JN_Args
-{
-    JnObject** objects;
-    size_t count;
-};
 
 // Object Type
 typedef struct Chuck Chuck;
@@ -233,13 +224,15 @@ typedef struct JnObject{
         JnBoolObject bool8;
         JnCharObject j_char;
     };
+    JnObject* next;
     JnTypeObject type;
+    int marked;
 } JnObject;
 
 
 JN_API void Jn_repl(void);
 
-
+void* Jn_alloc(size_t size);
 // Helpers
 unsigned long djb2_hash(unsigned char* str);
 
@@ -247,7 +240,7 @@ unsigned long djb2_hash(unsigned char* str);
 JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
 
 JN_API void Jn_environ_insert(char* name, JnObject* obj);
-JN_API Jn_environ_T* Jn_environ_get(char* name);
+JN_API Jn_environ_E* Jn_environ_get(char* name);
 
 // Load builtin function
 JN_API void Jn_load_Cfunctions(void);

@@ -56,19 +56,3 @@ static JnObject* builtin_id(JnObject** argv, size_t argc)
     uintptr_t ptr = (uintptr_t)argv[0];
     return jn_intern_obj(jn_obj_int((long)ptr));
 }
-
-
-JN_API void Jn_load_Cfunctions(void)
-{
-    int count = (int) sizeof(builtin_functions) / sizeof(builtin_functions[0]);
-    JnObject* obj;
-    for(int i = 0; i < count; i++)
-    {
-        NativeFunction fn = builtin_functions[i];
-        obj = jn_obj_new(NATIVE_TYPE);
-        obj->native_fn = malloc(sizeof(JnNativeObject));
-        obj->native_fn->fnName = fn.name;
-        obj->native_fn->fn = fn.func;
-        // set_env(env, fn.name, obj, true, false);
-    }
-}

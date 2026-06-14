@@ -1,9 +1,39 @@
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include "Joan.h"
 #include "env.h"
 #include "object.h"
 #include "helper.h"
+
+typedef struct Jn_environ_E {
+    JnObject* value;
+    uint64_t hash;
+    Jn_environ_E* parent;
+    char* key;
+    bool used;
+} Jn_environ_E;
+
+struct Jn_environ {
+    Jn_environ_E* buckets;
+    size_t capacity, size;
+};
+
+static Jn_environ* environ_get(Jn_environ* env, char* key, int keylen)
+{
+    assert(env != NULL);
+    uint64_t id = fnv_hash(key, keylen) % env->capacity;
+    
+}
+
+static void environ_insert(Jn_environ* env, char* key, JnObject* obj)
+{
+    // TODO   
+}
+
+JN_API void Jn_environ_insert(char* name, JnObject* obj);
+JN_API Jn_environ_E* Jn_environ_get(char* name);
+
 
 env_t* init_env(env_t* parent)
 {

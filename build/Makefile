@@ -495,6 +495,30 @@ src/repl.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.s
 .PHONY : src/repl.c.s
 
+src/std.obj: src/std.c.obj
+.PHONY : src/std.obj
+
+# target to build an object file
+src/std.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/std.c.obj
+.PHONY : src/std.c.obj
+
+src/std.i: src/std.c.i
+.PHONY : src/std.i
+
+# target to preprocess a source file
+src/std.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/std.c.i
+.PHONY : src/std.c.i
+
+src/std.s: src/std.c.s
+.PHONY : src/std.s
+
+# target to generate assembly for a file
+src/std.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/std.c.s
+.PHONY : src/std.c.s
+
 src/token.obj: src/token.c.obj
 .PHONY : src/token.obj
 
@@ -598,6 +622,9 @@ help:
 	@echo ... src/repl.obj
 	@echo ... src/repl.i
 	@echo ... src/repl.s
+	@echo ... src/std.obj
+	@echo ... src/std.i
+	@echo ... src/std.s
 	@echo ... src/token.obj
 	@echo ... src/token.i
 	@echo ... src/token.s

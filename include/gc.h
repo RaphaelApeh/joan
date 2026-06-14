@@ -1,28 +1,19 @@
 #ifndef GC_H
+#define GC_H
 #include <stdbool.h>
 #include <stdint.h>
-#include "object.h"
+#include "Joan.h"
 
-typedef struct GCObject GCObject;
-typedef struct VM VM;
-
-struct GCObject{
-    GCObject* next;
-    bool marked;
-    JnTypeObject kind;
-};
-
-typedef struct{
-    GCObject* objects;
-    size_t bytes_allocated;
+typedef struct GC{
+    JnObject* objects;
+    size_t bytes_allocated, object_count;
     size_t next_gc;
 } GC;
 
 
-void* gc_alloc(VM* vm, size_t size, JnTypeObject kind);
-void mark_gcobj(GCObject* gcobj);
+void* gc_alloc(size_t size, JnTypeObject type);
 void mark_object(JnObject* obj);
-void mark_roots(VM* vm);
-void sweep(VM* vm);
-void gc_collect(VM* vm);
+void mark_roots(JnVM* vm);
+void sweep(J_State* state);
+void gc_collect(J_State* state);
 #endif

@@ -7,6 +7,7 @@
 #include "object.h"
 #include "helper.h"
 #include "vm.h"
+#include "gc.h"
 
 JnObject NoneObj = {0};
 
@@ -15,8 +16,7 @@ static InternEntry* intern_pool[JN_INTER_SIZE];
 
 JnObject* jn_obj_new(JnTypeObject type)
 {
-    J_State* state = Jn_get_state();
-    JnObject* obj = state->alloc_fn(sizeof(JnObject), type);
+    JnObject* obj = gc_alloc(sizeof(JnObject), type);
     assert(obj != NULL);
     return obj;
 }

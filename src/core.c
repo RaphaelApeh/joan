@@ -4,6 +4,7 @@
 #include "opcode.h"
 #include "object.h"
 #include "vm.h"
+#include "gc.h"
 #include "emit.h"
 #include "ast.h"
 
@@ -11,7 +12,7 @@ J_State Jn_globalState;
 static bool __set = false;
 
 // Main allocation function
-static void* Jn_alloc(size_t size)
+void* Jn_alloc(size_t size)
 {
     void* m = malloc(size);
     assert(m != NULL);
@@ -19,18 +20,6 @@ static void* Jn_alloc(size_t size)
     return m;
 }
 
-static void* alloc_object(size_t size, JnTypeObject type)
-{
-    assert(Jn_globalState.running && "Program not initialized.");
-    J_State* state = &Jn_globalState;
-    JnObject* obj = malloc(size);
-    assert(obj != NULL);
-    memset(obj, 0, size);
-    obj->type = type;
-    state->objects[state->object_count++] = obj;
-    state->bytes_allocated += size;
-    return obj;
-}
 
 JN_API J_State* Jn_get_state(void)
 {
@@ -54,7 +43,9 @@ JN_API void Jn_program_init(void)
     J_State* state = &Jn_globalState;
     __set = true;
     state->vm = malloc(sizeof(JnVM));
+    state->gc = malloc(sizeof(GC));
     assert(state->vm != NULL);
+    assert(state->gc != NULL);
     state->arena = malloc(sizeof(Arena));
     assert(state->arena);
     arena_init(state->arena);
@@ -62,15 +53,13 @@ JN_API void Jn_program_init(void)
     assert(state->vm->chuck != NULL);
     chuck_init(state->vm->chuck);
     state->running = true;
-    state->object_capacity = 1000;
-    state->object_count = 0;
     state->parser = NULL;
-    state->alloc_fn = alloc_object;
-    state->next_gc = 1024 * 1024;
+    state->gc->next_gc = 1024 * 1024;
+    state->gc->bytes_allocated = 0;
+    state->gc->object_count = 0;
     state->globals = init_env(NULL); // Jn_global_init(NULL)
-    state->objects = malloc(sizeof(JnObject* ) * state->object_capacity);
+    state->gc->objects = NULL;
     assert(state->running && "Something went wrong"); // TODO
-    assert(state->objects != NULL && "malloc failed.");
     assert(state->globals && "Global not set...");
     assert(state->arena && "Arena not set...");
     state->vm->chuck->env = state->globals;
@@ -101,6 +90,8 @@ JN_API int Jn_exec_program(char* source)
     }
     write_chuck(state->vm->chuck, OP_END);
     InterpretResult i = vm_run(state->vm);
+    // Clean-Up
+    gc_collect(state);
     if (i == INTERPRET_RUNTIME_ERROR)
         return -1;
     state->globals = state->vm->env;
@@ -130,13 +121,12 @@ JN_API void Jn_program_close(void)
     J_State* state = &Jn_globalState;
     assert(state->running && "Program has already stopped."); // TOD: better msg
     state->running = false;
-    for (int i = 0; i < state->object_count; i++)
-        free(state->objects[i]); // TODO JnObjectFree(obj)
-    free(state->objects);
     free(state->globals);
     arena_free(state->arena);
+    free(state->arena);
     free(state->globals);
     free(state->parser);
     free(state->vm->chuck);
     free(state->vm);
+    free(state->gc);
 }
