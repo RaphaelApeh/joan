@@ -85,7 +85,7 @@ JN_API void Jn_program_init(void)
     assert(state->vm->chuck != NULL);
     chuck_init(state->vm->chuck);
     state->running = true;
-    state->parser = NULL;
+    state->parser = malloc(sizeof(joan_parser_t));
     state->gc->next_gc = 1024 * 1024;
     state->gc->bytes_allocated = 0;
     state->gc->object_count = 0;
@@ -99,25 +99,22 @@ JN_API void Jn_program_init(void)
     assert(state->vm->global != NULL);
 }
 
-JN_API int Jn_exec_program(char* source)
+JN_API int Jn_exec_program(J_State* state, char* source)
 {
     if (source == NULL) return -1;
-    J_State* state = &Jn_globalState;
     assert(state->running && "program is not initialize.");
     joan_lexer_t l;
+    state->parser->arena = state->arena;
     J_init_lexer(&l, source);
-    joan_parser_t* p = jn_init_parser(&l);
-    state->parser = p;
-    p->arena = state->arena;
-    state->vm->p = p;
+    jn_init_parser(state->parser, &l);
     state->vm->env = state->globals;
     state->vm->global = state->globals;
-    assert(p->arena && "Arena not set ...");
+    assert(state->parser->arena && "Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");
-    while(p->curr.type != TOKEN_EOF)
+    while(state->parser->curr.type != TOKEN_EOF)
     {
-        AST* stmt = parse_stmt(p);
+        AST* stmt = parse_stmt(state->parser);
         compile(stmt, state->vm->chuck);
     }
     write_chuck(state->vm->chuck, OP_END);
@@ -126,18 +123,32 @@ JN_API int Jn_exec_program(char* source)
     gc_collect(state);
     if (i == INTERPRET_RUNTIME_ERROR)
         return -1;
-    printf("%d:%d\n", state->cxt.cur_line, state->cxt.column);
     state->globals = state->vm->env;
     return 0;
+}
+
+JN_API int Jn_execute_main(char* filepath)
+{
+    if (!filepath)
+    {
+        fprintf(stderr, "filepath was not provided.\n");
+        exit(1);
+    }
+    J_Source src = read_source_file(filepath);
+    assert(src.filename != NULL && src.source != NULL);
+    J_State* state = Jn_get_state();
+    state->cxt.source = src;
+    int exit_code = Jn_exec_program(state, src.source);
+    return exit_code;
 }
 
 JN_API int Jn_exec_REPL(char* source)
 {
     if (!source) return -1;
-    int exrt = Jn_exec_program(source);
+    J_State* state = Jn_get_state();
+    int exrt = Jn_exec_program(state, source);
     if (exrt < 0)
         return exrt;
-    J_State* state = Jn_get_state();
     if (state->vm->sp > state->vm->stack)
     {
         JnObject* obj = (JnObject *)state->vm->sp[-1];
@@ -162,4 +173,6 @@ JN_API void Jn_program_close(void)
     free(state->vm->chuck);
     free(state->vm);
     free(state->gc);
+    free((void *)state->cxt.source.filename);
+    free(state->cxt.source.source);
 }

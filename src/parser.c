@@ -62,13 +62,12 @@ int check_next(joan_parser_t* p, J_TokenType type)
 }
 
 
-joan_parser_t* jn_init_parser(joan_lexer_t* l)
+void jn_init_parser(joan_parser_t* p, joan_lexer_t* l)
 {
-    joan_parser_t* p = malloc(sizeof(joan_parser_t));
+    assert(p != NULL && l != NULL);
     p->l = l;
     p->next = clean_token(l);
     advance_parser_c(p);
-    return p;
 }
 
 void J_parse_file(joan_parser_t* p, char* restrict filecontent)

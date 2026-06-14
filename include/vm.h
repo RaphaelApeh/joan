@@ -52,8 +52,6 @@ typedef struct JnVM{
     JnObject* stack[_STACK_MAX];
     JnObject** sp;
 
-    joan_parser_t* p;
-
     env_t* global;
     env_t* env;
 

@@ -30,7 +30,7 @@ typedef struct joan_parser_t{
 } joan_parser_t;
 
 
-joan_parser_t* jn_init_parser(joan_lexer_t* l);
+void jn_init_parser(joan_parser_t* p, joan_lexer_t* l);
 void advance_parser(joan_parser_t* p);
 precedence get_prec(J_TokenType type);
 // Main function for the parser.

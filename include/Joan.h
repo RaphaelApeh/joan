@@ -263,11 +263,11 @@ JN_API J_State* Jn_get_state(void);
 JN_API J_Context* Jn_get_context(void);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(void);
-JN_API int Jn_exec_program(char* source);
+JN_API int Jn_exec_program(J_State* state, char* source);
 JN_API int Jn_exec_string(char* str);
 JN_API int Jn_exec_REPL(char* source);
 // Main Execution function
-JN_API void Jn_execute_main(char* filepath);
+JN_API int Jn_execute_main(char* filepath);
 // Execute for FILE ptr.
 JN_API int Jn_exec_from_file(FILE* fptr);
 

@@ -133,3 +133,29 @@ void elseif_add(elseif* elif, AST* block, AST* cond)
         .stmt = block,
     };
 }
+
+
+void print_source_line(char* source, int line, int column)
+{
+    
+    char* p = source;
+    int current = 1;
+
+    while (*p && current < line)
+    {
+        if (*p == '\n')
+            current++;
+        p++;
+    }
+    char* s = p;
+    while (*p && *p != '\n')
+        p++;
+
+    printf("%4d| ", line);
+    fwrite(s, 1, p - s, stdout);
+    printf("\n");
+    printf("    | ");
+    for (int i = 1; i < column; ++i)
+        putchar(' ');
+    printf("^\n");
+}

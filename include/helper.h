@@ -89,6 +89,8 @@ unsigned long djb2_hash(unsigned char* str);
 bool isnumber(JnObject* obj);
 double tonumber(JnObject* obj);
 
+void print_source_line(char* source, int line, int column);
+
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);
 param_t* param_init(void);

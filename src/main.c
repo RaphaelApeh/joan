@@ -75,17 +75,15 @@ int main(int argc, char** argv)
         case C_RUN_REPL:
             filename = new_argv[1];
             if (!filename) return -1;
-            source = read_file(filename);
             Jn_program_init();
-            Jn_exec_program(source);
+            Jn_execute_main(filename);
             Jn_repl();
             Jn_program_close();
             return 0;
         case C_RUN:
             filename = new_argv[0];
-            source = read_file(filename);
             Jn_program_init();
-            Jn_exec_program(source);
+            Jn_execute_main(filename);
             Jn_program_close();
             return 0;
     }
