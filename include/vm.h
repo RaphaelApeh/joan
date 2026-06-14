@@ -18,6 +18,8 @@ typedef struct Chuck{
     size_t count;
     size_t capacity;
 
+    int lines[256]; // TODO
+    int columns[256]; // TODO
     JnObject** constants;
     int constants_count;
     int constants_capacity;

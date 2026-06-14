@@ -127,11 +127,13 @@ typedef struct Jn_environ Jn_environ;
 #define JN_ITER_INIT(obj) jn_obj_iter(obj)
 // State
 
+typedef struct {
+    const char* filename;
+    char* source;
+} J_Source;
 
 typedef struct J_Context {
-    void* (*alloc) (size_t size);
-    size_t alloc_count;
-    char* filename;
+    J_Source source;
     int cur_line, column;
 } J_Context;
 
@@ -139,12 +141,12 @@ typedef struct J_State
 {
     JnVM* vm;
     GC* gc;
-    J_Context* cxt;
     Arena* arena;
     joan_parser_t* parser;
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     env_t* globals;
+    J_Context cxt;
     bool running;
 } J_State;
 
@@ -200,6 +202,11 @@ typedef struct {
     const char* ident;
 } Jn_Enum;
 
+typedef enum {
+    RUNTIME_ERROR, ASSERT_ERROR, SYS_ERROR, IMPORT_ERROR, SYNTAX_ERROR,
+    TYPE_ERROR, UNDEFINE_ERROR
+} JN_CERROR_TYPE;
+
 typedef long long JnIntObject;
 typedef double JnFloatObject;
 typedef bool JnBoolObject;
@@ -225,6 +232,12 @@ typedef struct JnObject{
         JnCharObject j_char;
     };
     JnObject* next;
+    struct {
+        char *filename, *error_msg;
+        int line, col;
+        JN_CERROR_TYPE type;
+    } expection;
+
     JnTypeObject type;
     int marked;
 } JnObject;

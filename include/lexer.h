@@ -5,8 +5,7 @@
 #include <stdbool.h>
 
 typedef struct joan_lexer_t{
-    char* start;
-    char* curr;
+    char* start, *curr, *filename;
     size_t line;
     size_t column;
 } joan_lexer_t;

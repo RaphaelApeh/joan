@@ -6,6 +6,7 @@ typedef struct Chuck Chuck;
 
 int add_ident(Chuck* chuck, char* ident);
 void write_chuck(Chuck* chuck, uint8_t byte);
+void write_chuck_loc(Chuck* chuck, uint8_t byte, int line, int column);
 int add_constant(Chuck* chuck, JnObject* object);
 int current_offset(Chuck* chuck);
 int emit_jump(Chuck* chuck, uint8_t instrction);

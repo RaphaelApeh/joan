@@ -22,7 +22,7 @@ char advance(joan_lexer_t* l)
     if (c == '\n')
     {
         l->line++;
-        l->column = 0;
+        l->column = 1;
     } else l->column++;
 
     return c;
@@ -44,5 +44,5 @@ void J_init_lexer(joan_lexer_t* l, char* source)
     l->start = source;
     l->curr = source;
     l->line = 1;
-    l->column = 0;
+    l->column = 1;
 }

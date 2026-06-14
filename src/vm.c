@@ -12,6 +12,8 @@
 #include "eval.h"
 #include "emit.h"
 
+#define WRITE_CHUCK(chuck, OP) write_chuck_loc(chuck, OP, line, column);
+
 
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
@@ -44,13 +46,30 @@ void chuck_init(Chuck* chuck)
     assert(chuck->idents != NULL);
 }
 
+
+static inline int vm_line(JnVM* vm)
+{
+    size_t ip = (size_t)(vm->ip - vm->chuck->code);
+    if (ip == 0)  return 0;
+    return vm->chuck->lines[ip - 1];
+}
+static inline int vm_column(JnVM* vm)
+{
+    size_t ip = (size_t)(vm->ip - vm->chuck->code);
+    if (ip == 0)  return 0;
+    return vm->chuck->columns[ip - 1];
+}
+
 static InterpretResult die(JnVM* vm, const char* msg, ...)
 {
+    J_Context* ctx = Jn_get_context();
+    ctx->cur_line = vm_line(vm);
+    ctx->column = vm_column(vm);
     va_list arg; va_start(arg, msg);
     fprintf( // TODO: current impl does not get the exact line and column
         stderr, 
         "Error[main:%d:%d] ",
-        vm->p->curr.line, vm->p->curr.column
+        ctx->cur_line, ctx->column
     );
     vfprintf(stderr, msg, arg);
     fputc('\n', stderr);
@@ -82,6 +101,9 @@ InterpretResult vm_run(JnVM* vm)
     uint16_t offset;
     for (;;)
     {
+        J_Context* ctx = Jn_get_context();
+        ctx->cur_line = vm_line(vm);
+        ctx->column = vm_column(vm);
         uint8_t op = READ_BYTE();
         switch (op)
         {
@@ -695,42 +717,44 @@ void compile(AST* node, Chuck* chuck)
 {
     int id, idx, jump, offset, loop_start, exit_jmp;
     LoopContext* loop;
+    int line = node->line;
+    int column = node->col;
     switch (node->type)
     {
     case AST_LITERAL:
         idx = add_constant(chuck, node->literal);
-        write_chuck(chuck, OP_CONSTANT);
-        write_chuck(chuck, idx);
+        write_chuck_loc(chuck, OP_CONSTANT, line, column);
+        write_chuck_loc(chuck, idx, line, column);
         break;
     case AST_ERROR:
         id = add_ident(chuck, (char *)node->error_msg);
-        write_chuck(chuck, OP_ERROR_MSG);
-        write_chuck(chuck, id);
+        write_chuck_loc(chuck, OP_ERROR_MSG, line, column);
+        write_chuck_loc(chuck, id, line, column);
         break;
     case AST_IDENTIFIER:
         char* ident = (char *)node->identifier;
         id = add_ident(chuck, ident);
-        write_chuck(chuck, OP_GET_GLOBAL);
-        write_chuck(chuck, id);
+        write_chuck_loc(chuck, OP_GET_GLOBAL, line, column);
+        write_chuck_loc(chuck, id, line, column);
         break;
     case AST_ARRAY:
         for (size_t i = 0; i < node->array.count; i++)
             compile(node->array.elements[i], chuck);
-        write_chuck(chuck, OP_ARRAY);
-        write_chuck(chuck, node->array.count);
+        WRITE_CHUCK(chuck, OP_ARRAY);
+        write_chuck_loc(chuck, node->array.count, line, column);
         break;
     case AST_TUPLE:
         for (size_t i = 0; i < node->tuple.count; ++i)
             compile(node->tuple.elements[i], chuck);
-        write_chuck(chuck, OP_ITER);
-        write_chuck(chuck, node->tuple.count);
+        write_chuck_loc(chuck, OP_ITER, line, column);
+        write_chuck_loc(chuck, node->tuple.count, line, column);
         break;
     case AST_MEMBER:
         compile(node->member.callie, chuck);
         idx = add_ident(chuck, node->member.field);
-        write_chuck(chuck, OP_MEMBER);
-        write_chuck(chuck, idx);
-        write_chuck(chuck, node->member.tok);
+        write_chuck_loc(chuck, OP_MEMBER, line, column);
+        write_chuck_loc(chuck, idx, line, column);
+        write_chuck_loc(chuck, node->member.tok, line, column);
         break;
     case AST_CALL:
         
@@ -739,20 +763,20 @@ void compile(AST* node, Chuck* chuck)
             compile(node->call.pos_args[i], chuck);
         }
         compile(node->call.callee, chuck);
-        write_chuck(chuck, OP_CALL);
-        write_chuck(chuck, node->call.pos_count);
+        write_chuck_loc(chuck, OP_CALL, line, column);
+        write_chuck_loc(chuck, node->call.pos_count, line, column);
         break;
     case AST_BLOCK:
-        write_chuck(chuck, OP_SCOPE_ENTER);
+        WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
         for (size_t i = 0; i < node->block.count; i++)
         {
             compile(node->block.statements[i], chuck);
         }
-        write_chuck(chuck, OP_SCOPE_EXIT);
+        write_chuck_loc(chuck, OP_SCOPE_EXIT, line, column);
         break;
     case AST_PRINTLN:
         compile(node->println.out, chuck);
-        write_chuck(chuck, OP_PRINTLN);
+        write_chuck_loc(chuck, OP_PRINTLN, line, column);
         break;
     case AST_ASSERT:
         compile(node->assert_stmt.cond, chuck);
@@ -761,24 +785,24 @@ void compile(AST* node, Chuck* chuck)
         else
             id  = add_ident(chuck, "Assertion failed.");
 
-        write_chuck(chuck, OP_ASSERT);
-        write_chuck(chuck, id);
+        write_chuck_loc(chuck, OP_ASSERT, line, column);
+        write_chuck_loc(chuck, id, line, column);
         break;
     case AST_UNARY:
         compile(node->unary.right, chuck);
         switch (node->unary.op)
         {
             case TOKEN_MINUS:
-                write_chuck(chuck, OP_NEGATE);
+                write_chuck_loc(chuck, OP_NEGATE, line, column);
                 break;
             // case TOKEN_STAR:
-            //     write_chuck(chuck, OP_MUL);
+            //     write_chuck_loc(chuck, OP_MUL);
             //     break;
             case TOKEN_NOT:
-                write_chuck(chuck, OP_NOT);
+                write_chuck_loc(chuck, OP_NOT, line, column);
                 break;
             default:
-                write_chuck(chuck, OP_ERROR);
+                write_chuck_loc(chuck, OP_ERROR, line, column);
                 break;
         }
         break;
@@ -788,67 +812,67 @@ void compile(AST* node, Chuck* chuck)
         switch (node->binary.op)
         {
             case TOKEN_PLUS:
-                write_chuck(chuck, OP_ADD);
+                write_chuck_loc(chuck, OP_ADD, line, column);
                 break;
             case TOKEN_STAR:
-                write_chuck(chuck, OP_MUL);
+                write_chuck_loc(chuck, OP_MUL, line, column);
                 break;
             case TOKEN_MINUS:
-                write_chuck(chuck, OP_SUB);
+                write_chuck_loc(chuck, OP_SUB, line, column);
                 break;
             case TOKEN_RSHIFT:
-                write_chuck(chuck, OP_RSHIFT);
+                write_chuck_loc(chuck, OP_RSHIFT, line, column);
                 break;
             case TOKEN_LSHIFT:
-                write_chuck(chuck, OP_LSHIFT);
+                write_chuck_loc(chuck, OP_LSHIFT, line, column);
                 break;
             case TOKEN_EQEQ:
-                write_chuck(chuck, OP_EQUAL);
+                WRITE_CHUCK(chuck, OP_EQUAL);
                 break;
             case TOKEN_NEQ:
-                write_chuck(chuck, OP_NEQ);
+                WRITE_CHUCK(chuck, OP_NEQ);
                 break;
             case TOKEN_GT:
-                write_chuck(chuck, OP_GT);
+                WRITE_CHUCK(chuck, OP_GT);
                 break;
             case TOKEN_GTE:
-                write_chuck(chuck, OP_GTE);
+                WRITE_CHUCK(chuck, OP_GTE);
                 break;
             case TOKEN_LT:
-                write_chuck(chuck, OP_LT);
+                WRITE_CHUCK(chuck, OP_LT);
                 break;
             case TOKEN_LTE:
-                write_chuck(chuck, OP_LTE);
+                WRITE_CHUCK(chuck, OP_LTE);
                 break;
             case TOKEN_BITAND:
-                write_chuck(chuck, OP_BITAND);
+                WRITE_CHUCK(chuck, OP_BITAND);
                 break;
             case TOKEN_BITOR:
-                write_chuck(chuck, OP_BITOR);
+                WRITE_CHUCK(chuck, OP_BITOR);
                 break;
             case TOKEN_BITAC:
-                write_chuck(chuck, OP_BITAC);
+                WRITE_CHUCK(chuck, OP_BITAC);
                 break;
             case TOKEN_PERCENTAGE:
-                write_chuck(chuck, OP_PERC);
+                WRITE_CHUCK(chuck, OP_PERC);
                 break;
             case TOKEN_IN:
-                write_chuck(chuck, OP_IN);
+                WRITE_CHUCK(chuck, OP_IN);
                 break;
             case TOKEN_NOT_IN:
-                write_chuck(chuck, OP_NOT_IN);
+                WRITE_CHUCK(chuck, OP_NOT_IN);
                 break;
             case TOKEN_SLASH:
-                write_chuck(chuck, OP_DIV);
+                WRITE_CHUCK(chuck, OP_DIV);
                 break;
             case TOKEN_RANGE:
-                write_chuck(chuck, OP_RANGE); break;
+                WRITE_CHUCK(chuck, OP_RANGE); break;
             case TOKEN_IS:
-                write_chuck(chuck, OP_IS); break;
+                WRITE_CHUCK(chuck, OP_IS); break;
             case TOKEN_AND:
-                write_chuck(chuck, OP_AND); break;
+                WRITE_CHUCK(chuck, OP_AND); break;
             case TOKEN_OR:
-                write_chuck(chuck, OP_OR); break;
+                WRITE_CHUCK(chuck, OP_OR); break;
             default:
                 break;
         }
@@ -858,13 +882,13 @@ void compile(AST* node, Chuck* chuck)
         // ident = node->enum_stmt.ident;
         // JnObject* enumObj = obj_enum(ident, node->enum_stmt.fields, node->enum_stmt.count);
         // idx = add_constant(chuck, enumObj);
-        // write_chuck(chuck, OP_CONSTANT);
-        // write_chuck(chuck, idx);
+        // WRITE_CHUCK(chuck, OP_CONSTANT);
+        // WRITE_CHUCK(chuck, idx);
 
         // id = add_ident(chuck, ident);
-        // write_chuck(chuck, OP_SET_GLOBAL);
-        // write_chuck(chuck, id);
-        // write_chuck(chuck, 1);
+        // WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        // WRITE_CHUCK(chuck, id);
+        // WRITE_CHUCK(chuck, 1);
         break;
     case AST_INLINE_IF:
         compile(node->inline_if_stmt.cond, chuck);
@@ -882,9 +906,9 @@ void compile(AST* node, Chuck* chuck)
         for (size_t i = 0; i < node->match_node.cases->count; ++i)
         {
             case_o caseObj = node->match_node.cases->cases[i];
-            write_chuck(chuck, OP_DUP);
+            WRITE_CHUCK(chuck, OP_DUP);
             compile(caseObj.pattern, chuck);
-            write_chuck(chuck, OP_EQUAL);
+            WRITE_CHUCK(chuck, OP_EQUAL);
             int next_case = emit_jump(chuck, OP_JUMP_IF_FALSE);
             compile(caseObj.block, chuck);
             end_jumps[end_count++] = emit_jump(chuck, OP_JUMP);
@@ -904,8 +928,8 @@ void compile(AST* node, Chuck* chuck)
         chuck_init(lamda_chuck);
         lamda_chuck->env = chuck->env;
         compile(node->lambda_node.expr, lamda_chuck);
-        write_chuck(lamda_chuck, OP_RETURN);
-        write_chuck(lamda_chuck, OP_END);
+        WRITE_CHUCK(lamda_chuck, OP_RETURN);
+        WRITE_CHUCK(lamda_chuck, OP_END);
         JnObject* lambda_obj = jn_obj_function(
             lamda_chuck, 
             node->lambda_node.args, 
@@ -914,8 +938,8 @@ void compile(AST* node, Chuck* chuck)
         );
         lambda_obj->fn->env = chuck->env;
         idx = add_constant(chuck, lambda_obj);
-        write_chuck(chuck, OP_CONSTANT);
-        write_chuck(chuck, idx);
+        WRITE_CHUCK(chuck, OP_CONSTANT);
+        WRITE_CHUCK(chuck, idx);
         break;
     case AST_FUNCTION: 
         // Chuck fn_chuck;
@@ -923,9 +947,9 @@ void compile(AST* node, Chuck* chuck)
         // chuck_init(&fn_chuck);
         // compile(node->fn_node.block, &fn_chuck);
         // // idx = add_constant(&fn_chuck, obj_none());
-        // // write_chuck(&fn_chuck, OP_CONSTANT);
-        // // write_chuck(&fn_chuck, idx);
-        // write_chuck(&fn_chuck, OP_END);
+        // // WRITE_CHUCK(&fn_chuck, OP_CONSTANT);
+        // // WRITE_CHUCK(&fn_chuck, idx);
+        // WRITE_CHUCK(&fn_chuck, OP_END);
         // JnObject* objFn = jn_obj_function(
         //     &fn_chuck,
         //     node->fn_node.params,
@@ -933,32 +957,32 @@ void compile(AST* node, Chuck* chuck)
         //     node->fn_node.name
         // );
         // idx = add_constant(chuck, objFn);
-        // write_chuck(chuck, OP_CONSTANT);
-        // write_chuck(chuck, idx);
+        // WRITE_CHUCK(chuck, OP_CONSTANT);
+        // WRITE_CHUCK(chuck, idx);
 
         // id = add_ident(chuck, node->fn_node.name);
-        // write_chuck(chuck, OP_SET_GLOBAL);
-        // write_chuck(chuck, id);
-        // write_chuck(chuck, 1);
+        // WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        // WRITE_CHUCK(chuck, id);
+        // WRITE_CHUCK(chuck, 1);
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);
         int false_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
-        // write_chuck(chuck, OP_POP);
+        // WRITE_CHUCK(chuck, OP_POP);
         compile(node->if_node.then, chuck);
         int end_jump = emit_jump(chuck, OP_JUMP);
         patch_jump(chuck, false_jump);
-        // write_chuck(chuck, OP_POP);
+        // WRITE_CHUCK(chuck, OP_POP);
         for (size_t i = 0; i < node->if_node.elseif->count; i++)
         {
             elif_node elif = node->if_node.elseif->children[i];
             compile(elif.cond, chuck);
             int elif_false = emit_jump(chuck, OP_JUMP_IF_FALSE);
-            // write_chuck(chuck, OP_POP);
+            // WRITE_CHUCK(chuck, OP_POP);
             compile(elif.stmt, chuck);
             int elif_end = emit_jump(chuck, OP_JUMP);
             patch_jump(chuck, elif_false);
-            // write_chuck(chuck, OP_POP);
+            // WRITE_CHUCK(chuck, OP_POP);
             patch_jump(chuck, elif_end);
         }
         if (node->if_node.else_node)
@@ -972,8 +996,8 @@ void compile(AST* node, Chuck* chuck)
             compile(node->hmp_node.keys[i], chuck);
             compile(node->hmp_node.values[i], chuck);
         }
-        write_chuck(chuck, OP_HM);
-        write_chuck(chuck, node->hmp_node.count);
+        WRITE_CHUCK(chuck, OP_HM);
+        WRITE_CHUCK(chuck, node->hmp_node.count);
         break;
     case AST_BREAK:
         if (loop_depth <= 0)
@@ -987,7 +1011,7 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_RETURN:
         compile(node->return_stmt.value, chuck);
-        write_chuck(chuck, OP_RETURN);
+        WRITE_CHUCK(chuck, OP_RETURN);
         break;
     case AST_CONTINUE:
         if (loop_depth <= 0)
@@ -1008,36 +1032,36 @@ void compile(AST* node, Chuck* chuck)
         loop_for->break_count = 0;
         loop_for->continue_count = 0;
 
-        write_chuck(chuck, OP_SCOPE_ENTER);
+        WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
 
         compile(node->for_node.iter, chuck);
-        write_chuck(chuck, OP_GET_ITER);
+        WRITE_CHUCK(chuck, OP_GET_ITER);
         // push iter object to __iter variable
         char tmp[200];
         snprintf(tmp, sizeof(tmp), "__iter_%d", iter_count++);
         int iter_slot = add_ident(chuck, strdup(tmp));
-        write_chuck(chuck, OP_SET_GLOBAL);
-        write_chuck(chuck, iter_slot);
-        write_chuck(chuck, 1);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, iter_slot);
+        WRITE_CHUCK(chuck, 1);
 
-        write_chuck(chuck, OP_GET_GLOBAL);
-        write_chuck(chuck, iter_slot);
+        WRITE_CHUCK(chuck, OP_GET_GLOBAL);
+        WRITE_CHUCK(chuck, iter_slot);
         
-        write_chuck(chuck, OP_ITER_NEXT);
+        WRITE_CHUCK(chuck, OP_ITER_NEXT);
 
         exit_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
             
         int var_id = add_ident(chuck, node->for_node.ident);
-        write_chuck(chuck, OP_SET_GLOBAL);
-        write_chuck(chuck, var_id);
-        write_chuck(chuck, 0);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, var_id);
+        WRITE_CHUCK(chuck, 0);
 
         if (node->for_node.index != NULL)
         {
             int idx = add_ident(chuck, node->for_node.index);
-            write_chuck(chuck, OP_SET_GLOBAL);
-            write_chuck(chuck, idx);
-            write_chuck(chuck, 0);
+            WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+            WRITE_CHUCK(chuck, idx);
+            WRITE_CHUCK(chuck, 0);
         }
 
         compile(node->for_node.block, chuck);
@@ -1054,7 +1078,7 @@ void compile(AST* node, Chuck* chuck)
         {
             patch_jump(chuck, loop_for->breaks[i]);
         }
-        write_chuck(chuck, OP_SCOPE_EXIT);
+        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
         loop_depth--;
         break;
     }
@@ -1109,21 +1133,21 @@ void compile(AST* node, Chuck* chuck)
         id = add_ident(chuck, node->reassign.ident);
         if (node->reassign.op == TOKEN_WALRUS)
         {
-            write_chuck(chuck, OP_SET_GLOBAL);
-            write_chuck(chuck, id);
-            write_chuck(chuck, 1); //TODO: For some reason if set to false it crashes lol.
+            WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+            WRITE_CHUCK(chuck, id);
+            WRITE_CHUCK(chuck, 1); //TODO: For some reason if set to false it crashes lol.
             break;
         }
-        write_chuck(chuck, OP_REASSIGN);
-        write_chuck(chuck, id);
-        write_chuck(chuck, node->reassign.op);
+        WRITE_CHUCK(chuck, OP_REASSIGN);
+        WRITE_CHUCK(chuck, id);
+        WRITE_CHUCK(chuck, node->reassign.op);
         break;
     case AST_ASSIGN:
         compile(node->assign.value, chuck);
         id = add_ident(chuck, node->assign.name);
-        write_chuck(chuck, OP_SET_GLOBAL);
-        write_chuck(chuck, id);
-        write_chuck(chuck, (uint8_t)node->assign.is_const);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, id);
+        WRITE_CHUCK(chuck, (uint8_t)node->assign.is_const);
         break;
     case AST_ARRAY_INDEX:
         compile(node->index.pos, chuck);
@@ -1131,10 +1155,10 @@ void compile(AST* node, Chuck* chuck)
         if (node->index.is_set)
         {
             compile(node->index.value, chuck);
-            write_chuck(chuck, OP_SET_INDEX);
+            WRITE_CHUCK(chuck, OP_SET_INDEX);
             break;
         } 
-        write_chuck(chuck, OP_INDEX);
+        WRITE_CHUCK(chuck, OP_INDEX);
         break;
     default:
         break;

@@ -9,18 +9,23 @@
 #include "parser.h"
 
 
-AST* ast_create(Arena* arena, AST_TYPE type)
+AST* ast_create(joan_parser_t* p, AST_TYPE type)
 {
-    //AST* ast = malloc(sizeof(ast));
-    AST* ast = arena_alloc(arena, sizeof(AST));
+    assert(p != NULL);
+    assert(p->arena != NULL);
+    AST* ast = arena_alloc(p->arena, sizeof(AST));
+    assert(ast != NULL);
     ast->type = type;
+    ast->line = p->curr.line;
+    ast->col = p->curr.column;
     return ast;
 }
 
-AST* new_block(Arena* arena)
+AST* new_block(joan_parser_t* p)
 {
     u64 capacity = 8;
-    AST* ast = ast_create(arena, AST_BLOCK);
+    AST* ast = ast_create(p, AST_BLOCK);
+
     ast->block.count = 0;
     ast->block.capacity = capacity;
     ast->block.statements = malloc(sizeof(AST *) * capacity);
@@ -39,51 +44,57 @@ void add_block(AST* ast, AST* node)
 }
 
 
-AST* ast_literal(Arena* arena, JnObject* object)
+AST* ast_literal(joan_parser_t* p, JnObject* object)
 {
-    AST* ast = ast_create(arena, AST_LITERAL);
+    AST* ast = ast_create(p, AST_LITERAL);
+
     ast->literal = object;
     return ast;
 }
 
-AST* ast_identifier(Arena* arena, const char* identifier)
+AST* ast_identifier(joan_parser_t* p, const char* identifier)
 {
-    AST* ast = ast_create(arena, AST_IDENTIFIER);
+    AST* ast = ast_create(p, AST_IDENTIFIER);
+
     ast->identifier = identifier;
     return ast;
 }
 
-AST* ast_unary(Arena* arena, J_TokenType op, AST* right)
+AST* ast_unary(joan_parser_t* p, J_TokenType op, AST* right)
 {
-    AST* ast = ast_create(arena, AST_UNARY);
+    AST* ast = ast_create(p, AST_UNARY);
+
     ast->unary.op = op;
     ast->unary.right = right;
     return ast;
 }
 
-AST* ast_binary(Arena* arena, AST* lhs, J_TokenType op, AST* rhs)
+AST* ast_binary(joan_parser_t* p, AST* lhs, J_TokenType op, AST* rhs)
 {
-    AST* ast = ast_create(arena, AST_BINARY);
+    AST* ast = ast_create(p, AST_BINARY);
+
     ast->binary.left = lhs;
     ast->binary.op = op;
     ast->binary.right = rhs;
     return ast;
 }
 
-AST* ast_println(Arena* arena, AST* out)
+AST* ast_println(joan_parser_t* p, AST* out)
 {
-    AST* ast = ast_create(arena, AST_PRINTLN);
+    AST* ast = ast_create(p, AST_PRINTLN);
+
     ast->println.out = out;
     return ast;
 }
 
-AST* ast_array(Arena* arena)
+AST* ast_array(joan_parser_t* p)
 {
-    AST* ast = ast_create(arena, AST_ARRAY);
+    AST* ast = ast_create(p, AST_ARRAY);
+
     ast->array.count = 0;
     ast->array.capacity = 13;
     ast->array.elements = arena_alloc(
-        arena,
+        p->arena,
         sizeof(AST *) * ast->array.capacity
     );
     return ast;
@@ -102,9 +113,9 @@ void ast_array_add(AST* arr, AST* element)
     arr->array.elements[arr->array.count++] = element;
 }
 
-AST* ast_for(Arena* arena, const char* ident, AST* iter, AST* block)
+AST* ast_for(joan_parser_t* p, char* ident, AST* iter, AST* block)
 {
-    AST* ast = ast_create(arena, AST_FOR);
+    AST* ast = ast_create(p, AST_FOR);
     ast->for_node.block = block;
     ast->for_node.ident = ident;
     ast->for_node.iter = iter;
@@ -112,22 +123,22 @@ AST* ast_for(Arena* arena, const char* ident, AST* iter, AST* block)
 }
 
 AST* ast_assign(
-    Arena* arena,
+    joan_parser_t* p,
     char* name,
     bool is_const,
     AST* value
 )
 {
-    AST* ast = ast_create(arena, AST_ASSIGN);
+    AST* ast = ast_create(p, AST_ASSIGN);
     ast->assign.name = strdup(name);
     ast->assign.value = value;
     ast->assign.is_const = is_const;
     return ast;
 }
 
-AST* ast_if_node(Arena* arena, AST* cond, AST* then, elseif* elseif, AST* else_node)
+AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* else_node)
 {
-    AST* ast = ast_create(arena, AST_IF);
+    AST* ast = ast_create(p, AST_IF);
     ast->if_node.condition = cond;
     ast->if_node.then = then;
     ast->if_node.elseif = elseif;
@@ -135,38 +146,38 @@ AST* ast_if_node(Arena* arena, AST* cond, AST* then, elseif* elseif, AST* else_n
     return ast;
 }
 
-AST* ast_break(Arena* arena)
+AST* ast_break(joan_parser_t* p)
 {
-    AST* ast = ast_create(arena, AST_BREAK);
+    AST* ast = ast_create(p, AST_BREAK);
     return ast;
 }
 
-AST* ast_continue(Arena* arena)
+AST* ast_continue(joan_parser_t* p)
 {
-    AST* ast = ast_create(arena, AST_CONTINUE);
+    AST* ast = ast_create(p, AST_CONTINUE);
     return ast;
 }
 
-AST* ast_match(Arena* arena, AST* sub, case_t* cases, AST* def)
+AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def)
 {
-    AST* ast = ast_create(arena, AST_MATCH);
+    AST* ast = ast_create(p, AST_MATCH);
     ast->match_node.cases = cases;
     ast->match_node.subject = sub;
     ast->match_node.def = def;
     return ast;
 }
 
-AST* ast_struct(Arena* arena,const char* ident, attr_t* attr)
+AST* ast_struct(joan_parser_t* p,const char* ident, attr_t* attr)
 {
-    AST* ast = ast_create(arena, AST_MATCH);
+    AST* ast = ast_create(p, AST_MATCH);
     ast->struct_node.attrs = attr;
     ast->struct_node.ident = ident;
     return ast;
 }
 
-AST* ast_class(Arena* arena, const char* ident, attr_t* attr, klass_t* base)
+AST* ast_class(joan_parser_t* p, const char* ident, attr_t* attr, klass_t* base)
 {
-    AST* ast = ast_create(arena, AST_MATCH);
+    AST* ast = ast_create(p, AST_MATCH);
     ast->type = AST_CLASS;
     ast->class_node.ident = ident;
     ast->class_node.base = base;
@@ -175,13 +186,13 @@ AST* ast_class(Arena* arena, const char* ident, attr_t* attr, klass_t* base)
 }
 
 
-AST* ast_call(Arena* arena, AST* callee)
+AST* ast_call(joan_parser_t* p, AST* callee)
 {
-    AST* ast = ast_create(arena, AST_CALL);
+    AST* ast = ast_create(p, AST_CALL);
     ast->call.callee = callee;
     ast->call.pos_count = 0;
     //TODO
-    //ast->call.pos_args = arena_alloc(arena, sizeof(AST *) * 8);
+    //ast->call.pos_args = p_alloc(p, sizeof(AST *) * 8);
     //ast->call.params = param_init();
     return ast;
 }
@@ -195,9 +206,9 @@ AST* ast_instance(const char* ident, param_t* param)
     return ast;
 }
 
-AST* ast_error(Arena* arena, joan_parser_t* p, const char* msg)
+AST* ast_error(joan_parser_t* p, const char* msg)
 {
-    AST* ast = ast_create(arena, AST_ERROR);
+    AST* ast = ast_create(p, AST_ERROR);
     ast->error_msg = msg;
     return ast;
 }

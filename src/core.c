@@ -11,6 +11,38 @@
 J_State Jn_globalState;
 static bool __set = false;
 
+
+// Helper function to read file content
+
+
+J_Source read_source_file(const char* filename)
+{
+    J_Source src;
+    FILE* p_file;
+    p_file = fopen(filename, "rb");
+    if (NULL == p_file)
+    {
+        perror("Filename does not exists.");
+        exit(1);
+    }
+    fseek(p_file, 0, SEEK_END);
+    size_t size = ftell(p_file);
+    rewind(p_file);
+    char* buf = malloc(sizeof(char) * (size + 1));
+    if (NULL == buf)
+    {
+        perror("memory failed.");
+        exit(1);
+    }
+    fread(buf, 1, size, p_file);
+    buf[size] = '\0';
+    fclose(p_file);
+    src.filename = (const char*)strdup(filename);
+    src.source = buf;
+    return src;
+}
+
+
 // Main allocation function
 void* Jn_alloc(size_t size)
 {
@@ -32,7 +64,7 @@ JN_API J_State* Jn_get_state(void)
 JN_API J_Context* Jn_get_context(void)
 {
     J_State* state = Jn_get_state();
-    return state->cxt;
+    return &state->cxt;
 }
 
 
@@ -94,6 +126,7 @@ JN_API int Jn_exec_program(char* source)
     gc_collect(state);
     if (i == INTERPRET_RUNTIME_ERROR)
         return -1;
+    printf("%d:%d\n", state->cxt.cur_line, state->cxt.column);
     state->globals = state->vm->env;
     return 0;
 }

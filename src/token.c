@@ -73,9 +73,15 @@ joan_token_t token_string(joan_lexer_t* l)
     while (*l->curr && *l->curr != q)
     {
         if (*l->curr == '\\' && *l->curr)
+        {
             l->curr += 2;
+            l->column += 2;
+        }
         else
+        {
             l->curr++;
+            l->column++;
+        }
     }
     if (*l->curr == '\0')
     {
@@ -89,6 +95,7 @@ joan_token_t token_string(joan_lexer_t* l)
     }
     joan_token_t t = make_token(l, TOKEN_STRING);
     char c = *l->curr++;
+    l->column++;
     if (q != c)
         return make_token(l, TOKEN_ERROR);
     return t;   

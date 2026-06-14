@@ -17,18 +17,35 @@ int add_ident(Chuck* chuck, char* ident)
     chuck->idents[chuck->ident_count] = ident;
     return chuck->ident_count++;
 }
+static void chuck_grow(Chuck* chuck)
+{
+    chuck->capacity *= 2;
+    chuck->code = realloc(
+            chuck->code, chuck->capacity
+    );
+}
 
 void write_chuck(Chuck* chuck, uint8_t byte)
 {
     CHECK_CHUCK();
     if (chuck->count >= chuck->capacity)
     {
-        chuck->capacity *= 2;
-        chuck->code = realloc(
-            chuck->code, chuck->capacity
-        );
+        chuck_grow(chuck);
     }
     chuck->code[chuck->count++] = byte;
+}
+
+void write_chuck_loc(Chuck* chuck, uint8_t byte, int line, int column)
+{
+    CHECK_CHUCK();
+    if (chuck->count >= chuck->capacity)
+    {
+        chuck_grow(chuck);
+    }
+    chuck->code[chuck->count] = byte;
+    chuck->lines[chuck->count] = line;
+    chuck->columns[chuck->count] = column;
+    chuck->count++;
 }
 
 int add_constant(Chuck* chuck, JnObject* object)

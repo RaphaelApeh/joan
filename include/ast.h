@@ -277,57 +277,58 @@ typedef struct AST{
         char* comment;
         const char* error_msg;
     };
+    int line, col;
 } AST;
 
-AST* ast_create(Arena* arena, AST_TYPE type);
+AST* ast_create(joan_parser_t* p, AST_TYPE type);
 
-AST* new_block(Arena* arena);
+AST* new_block(joan_parser_t* p);
 
 void add_block(AST* ast, AST* node);
 // LITERAL: -> true, false, None
-AST* ast_literal(Arena* arena, JnObject* object);
+AST* ast_literal(joan_parser_t* p, JnObject* object);
 
-AST* ast_binary(Arena* arena, AST* lhs, J_TokenType op, AST* rhs);
+AST* ast_binary(joan_parser_t* p, AST* lhs, J_TokenType op, AST* rhs);
 
-AST* ast_unary(Arena* arena, J_TokenType op, AST* right);
+AST* ast_unary(joan_parser_t* p, J_TokenType op, AST* right);
 
-AST* ast_println(Arena* arena, AST* out);
+AST* ast_println(joan_parser_t* p, AST* out);
 
 //ARRAY: AST functions
-AST* ast_array(Arena* arena);
+AST* ast_array(joan_parser_t* p);
 void ast_array_add(AST* arr, AST* element);
 
-AST* ast_identifier(Arena* arena, const char* identifier);
+AST* ast_identifier(joan_parser_t* p, const char* identifier);
 //LOOP
-AST* ast_for(Arena* arena, const char* ident, AST* iter, AST* block);
+AST* ast_for(joan_parser_t* p, char* ident, AST* iter, AST* block);
 
 
 //ASSIGN: v = true; const x = 4
 AST* ast_assign(
-    Arena* arena,
+    joan_parser_t* p,
     char* name,
     bool is_const,
     AST* value
 );
 
 //IF STATEMENT
-AST* ast_if_node(Arena* arena, AST* cond, AST* then, elseif* elseif, AST* else_node);
+AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* else_node);
 
 //BREAK, CONTINUE
-AST* ast_break(Arena* arena);
-AST* ast_continue(Arena* arena);
+AST* ast_break(joan_parser_t* p);
+AST* ast_continue(joan_parser_t* p);
 
 // obj()
-AST* ast_call(Arena* arena, AST* callee);
+AST* ast_call(joan_parser_t* p, AST* callee);
 
 //Match
-AST* ast_match(Arena* arena, AST* sub, case_t* cases, AST* def);
+AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def);
 //CLASS, STRUCT
-AST* ast_struct(Arena* arena, const char* ident, attr_t* attr);
+AST* ast_struct(joan_parser_t* p, const char* ident, attr_t* attr);
 
 //AST* ast_class(const char* ident, attr_t* attr, klass_t* base);
 
 //ERROR
-AST* ast_error(Arena* arena, joan_parser_t* p, const char* msg);
+AST* ast_error(joan_parser_t* p, const char* msg);
 
 #endif
