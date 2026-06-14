@@ -610,14 +610,14 @@ static AST* parse_lambda(joan_parser_t* p)
     /*
     Inline function
     Example:
-        add := lambda a, b: a + b
+        add :=  |a, b| => a + b
         add(32, 12)
     */
-    advance_parser_c(p); // lambda
+    advance_parser_c(p);
     int len = 0, cap = 20;
     char** args = malloc(sizeof(char *) * cap);
     do {
-        if (match(p, TOKEN_COLON))  break;
+        if (match(p, TOKEN_BITOR))  break;
         if (!check(p, TOKEN_IDENTIFIER)) return parse_error(p, "lambda expect an identifer but got %s.", GET_LEX(p));
         if (len >= cap)
         {
@@ -627,9 +627,10 @@ static AST* parse_lambda(joan_parser_t* p)
         args[len++] = GET_LEX(p);
         advance_parser_c(p);
         if (match(p, TOKEN_COMMA)) continue;
-        if (match(p, TOKEN_COLON)) break;
+        if (match(p, TOKEN_BITOR)) break;
     } while(true);
     args[len] = NULL;
+    match(p, TOKEN_EXR);
     AST* expr = parse_expr(p);
     AST* ast = ast_create(p->arena, AST_LAMBDA);
     ast->lambda_node.count = len;
@@ -730,7 +731,7 @@ AST* parse_value(joan_parser_t* p)
             return ast;
         case TOKEN_LBRACKET:
             return parse_array(p);
-        case TOKEN_LAMBDA:
+        case TOKEN_BITOR:
             return parse_lambda(p);
         case TOKEN_PRINTLN: {
             advance_parser_c(p);

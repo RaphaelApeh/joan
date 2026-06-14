@@ -97,7 +97,7 @@ static uint64_t hash_object(JnObject* obj)
         case CHAR_TYPE:
             return ( int )obj->j_char;
         case ITER_TYPE:
-            return hash_object(obj->iter->obj);
+            return hash_object(obj->iter->obj) * obj->iter->index;
         default:
             return 0;
     }
@@ -250,6 +250,9 @@ void print_JnObject(JnObject* obj)
             fprintf(stdout, "<function '%s' args=%d>", obj->fn->name != NULL ? obj->fn->name : "<lambda>", obj->fn->arity);
             break;
         case ITER_TYPE:
+            fprintf(stderr, "<iter '");
+            print_JnObject(obj->iter->obj);
+            fprintf(stderr, "' >");
             break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);

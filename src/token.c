@@ -198,8 +198,6 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_MATCH;
     else if (strcmp(t.lexeme, "println") == 0)
         t.type = TOKEN_PRINTLN;
-    else if (equal(t.lexeme, "lambda"))
-        t.type = TOKEN_LAMBDA;
     return t;
 }
 

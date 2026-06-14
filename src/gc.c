@@ -79,7 +79,11 @@ void Jn_freeObject(JnObject* obj)
             free(obj->hashmap);
             break;
         case FUNCTION_TYPE:
-            break; // TODO
+            free(obj->fn);
+            break;
+        case NATIVE_TYPE:
+            free(obj->native_fn);
+            break;
         case ITER_TYPE:
             Jn_freeObject(obj->iter->obj);
             free(obj->iter);
