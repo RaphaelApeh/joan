@@ -153,7 +153,7 @@ void print_source_line(char* source, int line, int column)
 
     printf("%4d| ", line);
     fwrite(s, 1, p - s, stdout);
-    printf("\n");
+    putchar('\n');
     printf("    | ");
     for (int i = 1; i < column; ++i)
         putchar(' ');

@@ -106,9 +106,13 @@ JN_API void Jn_repl(void)
         if (type == INCOMPLETE)
             continue;
         
-        Jn_exec_REPL(buffer);
+        int exit_code = Jn_exec_REPL(buffer);
         buffer[0] = 0;
         buffer_count = 0;
+        if (exit_code < 0)
+        {
+            // DO something
+        }
     }
     if (_JN_INIT_PROGRAM)
         Jn_program_close();

@@ -146,6 +146,8 @@ JN_API int Jn_exec_REPL(char* source)
 {
     if (!source) return -1;
     J_State* state = Jn_get_state();
+    state->cxt.source.filename = NULL;
+    state->cxt.source.source = strdup(source);
     int exrt = Jn_exec_program(state, source);
     if (exrt < 0)
         return exrt;
@@ -173,6 +175,7 @@ JN_API void Jn_program_close(void)
     free(state->vm->chuck);
     free(state->vm);
     free(state->gc);
-    free((void *)state->cxt.source.filename);
+    if (state->cxt.source.filename != NULL)
+        free((void *)state->cxt.source.filename);
     free(state->cxt.source.source);
 }
