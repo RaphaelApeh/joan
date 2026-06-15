@@ -122,7 +122,12 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     // Clean-Up
     gc_collect(state);
     if (i == INTERPRET_RUNTIME_ERROR)
+    {
+        // RESET
+        state->vm->chuck->count = 0;
+        state->vm->ip = state->vm->chuck->code;
         return -1;
+    }
     state->globals = state->vm->env;
     return 0;
 }
