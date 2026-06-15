@@ -126,6 +126,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
         // RESET
         state->vm->chuck->count = 0;
         state->vm->ip = state->vm->chuck->code;
+        Jnvm_init(state->vm, state->vm->chuck);
         return -1;
     }
     state->globals = state->vm->env;
@@ -175,7 +176,6 @@ JN_API void Jn_program_close(void)
     free(state->globals);
     arena_free(state->arena);
     free(state->arena);
-    free(state->globals);
     free(state->parser);
     free(state->vm->chuck);
     free(state->vm);

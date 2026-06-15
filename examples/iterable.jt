@@ -1,3 +1,4 @@
 x := 3
 println "Hello World"
-print
+print // Error
+y := x

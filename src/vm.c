@@ -66,7 +66,7 @@ static InterpretResult die(JnVM* vm, const char* msg, ...)
     ctx->cur_line = vm_line(vm);
     ctx->column = vm_column(vm);
     va_list arg; va_start(arg, msg);
-    fprintf( // TODO: current impl does not get the exact line and column
+    fprintf(
         stderr, 
         "RuntimeError: '%s':%d:%d \n\t",  ctx->source.filename ? ctx->source.filename: "main",
         ctx->cur_line, ctx->column
@@ -74,7 +74,7 @@ static InterpretResult die(JnVM* vm, const char* msg, ...)
     vfprintf(stderr, msg, arg);
     fputc('\n', stderr);
     va_end(arg);
-    print_source_line(ctx->source.source, ctx->cur_line, ctx->column);
+    print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
     return INTERPRET_RUNTIME_ERROR;
 }
 

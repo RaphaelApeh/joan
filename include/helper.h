@@ -11,6 +11,11 @@ typedef struct J_DArray_Obj J_DArray_Obj;
 
 #define RESIZE_DOBJ(arr) (arr)->items = realloc((arr)->items, sizeof(*(arr)->items) * (arr)->capacity)
 
+/* COLORS */
+#define RESET "\x1b[0m"
+#define RED "\x1b[31m"
+#define GREEN "\x1b[31m"
+
 #define PUSH_ITEM(arr, obj) do {\
     if ((arr)->size >= (arr)->capacity)\
     {                                   \
@@ -89,6 +94,7 @@ unsigned long djb2_hash(unsigned char* str);
 bool isnumber(JnObject* obj);
 double tonumber(JnObject* obj);
 
+void print_source_lines(char* source, int line, int column, int context);
 void print_source_line(char* source, int line, int column);
 
 void runtime_error(char* msg, ...);

@@ -134,6 +134,36 @@ void elseif_add(elseif* elif, AST* block, AST* cond)
     };
 }
 
+void print_source_lines(char* source, int line, int column, int context)
+{
+    if (line < 1)   return;
+    char* p = source;
+    int cur_line = 1;
+
+    while (*p)
+    {
+        char* line_s = p;
+        while (*p && *p != '\n') p++;
+        char* line_end = p;
+        if (cur_line >= line - context && cur_line <= line + context)
+        {
+            printf("%4d| ", cur_line);
+            fwrite(line_s, 1, line_end - line_s, stdout);
+            putchar('\n');
+            if (cur_line == line)
+            {
+                printf("   | ");
+                for (int i = 1; i < column; ++i)    putchar(' ');
+                printf("^^^\n");
+            }
+
+        }
+        if (*p == '\n') p++;
+        cur_line++;
+        if (cur_line > line + context)
+            break;
+    }
+}
 
 void print_source_line(char* source, int line, int column)
 {
@@ -154,7 +184,7 @@ void print_source_line(char* source, int line, int column)
     printf("%4d| ", line);
     fwrite(s, 1, p - s, stdout);
     putchar('\n');
-    printf("    | ");
+    printf("   | ");
     for (int i = 1; i < column; ++i)
         putchar(' ');
     printf("^\n");
