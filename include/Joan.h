@@ -39,6 +39,7 @@ typedef enum{
     BOOL_TYPE,
     FLOAT_TYPE,
     ARRAY_TYPE,
+    RANGE_TYPE,
     HASHMAP_TYPE,
     FUNCTION_TYPE,
     NATIVE_TYPE,
@@ -77,6 +78,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_RETURN_STRING(s) jn_obj_string((s))
 #define JN_RETURN_CHAR(c) jn_obj_char((c))
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
+#define JN_OBJECT_RANGE(start, stop, step) jn_obj_range(start, stop, step)
 #define JN_OBJECT_VALUE(obj) // TODO 
 #define JN_AS_CHAR(obj) (obj)->j_char
 #define JN_AS_STRING(obj) (obj)->str
@@ -181,6 +183,11 @@ typedef struct {
 } JnArrayObject;
 
 typedef struct {
+    uint64_t start, stop;
+    uint16_t step;
+} JnRange;
+
+typedef struct {
     JnObject* obj;
     int index;
 } JnIterObject;
@@ -225,6 +232,7 @@ typedef struct JnObject{
         Jn_Hashmap* hashmap;
         JnNativeObject* native_fn;
         Jn_Enum* enum_n;
+        JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
         JnBoolObject bool8;
@@ -276,6 +284,7 @@ JnObject* jn_obj_string(char* str);
 JnObject* jn_obj_char(char c);
 JnObject* jn_obj_none(void);
 JnObject* jn_obj_bool(bool o_bool);
+JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);

@@ -1,6 +1,4 @@
-// Range expression
 let x = 32..21
-let count = 2
+arr := [1, 2, 4, 5]
 // ❌ Error can not set an iter object
-//x[count + 1] = 23
-println len(x)
+println arr[1..2]

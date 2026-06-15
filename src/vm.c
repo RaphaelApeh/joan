@@ -14,6 +14,7 @@
 
 #define WRITE_CHUCK(chuck, OP) write_chuck_loc(chuck, OP, line, column);
 
+#define PUSH(obj) push(vm, (obj))
 
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
@@ -420,25 +421,9 @@ InterpretResult vm_run(JnVM* vm)
                 push(vm, jn_obj_none()); // for now
                 break;
             case OP_RANGE:
-                // Object *b = pop(vm), *a = pop(vm);
-                // if (a->type != INT_TYPE || b->type != INT_TYPE)
-                //     return die(vm, "Expected type int but got TODO:");
-                // int start = a->int32, end = b->int32;
-                // int tmp;
-                // if (start > end)
-                // {
-                //     tmp = end;
-                //     end = start;
-                //     start = tmp;
-                // }
-                // iter = ObjectIter(b->int32);
-                // for (int i = start; i < end; ++i)
-                // {
-                //     pushItem(iter, jn_obj_int(i));
-                // }
-                // o = jn_obj_new(ITER_TYPE);
-                // o->iter = iter;
-                // push(vm, o);
+                op = READ_BYTE();
+                int start = JN_AS_INT(pop(vm)); int stop = JN_AS_INT(pop(vm));
+                PUSH(JN_OBJECT_RANGE(start, stop, 0)); // TODO add step support 
                 break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
@@ -488,9 +473,9 @@ InterpretResult vm_run(JnVM* vm)
                 JnObject* idx_key = pop(vm);
                 if (!array || !idx_key)
                     return die(vm, "None value array or pos.");
-                if (JN_IS_ARRAY(array) && idx_key->type != INT_TYPE)
+                if (JN_IS_ARRAY(array) && idx_key->type != INT_TYPE && idx_key->type != RANGE_TYPE)
                     return die(vm, "pos is not an int");
-                int index = idx_key->int32;
+                int index = (idx_key->type == INT_TYPE) ? idx_key->int32: range_len(&idx_key->range);
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
@@ -868,8 +853,6 @@ void compile(AST* node, Chuck* chuck)
             case TOKEN_SLASH:
                 WRITE_CHUCK(chuck, OP_DIV);
                 break;
-            case TOKEN_RANGE:
-                WRITE_CHUCK(chuck, OP_RANGE); break;
             case TOKEN_IS:
                 WRITE_CHUCK(chuck, OP_IS); break;
             case TOKEN_AND:
@@ -879,6 +862,13 @@ void compile(AST* node, Chuck* chuck)
             default:
                 break;
         }
+        break;
+
+    case AST_RANGE:
+        compile(node->range_node.stop, chuck);
+        compile(node->range_node.start, chuck);
+        WRITE_CHUCK(chuck, OP_RANGE);
+        WRITE_CHUCK(chuck, node->range_node.op);
         break;
     case AST_ENUM: 
         // TODO

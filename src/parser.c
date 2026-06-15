@@ -115,7 +115,6 @@ precedence get_prec(J_TokenType type)
         return PREC_OR;
     
     case TOKEN_IS:
-    case TOKEN_RANGE:
         return PREC_PRIMARY;
     
     default:
@@ -159,6 +158,21 @@ static AST* parse_loop(joan_parser_t* p)
     AST* ast = ast_create(p, AST_LOOP);
     if (check(p, TOKEN_LBRACE))
         ast->loop_stmt.block = parse_block(p);
+    return ast;
+}
+
+static AST* parse_range(joan_parser_t* p, AST* node)
+{
+    advance_parser_c(p); // ...
+    int op = 0; // None
+    if (match(p, TOKEN_EQUAL))
+        op = TOKEN_EQUAL;
+    else if (match(p, TOKEN_LT))
+        op = TOKEN_LT;
+    AST* ast = ast_create(p, AST_RANGE);
+    ast->range_node.start = node;
+    ast->range_node.stop = parse_expr(p);
+    ast->range_node.op = op;
     return ast;
 }
 
@@ -509,6 +523,9 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         {
             return parse_inline_if(p, left);
         }
+
+        if (check(p, TOKEN_RANGE))
+            return parse_range(p, left);
 
         //TODO
         if (check(p, TOKEN_SETTER) || check(p, TOKEN_DOT))

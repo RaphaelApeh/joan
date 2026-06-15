@@ -82,6 +82,33 @@ JnObject* jn_obj_iter(JnObject* obj)
     return new_obj;
 }
 
+int64_t range_len(JnRange* r)
+{
+    if (r->step > 0)
+    {
+        if (r->start >= r->stop)
+            return 0;
+        return (r->stop - r->start + r->step - 1) / r->step;
+    }
+    if (r->start <= r->stop)
+        return 0;
+    return (r->start - r->stop - r->step - 1) / (-r->step);
+}
+
+int64_t range_at(JnRange* r, int64_t idx)
+{
+    return r->start + (idx * r->step);
+}
+
+JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step)
+{
+    JnObject* obj = jn_obj_new(RANGE_TYPE);
+    obj->range.start = start;
+    obj->range.stop = stop;
+    obj->range.step = (step == 0) ? 1 : step;
+    return obj;
+}
+
 static uint64_t hash_object(JnObject* obj)
 {
     switch (obj->type)
@@ -242,6 +269,9 @@ void print_JnObject(JnObject* obj)
             break;
         case NONE_TYPE:
             fprintf(stderr, "None");
+            break;
+        case RANGE_TYPE:
+            fprintf(stderr, "<Range (%lld, %lld, %ld)>", obj->range.start, obj->range.stop, obj->range.step);
             break;
         case ENUM_TYPE:
             fprintf(stderr, "<Enum>");

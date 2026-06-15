@@ -216,7 +216,8 @@ typedef struct AST{
 
         struct {
             AST* start;
-            AST* end;
+            AST* stop;
+            int op;
         } range_node;
 
         struct {

@@ -18,6 +18,8 @@ typedef struct InternEntry {
     struct InternEntry* next;
 } InternEntry;
 
+int64_t range_len(JnRange* r);
+int64_t range_at(JnRange* r, int64_t idx);
 JnObject* jn_intern_obj(JnObject* obj);
 
 bool is_truthy(JnObject* obj);
