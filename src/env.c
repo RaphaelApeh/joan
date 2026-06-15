@@ -28,6 +28,7 @@ JN_API Jn_environ* Jn_environ_init(Jn_environ* parent)
     {
         Jn_environ_E* ent = &env->buckets[i];
         ent->used = false;
+        ent->value = NULL;
         ent->key = NULL;
     }
     return env;
@@ -38,21 +39,13 @@ Jn_environ_E* environ_get(Jn_environ* env, char* key)
 {
     assert(env != NULL && env->buckets != NULL);
     assert(key != NULL);
-    int keylen = strlen(key);
-    uint64_t hash = fnv_hash(key, keylen) % env->capacity;
-    printf("GET HASH %lld \n", hash);
     while (env)
     {
-        for (int i = 0; i < env->capacity; ++i)
+        for (int i = 0; i < env->size; ++i)
         {
-            Jn_environ_E* ent = &env->buckets[(hash + i) % env->capacity];
+            Jn_environ_E* ent = &env->buckets[i];
             if (match(ent, key))
                 return ent;
-            if (ent->key == NULL)
-            {
-                printf("ent->key is NULL\n"); //TODO
-                return NULL;
-            }
         }
         env = env->parent;
     }
@@ -63,12 +56,14 @@ void environ_insert(Jn_environ* env, char* key, JnObject* obj)
 {
 
     assert(env != NULL && key != NULL && obj != NULL);
-    uint64_t hash = fnv_hash(key, strlen(key)) % env->capacity;
-    printf("HASH %ld\n", hash);
-    while (env->buckets[hash].used && match(&env->buckets[hash], key))
-        hash = (hash + 1) & env->capacity;
-    env->buckets[hash].used = true;
-    env->buckets[hash].key = strdup(key);
-    env->buckets[hash].value = obj;
+    if (env->capacity <= env->size)
+    {
+        env->capacity *= 2;
+        env->buckets = realloc(env->buckets, sizeof(Jn_environ_E) * env->capacity);
+    }
+    env->buckets[env->size].used = true;
+    env->buckets[env->size].key = strdup(key);
+    env->buckets[env->size].value = obj;
+    env->size++;
 }
 

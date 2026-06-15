@@ -444,7 +444,8 @@ InterpretResult vm_run(JnVM* vm)
                 ident = READ_IDENT();
                 Jn_environ_E* ent = environ_get(vm->env, ident);
                 if (ent == NULL)
-                    return die(vm, "Seem like you got an undefine variable '%s'.", ident);
+                    return die(vm, "Seem like you did not define a variable '%s'.", ident);
+                assert(ent->value != NULL);
                 push(vm, jn_intern_obj(ent->value));
                 break;
             case OP_PRINTLN:
@@ -559,7 +560,7 @@ InterpretResult vm_run(JnVM* vm)
                  }
                 break;
             case OP_SCOPE_ENTER:
-                Jn_environ* local = Jn_environ_init(vm->env);
+                local = Jn_environ_init(vm->env);
                 vm->env = local;
                 break;
             case OP_SCOPE_EXIT:
@@ -567,6 +568,7 @@ InterpretResult vm_run(JnVM* vm)
                 {
                     Jn_environ* old = vm->env;
                     vm->env = vm->env->parent;
+                    free(old->buckets);
                     free(old);
                 }
                 break;

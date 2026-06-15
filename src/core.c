@@ -132,7 +132,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
         Jnvm_init(state->vm, state->vm->chuck);
         return -1;
     }
-    state->globals = state->vm->env;
+    // state->globals = state->vm->env;
     return 0;
 }
 
