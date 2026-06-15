@@ -28,7 +28,7 @@ typedef struct Chuck{
     size_t ident_count;
     size_t ident_capacity;
 
-    env_t* env;
+    Jn_environ* env;
 } Chuck;
 
 
@@ -42,7 +42,7 @@ typedef struct {
     JnObject** slots;
     JnFunctionObject* fn;
     uint8_t* ip;
-    env_t* env;
+    Jn_environ* env;
 } CallFrame;
 
 typedef struct JnVM{
@@ -52,8 +52,8 @@ typedef struct JnVM{
     JnObject* stack[_STACK_MAX];
     JnObject** sp;
 
-    env_t* global;
-    env_t* env;
+    Jn_environ* global;
+    Jn_environ* env;
 
     CallFrame frames[_FRAME_MAX];
     int frame_count;

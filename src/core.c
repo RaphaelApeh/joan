@@ -7,6 +7,8 @@
 #include "gc.h"
 #include "emit.h"
 #include "ast.h"
+#include "env.h"
+
 
 J_State Jn_globalState;
 static bool __set = false;
@@ -89,12 +91,13 @@ JN_API void Jn_program_init(void)
     state->gc->next_gc = 1024 * 1024;
     state->gc->bytes_allocated = 0;
     state->gc->object_count = 0;
-    state->globals = init_env(NULL); // Jn_global_init(NULL)
+    state->globals = Jn_environ_init(NULL);
     state->gc->objects = NULL;
-    assert(state->running && "Something went wrong"); // TODO
+    assert(state->running && "Something went wrong");
     assert(state->globals && "Global not set...");
     assert(state->arena && "Arena not set...");
     state->vm->chuck->env = state->globals;
+    state->vm->global = state->globals;
     Jnvm_init(state->vm, state->vm->chuck);
     assert(state->vm->global != NULL);
 }
@@ -107,8 +110,8 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     state->parser->arena = state->arena;
     J_init_lexer(&l, source);
     jn_init_parser(state->parser, &l);
-    state->vm->env = state->globals;
     state->vm->global = state->globals;
+    state->vm->env = state->globals;
     assert(state->parser->arena && "Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");
@@ -177,6 +180,7 @@ JN_API void Jn_program_close(void)
     arena_free(state->arena);
     free(state->arena);
     free(state->parser);
+    free(state->vm->chuck->code);
     free(state->vm->chuck);
     free(state->vm);
     free(state->gc);

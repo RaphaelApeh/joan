@@ -51,7 +51,6 @@ typedef enum{
 typedef struct GC GC;
 typedef struct InternEntry InternEntry;
 typedef struct joan_parser_t joan_parser_t;
-typedef struct env_t env_t;
 typedef struct Arena Arena;
 typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
@@ -145,7 +144,7 @@ typedef struct J_State
     joan_parser_t* parser;
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
-    env_t* globals;
+    Jn_environ* globals;
     J_Context cxt;
     bool running;
 } J_State;
@@ -169,7 +168,7 @@ typedef struct {
 
 typedef struct {
     Chuck* chuck;
-    env_t* env;
+    Jn_environ* env;
     char** params;
     char* name;
     int arity, is_lambda;
@@ -251,9 +250,6 @@ unsigned long djb2_hash(unsigned char* str);
 
 // Register native function
 JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
-
-JN_API void Jn_environ_insert(char* name, JnObject* obj);
-JN_API Jn_environ_E* Jn_environ_get(char* name);
 
 // Load builtin function
 JN_API void Jn_load_Cfunctions(void);

@@ -19,7 +19,7 @@ static LoopContext loop_stack[256];
 static int loop_depth = 0;
 
 static int iter_count = 0;
-static env_t* local;
+static Jn_environ* local;
 
 void Jnvm_init(JnVM* vm, Chuck* chuck)
 {
@@ -277,11 +277,11 @@ InterpretResult vm_run(JnVM* vm)
                 ident = READ_IDENT();
                 int t_op = READ_BYTE();
                 a = pop(vm);
-                entry_t* entry = get_envEntry(vm->env, ident);
+                Jn_environ_E* entry = environ_get(vm->env, ident);
                 if (NULL == a || NULL == entry)
                     return die(vm, "undefine variable.");
-                if (entry->is_const)
-                    return die(vm, "Cannot reassign a variable of const.");
+                // if (entry->is_const)
+                //     return die(vm, "Cannot reassign a variable of const.");
                 o = entry->value;
                 o->type = a->type;
                 switch (t_op)
@@ -442,10 +442,10 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
-                o = get_env(vm->env, ident);
-                if (NULL == o)
-                    return die(vm, "undefine variable '%s'.", ident);
-                push(vm, jn_intern_obj(o));
+                Jn_environ_E* ent = environ_get(vm->env, ident);
+                if (ent == NULL)
+                    return die(vm, "Seem like you got an undefine variable '%s'.", ident);
+                push(vm, jn_intern_obj(ent->value));
                 break;
             case OP_PRINTLN:
                 JnObject* out = pop(vm);
@@ -480,7 +480,7 @@ InterpretResult vm_run(JnVM* vm)
                 bool is_const = (bool)READ_BYTE();
                 if (o == NULL || ident == NULL)
                     return die(vm, "Object not set.");
-                set_env(vm->env, ident, o, is_const, false);
+                environ_insert(vm->env, ident, o);
                 break;
             case OP_INDEX:
                 array = pop(vm);
@@ -559,13 +559,13 @@ InterpretResult vm_run(JnVM* vm)
                  }
                 break;
             case OP_SCOPE_ENTER:
-                env_t* local = init_env(vm->env);
+                Jn_environ* local = Jn_environ_init(vm->env);
                 vm->env = local;
                 break;
             case OP_SCOPE_EXIT:
                 if (vm->env->parent)
                 {
-                    env_t* old = vm->env;
+                    Jn_environ* old = vm->env;
                     vm->env = vm->env->parent;
                     free(old);
                 }
@@ -668,11 +668,11 @@ InterpretResult vm_run(JnVM* vm)
                         current->fn = fn;
                         current->ip = vm->ip;
                         current->env = vm->env;
-                        local = init_env(fn->env);
+                        local = Jn_environ_init(fn->env);
 
                         for (int i = fn->arity - 1; i >= 0; --i)
                         {
-                            set_env(local, fn->params[i], args[i], false, false);
+                            environ_insert(local, fn->params[i], args[i]);
                         }
                         vm->env = local;
                         vm->ip = fn->chuck->code;
@@ -697,7 +697,7 @@ InterpretResult vm_run(JnVM* vm)
                     push(vm, o);
                     return INTERPRET_OK;
                 }
-                env_t* old = vm->env;
+                Jn_environ* old = vm->env;
                 CallFrame* frame = &vm->frames[vm->frame_count - 1];
                 vm->ip = frame->ip;
                 vm->env = frame->env;

@@ -52,8 +52,8 @@ void mark_roots(JnVM* vm)
     for (JnObject** slot = vm->stack; slot < vm->sp; slot++)
         mark_object(*slot);
 
-    for (int i = 0; i < vm->global->count; ++i)
-        mark_object(vm->global->entries[i].value);
+    for (int i = 0; i < vm->global->size; ++i)
+        mark_object(vm->global->buckets[i].value);
 }
 
 void Jn_freeObject(JnObject* obj)
