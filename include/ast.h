@@ -182,12 +182,6 @@ typedef struct AST{
         } index;
 
         struct {
-            AST* array;
-            AST* start;
-            AST* end;
-        } slice;
-
-        struct {
             char* name;
             AST* value;
             bool is_const;
@@ -217,7 +211,8 @@ typedef struct AST{
         struct {
             AST* start;
             AST* stop;
-            int op;
+            AST* step;
+            int op, has_step;
         } range_node;
 
         struct {

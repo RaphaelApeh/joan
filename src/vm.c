@@ -421,9 +421,13 @@ InterpretResult vm_run(JnVM* vm)
                 push(vm, jn_obj_none()); // for now
                 break;
             case OP_RANGE:
+                int has_step = READ_BYTE();
                 op = READ_BYTE();
                 int start = JN_AS_INT(pop(vm)); int stop = JN_AS_INT(pop(vm));
-                PUSH(JN_OBJECT_RANGE(start, stop, 0)); // TODO add step support 
+                int step = 0;
+                if (has_step)
+                    step = JN_AS_INT(pop(vm));
+                PUSH(JN_OBJECT_RANGE(start, stop, step));
                 break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
@@ -865,9 +869,12 @@ void compile(AST* node, Chuck* chuck)
         break;
 
     case AST_RANGE:
+        if (node->range_node.has_step)
+            compile(node->range_node.step, chuck);
         compile(node->range_node.stop, chuck);
         compile(node->range_node.start, chuck);
         WRITE_CHUCK(chuck, OP_RANGE);
+        WRITE_CHUCK(chuck, node->range_node.has_step);
         WRITE_CHUCK(chuck, node->range_node.op);
         break;
     case AST_ENUM: 

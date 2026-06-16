@@ -1,4 +1,4 @@
 let x = 32..21
 arr := [1, 2, 4, 5]
-// ❌ Error can not set an iter object
-println arr[1..2]
+
+println arr[0..3:2] // 4

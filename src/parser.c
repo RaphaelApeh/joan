@@ -163,15 +163,21 @@ static AST* parse_loop(joan_parser_t* p)
 
 static AST* parse_range(joan_parser_t* p, AST* node)
 {
-    advance_parser_c(p); // ...
+    advance_parser_c(p); // ..
     int op = 0; // None
     if (match(p, TOKEN_EQUAL))
         op = TOKEN_EQUAL;
     else if (match(p, TOKEN_LT))
         op = TOKEN_LT;
+    AST* stop = parse_expr(p);
+    AST* step = NULL;
+    if (match(p, TOKEN_COLON))
+        step = parse_expr(p);
     AST* ast = ast_create(p, AST_RANGE);
     ast->range_node.start = node;
-    ast->range_node.stop = parse_expr(p);
+    ast->range_node.stop = stop;
+    ast->range_node.step = step;
+    ast->range_node.has_step = step != NULL;
     ast->range_node.op = op;
     return ast;
 }
