@@ -35,7 +35,8 @@ typedef struct Chuck{
 typedef enum 
 {
     INTERPRET_OK,
-    INTERPRET_RUNTIME_ERROR
+    INTERPRET_RUNTIME_ERROR,
+    INTERPRET_ERROR,
 } InterpretResult;
 
 typedef struct {
@@ -77,6 +78,8 @@ typedef struct {
 void Jnvm_init(JnVM* vm, Chuck* chuck);
 void chuck_init(Chuck* chuck);
 void compile(AST* node, Chuck* chuck);
+void vm_free(JnVM* vm);
+void chuck_free(Chuck* chuck);
 
 InterpretResult vm_run(JnVM* vm);
 

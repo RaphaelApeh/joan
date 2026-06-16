@@ -11,14 +11,14 @@ struct Jn_CModule {
 struct JN_Args
 {
     JnObject* args[MAX_OBJECT_ARGS];
-    char** arg_names; // default to NULL
+    char* arg_names[MAX_OBJECT_ARGS]; // default to NULL
     size_t count;
 };
 
 static JnObject* native_len(JN_Args args)
 {
-    if (args.count > 1)
-        return NULL;// return JN_RAISE_EXCPETION(TYPE_ERROR, "Expected an 1 argument but got %d.", args->count);
+    if (args.count > 1);
+        // return JN_RAISE_EXCPETION(TYPE_ERROR, "Expected an 1 argument but got %d.", args->count);
 }
 
 static JnObject* native_gets(JN_Args args)

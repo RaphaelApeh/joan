@@ -14,7 +14,11 @@
 
 #define WRITE_CHUCK(chuck, OP) write_chuck_loc(chuck, OP, line, column);
 
-#define PUSH(obj) push(vm, (obj))
+#define PUSH(vm, obj)  do { \
+    assert(vm != NULL && obj != NULL);              \
+    if (JN_IS_ERROR(obj)) return vm_error(vm, obj); \
+    push(vm, obj);                                  \
+}while(false)
 
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
@@ -47,6 +51,20 @@ void chuck_init(Chuck* chuck)
     assert(chuck->idents != NULL);
 }
 
+void chuck_free(Chuck* chuck)
+{
+    assert(chuck != NULL);
+    free(chuck->code);
+    free(chuck->constants);
+    free(chuck->idents);
+}
+
+void vm_free(JnVM* vm)
+{
+    assert(vm != NULL);
+    free(vm->sp);
+    free(vm->ip);
+}
 
 static inline int vm_line(JnVM* vm)
 {
@@ -59,6 +77,27 @@ static inline int vm_column(JnVM* vm)
     size_t ip = (size_t)(vm->ip - vm->chuck->code);
     if (ip == 0)  return 0;
     return vm->chuck->columns[ip - 1];
+}
+
+static int vm_error(JnVM* vm, JnObject* obj)
+{
+    assert(obj != NULL && JN_IS_ERROR(obj));
+    J_Context* ctx = Jn_get_context();
+    ctx->cur_line = vm_line(vm);
+    ctx->column = vm_column(vm);
+    obj->expection.filename = (char *)ctx->source.filename;
+    obj->expection.line = ctx->cur_line;
+    obj->expection.col = ctx->column;
+    printf(JN_ERROR_PRINT(obj->expection.type));
+    putchar(':');
+    fprintf(
+        stderr, 
+        " '%s':%d:%d \n\t",  ctx->source.filename ? ctx->source.filename: "main",
+        ctx->cur_line, ctx->column
+    );
+    printf("%s\n", obj->expection.error_msg);
+    print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
+    return INTERPRET_ERROR;
 }
 
 static InterpretResult die(JnVM* vm, const char* msg, ...)
@@ -111,7 +150,7 @@ InterpretResult vm_run(JnVM* vm)
         {
             case OP_CONSTANT:
                 o = READ_CONST();
-                push(vm, jn_intern_obj(o));
+                PUSH(vm, jn_intern_obj(o));
                 break;
             case OP_ADD:
                 a = pop(vm);
@@ -119,7 +158,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = jn_intern_obj(eval_binary(b, a, EVAL_ADD));
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_SUB:
                 a = pop(vm);
@@ -127,13 +166,13 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_SUB);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_MUL:
                 a = pop(vm);
                 b = pop(vm);
                 a->int32 = a->int32 * b->int32;
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_BITAND:
                 a = pop(vm);
@@ -141,7 +180,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_BAND);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_BITOR:
                 a = pop(vm);
@@ -149,7 +188,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_BOR);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_PERC:
                 a = pop(vm);
@@ -157,12 +196,12 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_PERC);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_DIV:
                 a = pop(vm); b = pop(vm);
                 a = eval_binary(b, a, EVAL_DIV);
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_BITAC:
                 a = pop(vm);
@@ -170,7 +209,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_BAC);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_EQUAL:
                 a = pop(vm);
@@ -178,7 +217,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_EQUAL);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_LSHIFT:
                 a = pop(vm);
@@ -186,7 +225,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_LSHIFT);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_RSHIFT:
                 a = pop(vm);
@@ -194,7 +233,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_RSHIFT);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_NEQ:
                 a = pop(vm);
@@ -202,7 +241,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_NOTEQUAL);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_GT:
                 a = pop(vm);
@@ -210,7 +249,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_GT);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_GTE:
                 a = pop(vm);
@@ -218,7 +257,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_GTE);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_LT:
                 a = pop(vm);
@@ -226,7 +265,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_LT);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_LTE:
                 a = pop(vm);
@@ -234,7 +273,7 @@ InterpretResult vm_run(JnVM* vm)
                 a = eval_binary(b, a, EVAL_LTE);
                 if (NULL == a)
                     return die(vm, "Invalid binary");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_ARRAY:
                 count = READ_BYTE();
@@ -246,20 +285,20 @@ InterpretResult vm_run(JnVM* vm)
                 assert(arr != NULL);
                 o = JN_OBJECT(ARRAY_TYPE);
                 o->arr = arr;
-                push(vm, o);
+                PUSH(vm, o);
                 break;
             case OP_ITER:
                 // count = READ_BYTE();
                 // iter = ObjectIter(count);
                 // for (int i = count - 1; i >= 0; --i)
                 // {
-                //     //pushItem(iter, pop(vm));
+                //     //PUSHItem(iter, pop(vm));
                 //     iter->items[i] = pop(vm);
                 //     iter->count++;
                 // }
                 // o = jn_obj_new(ITER_TYPE);
                 // o->iter = iter;
-                // push(vm, o);
+                // PUSH(vm, o);
                 break;
             case OP_HM:
                 count = READ_BYTE();
@@ -272,7 +311,7 @@ InterpretResult vm_run(JnVM* vm)
                 assert(map != NULL);
                 JnObject* obj = JN_OBJECT(HASHMAP_TYPE);
                 obj->hashmap = map;
-                push(vm, obj);
+                PUSH(vm, obj);
                 break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
@@ -364,38 +403,38 @@ InterpretResult vm_run(JnVM* vm)
                 a = pop(vm);
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_IN);
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_NOT_IN:
                 a = pop(vm);
                 b = pop(vm);
                 a = eval_binary(b, a, EVAL_NOT_IN);
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_IS:
                 b = pop(vm); a = pop(vm);
                 a = eval_binary(a, b, EVAL_IS);
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_AND:
                 b = pop(vm); a = pop(vm);
                 a = jn_intern_obj(eval_binary(a, b, EVAL_AND));
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_OR:
                 b = pop(vm); a = pop(vm);
                 a = jn_intern_obj(eval_binary(a, b, EVAL_OR));
                 if (NULL == a)
                     return die(vm, "Invalid binary opration.");
-                push(vm, a);
+                PUSH(vm, a);
                 break;
             case OP_NOT:
                 o = pop(vm);
-                push(vm, jn_obj_bool(!is_truthy(o)));
+                PUSH(vm, jn_obj_bool(!is_truthy(o)));
                 break;
             case OP_ASSERT:
                 o = pop(vm);
@@ -417,7 +456,7 @@ InterpretResult vm_run(JnVM* vm)
                     default:
                         return die(vm, "Got an invalid member token %d\n", op);
                 }
-                push(vm, jn_obj_none()); // for now
+                PUSH(vm, jn_obj_none()); // for now
                 break;
             case OP_RANGE:
                 int has_step = READ_BYTE();
@@ -426,7 +465,7 @@ InterpretResult vm_run(JnVM* vm)
                 int step = 0;
                 if (has_step)
                     step = JN_AS_INT(pop(vm));
-                PUSH(JN_OBJECT_RANGE(start, stop, step));
+                PUSH(vm, JN_OBJECT_RANGE(start, stop, step));
                 break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
@@ -434,7 +473,7 @@ InterpretResult vm_run(JnVM* vm)
                 if (ent == NULL)
                     return die(vm, "Seem like you did not define a variable '%s'.", ident);
                 assert(ent->value != NULL);
-                push(vm, jn_intern_obj(ent->value));
+                PUSH(vm, jn_intern_obj(ent->value));
                 break;
             case OP_PRINTLN:
                 JnObject* out = pop(vm);
@@ -448,11 +487,11 @@ InterpretResult vm_run(JnVM* vm)
                 {
                     case INT_TYPE:
                         o->int32 = -(o->int32);
-                        push(vm, o);
+                        PUSH(vm, o);
                         break;
                     case FLOAT_TYPE:
                         o->float32 = -o->float32;
-                        push(vm, o);
+                        PUSH(vm, o);
                         break;
                     default:
                         return die(vm, "Invalid type.");
@@ -463,7 +502,7 @@ InterpretResult vm_run(JnVM* vm)
                 switch (o->type)
                 {
                 case ARRAY_TYPE:
-                    push(vm, JN_RETURN_INT(JN_AS_ARRAY(o)->size));
+                    PUSH(vm, JN_RETURN_INT(JN_AS_ARRAY(o)->size));
                     break;
                 default:
                     return die(vm, "Expected an iterable.");
@@ -473,7 +512,7 @@ InterpretResult vm_run(JnVM* vm)
                 pop(vm); break;
             case OP_DUP:
                 JnObject* top = *(vm->sp - 1);
-                push(vm, top); break;
+                PUSH(vm, top); break;
             case OP_SET_GLOBAL:
                 o = pop(vm);
                 ident = READ_IDENT();
@@ -496,7 +535,7 @@ InterpretResult vm_run(JnVM* vm)
                     case ARRAY_TYPE:
                         o = JN_GET_ARRAY(array->arr, index);
                         if (o == NULL) return die(vm, "Invalid array index.");
-                        push(vm, o);
+                        PUSH(vm, o);
                         break;
                     case STR_TYPE:
                         if (index < 0)
@@ -509,19 +548,19 @@ InterpretResult vm_run(JnVM* vm)
                         str[0] = array->str->chars[index];
                         str[1] = '\0';
                         o = jn_obj_string(str);
-                        push(vm, o);
+                        PUSH(vm, o);
                         break;
                     case ITER_TYPE:
                         // if (index < 0 || index >= array->iter->count)
                         //     return die(vm, "pos is > or < array length");
                         // o = array->iter->items[index];
-                        // push(vm, o);
+                        // PUSH(vm, o);
                         break;
                     case HASHMAP_TYPE:
                     Jn_HashEntry* entry = JN_HASHMAP_GET((array->hashmap), idx_key);
                     if (entry == NULL)
                         return die(vm, "invalid key.");
-                    push(vm, entry->value);
+                    PUSH(vm, entry->value);
                     break;
                     default:
                         return die(vm, "Expected an iterable but got '%s'.", "TODO");
@@ -596,7 +635,7 @@ InterpretResult vm_run(JnVM* vm)
                 JnObject* iterable = pop(vm);
                 if (!JN_IS_ITERABLE(iterable))
                     return die(vm, "object is not iterable.");
-                push(vm, JN_ITER_INIT(iterable));
+                PUSH(vm, JN_ITER_INIT(iterable));
                 break;
             case OP_ITER_NEXT:
                 JnObject* iter_obj = pop(vm);
@@ -610,25 +649,25 @@ InterpretResult vm_run(JnVM* vm)
                 case ARRAY_TYPE:
                     if (_iter->index >= JN_AS_ARRAY(target)->size)
                     {
-                        push(vm, JN_RETURN_BOOL(false));
+                        PUSH(vm, JN_RETURN_BOOL(false));
                         break;
                     }
-                    push(vm, JN_RETURN_INT(_iter->index));
+                    PUSH(vm, JN_RETURN_INT(_iter->index));
                     tmp = JN_AS_ARRAY(target)->items[_iter->index++];
                     assert(tmp != NULL);
-                    push(vm, tmp);
-                    push(vm, JN_RETURN_BOOL(true));
+                    PUSH(vm, tmp);
+                    PUSH(vm, JN_RETURN_BOOL(true));
                     break;
                 case HASHMAP_TYPE:
                     if (_iter->index >= JN_AS_HM(target)->size)
                     {
-                        push(vm, JN_RETURN_BOOL(false));
+                        PUSH(vm, JN_RETURN_BOOL(false));
                         break;
                     }
-                    push(vm, JN_RETURN_INT(_iter->index));
+                    PUSH(vm, JN_RETURN_INT(_iter->index));
                     tmp = target->hashmap->buckets[_iter->index++].key;
-                    push(vm, tmp);
-                    push(vm, JN_RETURN_BOOL(true));
+                    PUSH(vm, tmp);
+                    PUSH(vm, JN_RETURN_BOOL(true));
                     break;
                 default:
                     break;
@@ -652,7 +691,7 @@ InterpretResult vm_run(JnVM* vm)
                         a = o->native_fn->fn(args, (size_t)count);
                         if (a == NULL)
                             return die(vm, "SystemError: got NULL");
-                        push(vm, a);
+                        PUSH(vm, a);
                         break;
                     }
                     case FUNCTION_TYPE: {
@@ -698,7 +737,7 @@ InterpretResult vm_run(JnVM* vm)
                 o = pop(vm);
                 if (vm->frame_count == 0)
                 {
-                    push(vm, o);
+                    PUSH(vm, o);
                     return INTERPRET_OK;
                 }
                 Jn_environ* old = vm->env;
@@ -706,7 +745,7 @@ InterpretResult vm_run(JnVM* vm)
                 vm->ip = frame->ip;
                 vm->env = frame->env;
                 free(old);
-                push(vm, o);
+                PUSH(vm, o);
                 break;
             case OP_ERROR:
                 return INTERPRET_RUNTIME_ERROR;

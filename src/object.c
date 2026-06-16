@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
@@ -110,12 +111,15 @@ JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step)
 }
 
 
-JnObject* jn_obj_error(int type, char* msg)
+JnObject* jn_obj_error(int type, char* msg, ...)
 {
     JnObject* obj = jn_obj_new(ERROR_TYPE);
-    obj->expection.error_msg = msg;
     obj->expection.type = type;
+    va_list arg; va_start(arg, msg);
+    // vsnprintf(msg, sizeof(msg), ".", arg);
+    va_end(arg);
     // defualt values
+    obj->expection.error_msg = strdup(msg);
     obj->expection.col = 0;
     obj->expection.line = 0;
     obj->expection.filename = NULL;

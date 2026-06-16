@@ -66,14 +66,14 @@ typedef struct Jn_environ_E Jn_environ_E;
 typedef struct Jn_environ Jn_environ;
 
 // Object internal pool
-#define JN_INTER_SIZE 1024
+#define JN_INTER_SIZE 1 << 10
 // max JnObject object store
-#define JN_MAX_OBJECT 0x14062005
+#define JN_MAX_OBJECT 0xff << 10
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define JN_OBJECT(type) jn_obj_new(type)
-#define JN_RAISE_EXCPETION(t, msg) jn_obj_error(t, msg)
+#define JN_RAISE_EXCPETION(t, msg, ...) jn_obj_error(t, msg, ##__VA_ARGS__)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_INT(i) jn_obj_int((i))
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
@@ -98,6 +98,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
 #define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
 #define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
+#define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_ITER(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
@@ -129,6 +130,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 #define JN_AS_HM(obj) obj->hashmap
 #define JN_ITER_INIT(obj) jn_obj_iter(obj)
+#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT_ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX_ERROR" : (type) ==   ASSERT_ERROR ? "ASSERT_ERROR" : (type) == TYPE_ERROR ? "TYPE_ERROR" : "UNDEFINE_ERROR")
 // State
 
 typedef struct {
@@ -293,7 +295,7 @@ JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
-JnObject* jn_obj_error(int type, char* msg);
+JnObject* jn_obj_error(int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
 

@@ -124,7 +124,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     InterpretResult i = vm_run(state->vm);
     // Clean-Up
     gc_collect(state);
-    if (i == INTERPRET_RUNTIME_ERROR)
+    if (i != INTERPRET_OK)
     {
         // RESET
         state->vm->chuck->count = 0;
@@ -180,7 +180,8 @@ JN_API void Jn_program_close(void)
     arena_free(state->arena);
     free(state->arena);
     free(state->parser);
-    free(state->vm->chuck->code);
+    chuck_free(state->vm->chuck);
+    vm_free(state->vm);
     free(state->vm->chuck);
     free(state->vm);
     free(state->gc);
