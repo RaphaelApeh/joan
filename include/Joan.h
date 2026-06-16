@@ -47,6 +47,7 @@ typedef enum{
     INSTANCE_TYPE,
     MODULE_TYPE,
     ENUM_TYPE,
+    ERROR_TYPE,
 } JnTypeObject;
 
 typedef struct GC GC;
@@ -72,6 +73,7 @@ typedef struct Jn_environ Jn_environ;
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define JN_OBJECT(type) jn_obj_new(type)
+#define JN_RAISE_EXCPETION(t, msg) jn_obj_error(t, msg)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_INT(i) jn_obj_int((i))
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
@@ -95,6 +97,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, ARRAY_TYPE)
 #define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
 #define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
+#define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_ITER(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
@@ -247,6 +250,7 @@ typedef struct JnObject{
 
     JnTypeObject type;
     int marked;
+    int constant;
 } JnObject;
 
 
@@ -289,6 +293,7 @@ JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
 JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
+JnObject* jn_obj_error(int type, char* msg);
 char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
 

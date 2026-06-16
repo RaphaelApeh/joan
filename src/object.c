@@ -109,6 +109,50 @@ JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step)
     return obj;
 }
 
+
+JnObject* jn_obj_error(int type, char* msg)
+{
+    JnObject* obj = jn_obj_new(ERROR_TYPE);
+    obj->expection.error_msg = msg;
+    obj->expection.type = type;
+    // defualt values
+    obj->expection.col = 0;
+    obj->expection.line = 0;
+    obj->expection.filename = NULL;
+    return obj;
+}
+
+void jn_obj_reassign(JnObject* obj1, JnObject* obj2)
+{
+    assert(obj1 != NULL && obj2 != NULL);
+    obj1->type = obj2->type;
+    switch (obj2->type)
+    {
+        case INT_TYPE:
+            obj1->int32 = obj2->int32;
+            break;
+        case STR_TYPE:
+            printf("Hello World 1\n");
+            obj1->str = malloc(sizeof(JnStringObject));
+            memcpy(obj1->str, obj2->str, sizeof(*obj2->str));
+            break;
+        case BOOL_TYPE:
+            obj1->bool8 = obj2->bool8;
+            break;
+        case FLOAT_TYPE:
+            obj1->float32 = obj2->float32;
+            break;
+        case CHAR_TYPE:
+            obj1->j_char = obj2->j_char;
+            break;
+        case RANGE_TYPE:
+            obj1->range = obj2->range;
+            break;
+        default:
+            assert(false && "Not yet impl reassign for this type TODO.");
+    }
+}
+
 static uint64_t hash_object(JnObject* obj)
 {
     switch (obj->type)

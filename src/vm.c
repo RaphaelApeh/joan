@@ -280,82 +280,81 @@ InterpretResult vm_run(JnVM* vm)
                 a = pop(vm);
                 Jn_environ_E* entry = environ_get(vm->env, ident);
                 if (NULL == a || NULL == entry)
-                    return die(vm, "undefine variable.");
-                // if (entry->is_const)
-                //     return die(vm, "Cannot reassign a variable of const.");
+                    return die(vm, "undefine variable '%s', \tI think you meant ':=' but forgot.", ident);
+                if (entry->value->constant)
+                    return die(vm, "Cannot reassign a variable of const.");
                 o = entry->value;
-                o->type = a->type;
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
                         b = eval_binary(o, a, EVAL_ADD);
                         if (NULL == b)
                             break;
-                        *o = *b; // TODO
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_AMINUS:
                         b = eval_binary(o, a, EVAL_SUB);
                         if (NULL == b)
                             break;
-                        *o = *b; // TODO
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_EQUAL:
-                        jn_intern_obj(o);
-                        *o = *a; //TODO
+                        jn_obj_reassign(o, a);
                         break;
                     case TOKEN_ASTAR:
                         b = eval_binary(o, a, EVAL_MUL);
                         if (NULL == b)
                             break;
-                        *o = *b; // TODO
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ARSHIFT:
                         b = eval_binary(o, a, EVAL_RSHIFT);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
+
                         break;
                     case TOKEN_ALSHIFT:
                         b = eval_binary(o, a, EVAL_LSHIFT);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_BITAC:
                         b = eval_binary(o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_APERCENTAGE:
                         b = eval_binary(o, a, EVAL_PERC);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ABITAC:
                         b = eval_binary(o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ASLASH:
                         b = eval_binary(o, a, EVAL_DIV);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ABITAND:
                         b = eval_binary(o, a, EVAL_BAND);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ABITOR:
                         b = eval_binary(o, a, EVAL_BOR);
                         if (NULL == b)
                             break;
-                        *o = *b;
+                        jn_obj_reassign(o, b);
                         break;
                     default:
                         return die(vm, "invalid operator.");
@@ -481,6 +480,7 @@ InterpretResult vm_run(JnVM* vm)
                 bool is_const = (bool)READ_BYTE();
                 if (o == NULL || ident == NULL)
                     return die(vm, "Object not set.");
+                o->constant = is_const;
                 environ_insert(vm->env, ident, o);
                 break;
             case OP_INDEX:
@@ -529,6 +529,8 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_SET_INDEX:
                 value = pop(vm); array = pop(vm); pos = pop(vm);
+                if (JN_IS_ARRAY(array) && !JN_IS_INT(pos) && !JN_IS_RANGE(pos))
+                    return die(vm, "Expected type 'int' or 'range' but got 'TODO'.");
                 index = pos->int32;
                 switch (array->type)
                 {
@@ -1218,7 +1220,7 @@ void compile(AST* node, Chuck* chuck)
         {
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, 1); //TODO: For some reason if set to false it crashes lol.
+            WRITE_CHUCK(chuck, 0);
             break;
         }
         WRITE_CHUCK(chuck, OP_REASSIGN);

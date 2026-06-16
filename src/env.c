@@ -56,6 +56,12 @@ void environ_insert(Jn_environ* env, char* key, JnObject* obj)
 {
 
     assert(env != NULL && key != NULL && obj != NULL);
+    Jn_environ_E* e = environ_get(env, key);
+    if (NULL != e)
+    {
+        e->value = obj;
+        return;
+    }
     if (env->capacity <= env->size)
     {
         env->capacity *= 2;

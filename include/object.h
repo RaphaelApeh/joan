@@ -22,6 +22,8 @@ int64_t range_len(JnRange* r);
 int64_t range_at(JnRange* r, int64_t idx);
 JnObject* jn_intern_obj(JnObject* obj);
 
+void jn_obj_reassign(JnObject* obj1, JnObject* obj2);
+
 bool is_truthy(JnObject* obj);
 void print_JnObject(JnObject* obj);
 #endif
