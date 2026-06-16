@@ -46,6 +46,7 @@ typedef enum{
     OP_SET_INDEX,
     OP_CALL,
 
+    OP_LEN,
     OP_JUMP,
     OP_JUMP_IF_FALSE,
     OP_LOOP,
