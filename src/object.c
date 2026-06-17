@@ -113,13 +113,14 @@ JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step)
 
 JnObject* jn_obj_error(int type, char* msg, ...)
 {
+    char buffer[1 << 10];
     JnObject* obj = jn_obj_new(ERROR_TYPE);
     obj->expection.type = type;
     va_list arg; va_start(arg, msg);
-    // vsnprintf(msg, sizeof(msg), ".", arg);
+    vsnprintf(buffer, sizeof(buffer), msg, arg);
     va_end(arg);
     // defualt values
-    obj->expection.error_msg = strdup(msg);
+    obj->expection.error_msg = strdup(buffer);
     obj->expection.col = 0;
     obj->expection.line = 0;
     obj->expection.filename = NULL;

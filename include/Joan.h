@@ -59,7 +59,7 @@ typedef struct JnVM JnVM;
 typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
-typedef JnObject* (*Jn_CFunction)(JN_Args* args);
+typedef JnObject* (*Jn_CFunction)(JN_Args args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_E Jn_environ_E;
@@ -99,7 +99,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
 #define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
 #define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
-#define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_ITER(obj))
+#define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
 #define JN_HASHMAP_INSERT(map, k, v, i) do {    \
@@ -111,6 +111,8 @@ typedef struct Jn_environ Jn_environ;
     }                                                \
     Jn_hashmap_insert(map, key, value, i);            \
 }while(false)
+
+#define JN_ALLOC(s) malloc(s)
 
 #define JN_SET_ARRAY(arr, obj, i) do{                  \
     if ((arr) == NULL){                                 \
@@ -130,8 +132,15 @@ typedef struct Jn_environ Jn_environ;
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 #define JN_AS_HM(obj) obj->hashmap
 #define JN_ITER_INIT(obj) jn_obj_iter(obj)
-#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT_ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX_ERROR" : (type) ==   ASSERT_ERROR ? "ASSERT_ERROR" : (type) == TYPE_ERROR ? "TYPE_ERROR" : "UNDEFINE_ERROR")
+#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT_ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX_ERROR" : (type) ==   ASSERT_ERROR ? "ASSERT_ERROR" : (type) == TYPE_ERROR ? "TYPE_ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT_IMPLEMENT_ERROR" : "UNDEFINE_ERROR")
 // State
+
+struct JN_Args
+{
+    JnObject** args;
+    char** arg_names; // default to NULL
+    size_t count;
+};
 
 typedef struct {
     const char* filename;
@@ -168,7 +177,7 @@ typedef struct {
 } JnStringObject;
 
 typedef struct {
-    NativeFn fn;
+    Jn_CFunction fn;
     char* fnName;
 } JnNativeObject;
 
@@ -215,7 +224,7 @@ typedef struct {
 
 typedef enum {
     RUNTIME_ERROR, ASSERT_ERROR, SYS_ERROR, IMPORT_ERROR, SYNTAX_ERROR,
-    TYPE_ERROR, UNDEFINE_ERROR
+    TYPE_ERROR, NOT_IMPLEMENT_ERROR, UNDEFINE_ERROR
 } JN_CERROR_TYPE;
 
 typedef long long JnIntObject;
@@ -249,7 +258,7 @@ typedef struct JnObject{
         int line, col;
         JN_CERROR_TYPE type;
     } expection;
-
+    const char* doc;
     JnTypeObject type;
     int marked;
     int constant;
@@ -262,11 +271,14 @@ void* Jn_alloc(size_t size);
 // Helpers
 unsigned long djb2_hash(unsigned char* str);
 
+JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count);
+
 // Register native function
-JN_API void Jn_register(const char* name, const char* doc, Jn_CFunction fn);
+JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
+JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
 
 // Load builtin function
-JN_API void Jn_load_Cfunctions(void);
+JN_API void Jn_load_Cfunctions(J_State* state);
 // Call user-define functions
 JN_API JnObject* Jn_call_fn(char* fn_name, JN_Args* args);
 JN_API J_State* Jn_get_state(void);

@@ -202,7 +202,7 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
             goto end;
         }
     }
-    return JN_RAISE_EXCPETION(TYPE_ERROR, "Invalid type %d %d.");
+    return JN_RAISE_EXCPETION(TYPE_ERROR, "Invalid type %d %d.", lhs->type, rhs->type);
     end:
         return NULL;
 }

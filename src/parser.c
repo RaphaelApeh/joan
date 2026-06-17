@@ -533,6 +533,13 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         if (check(p, TOKEN_RANGE))
             return parse_range(p, left);
 
+        if (match(p, TOKEN_SIMICOLON))
+        {
+            AST* block = new_block(p);
+            add_block(block, left);
+            add_block(block, parse_stmt(p));
+            return block;
+        }
         //TODO
         if (check(p, TOKEN_SETTER) || check(p, TOKEN_DOT))
         {

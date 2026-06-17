@@ -100,6 +100,7 @@ JN_API void Jn_program_init(void)
     state->vm->global = state->globals;
     Jnvm_init(state->vm, state->vm->chuck);
     assert(state->vm->global != NULL);
+    Jn_load_Cfunctions(state);
 }
 
 JN_API int Jn_exec_program(J_State* state, char* source)
@@ -147,6 +148,7 @@ JN_API int Jn_execute_main(char* filepath)
     assert(src.filename != NULL && src.source != NULL);
     J_State* state = Jn_get_state();
     state->cxt.source = src;
+    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filepath));
     int exit_code = Jn_exec_program(state, src.source);
     return exit_code;
 }
@@ -180,8 +182,8 @@ JN_API void Jn_program_close(void)
     arena_free(state->arena);
     free(state->arena);
     free(state->parser);
-    chuck_free(state->vm->chuck);
-    vm_free(state->vm);
+    // chuck_free(state->vm->chuck);
+    // vm_free(state->vm);
     free(state->vm->chuck);
     free(state->vm);
     free(state->gc);

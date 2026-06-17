@@ -440,7 +440,7 @@ InterpretResult vm_run(JnVM* vm)
                 o = pop(vm);
                 char * msg = READ_IDENT();
                 if (!is_truthy(o))
-                    return die(vm, msg);
+                    return vm_error(vm, JN_RAISE_EXCPETION(ASSERT_ERROR, msg));
                 break;
             case OP_MEMBER:
                 char* field = READ_IDENT(); o = pop(vm); op = READ_BYTE();
@@ -684,11 +684,13 @@ InterpretResult vm_run(JnVM* vm)
                 for (int i = count - 1; i >= 0; --i)
                 {
                     args[i] = pop(vm);
+                    len++;
                 }
                 switch (o->type)
                 {
                     case NATIVE_TYPE: {
-                        a = o->native_fn->fn(args, (size_t)count);
+                        JN_Args arg = Jn_make_arg(args, len);
+                        a = o->native_fn->fn(arg);
                         if (a == NULL)
                             return die(vm, "SystemError: got NULL");
                         PUSH(vm, a);
