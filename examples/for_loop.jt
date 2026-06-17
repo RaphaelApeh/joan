@@ -6,5 +6,8 @@ for i, key in arr{
     println "value: {}" << key
 }
 
+for x in hm {
+        println x
+}
 
 println "Done"

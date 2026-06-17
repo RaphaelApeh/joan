@@ -1077,137 +1077,67 @@ void compile(AST* node, Chuck* chuck)
         jump = emit_jump(chuck, OP_JUMP);
         loop->continues[loop->continue_count++] = jump;
         break;
-    
-    case AST_FOR:
+
+    case AST_FOR: {
+        
+        LoopContext* loop_for = &loop_stack[loop_depth++];
+        loop_for->break_count = 0;
+        loop_for->continue_count = 0;
+                offset = current_offset(chuck);
+        loop_for->loop_offset = offset;
+
+
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
+
+        compile(node->for_node.iter, chuck);
+        WRITE_CHUCK(chuck, OP_GET_ITER);
+        // push iter object to __iter variable
         char tmp[200];
         snprintf(tmp, sizeof(tmp), "__iter_%d", iter_count++);
-        compile(node->for_node.iter, chuck);
-        int iter_id = add_ident(chuck, tmp);
+        int iter_slot = add_ident(chuck, strdup(tmp));
         WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        WRITE_CHUCK(chuck, iter_id);
+        WRITE_CHUCK(chuck, iter_slot);
         WRITE_CHUCK(chuck, 0);
 
-        idx = add_constant(chuck, JN_RETURN_INT(0));
-        WRITE_CHUCK(chuck, OP_CONSTANT);
-        WRITE_CHUCK(chuck, idx);
-
-        int idx_id = add_ident(chuck, node->for_node.index);
-        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        WRITE_CHUCK(chuck, idx_id);
-        WRITE_CHUCK(chuck, 0);
-
-        loop = &loop_stack[loop_depth++];
-        loop->break_count = 0;
-        loop->continue_count = 0;
-
-        int loop_start = current_offset(chuck);
-        loop->loop_offset = loop_start;
-
         WRITE_CHUCK(chuck, OP_GET_GLOBAL);
-        WRITE_CHUCK(chuck, idx_id);
-
-        WRITE_CHUCK(chuck, OP_GET_GLOBAL);
-        WRITE_CHUCK(chuck, iter_id);
-
-        WRITE_CHUCK(chuck, OP_LEN);
-        WRITE_CHUCK(chuck, OP_LT);
+        WRITE_CHUCK(chuck, iter_slot);
+        
+        WRITE_CHUCK(chuck, OP_ITER_NEXT);
 
         exit_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
-
-        WRITE_CHUCK(chuck, OP_GET_GLOBAL);
-        WRITE_CHUCK(chuck, idx_id);
-        WRITE_CHUCK(chuck, OP_GET_GLOBAL);
-        WRITE_CHUCK(chuck, iter_id);
-
-        WRITE_CHUCK(chuck, OP_INDEX);
-
+            
         int var_id = add_ident(chuck, node->for_node.ident);
         WRITE_CHUCK(chuck, OP_SET_GLOBAL);
         WRITE_CHUCK(chuck, var_id);
         WRITE_CHUCK(chuck, 0);
 
+        if (node->for_node.index != NULL)
+        {
+            int idx = add_ident(chuck, node->for_node.index);
+            WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+            WRITE_CHUCK(chuck, idx);
+            WRITE_CHUCK(chuck, 0);
+        }
+
         compile(node->for_node.block, chuck);
 
-        for (int i = 0; i < loop->continue_count; i++)
-        {
-            patch_jump(chuck, loop->continues[i]);
-        }
-        WRITE_CHUCK(chuck, OP_CONSTANT);
-        WRITE_CHUCK(chuck, add_constant(chuck, JN_RETURN_INT(1)));
-        WRITE_CHUCK(chuck, OP_REASSIGN);
-        WRITE_CHUCK(chuck, idx_id);
-        WRITE_CHUCK(chuck, TOKEN_APLUS);
-
-        emit_loop(chuck, loop_start);
+        emit_loop(chuck, offset);
         patch_jump(chuck, exit_jmp);
 
-        for (int i = 0; i < loop->break_count; ++i)
+                
+        for (int i = 0; i < loop_for->continue_count; i++)
         {
-            patch_jump(chuck, loop->breaks[i]);
+            patch_jump(chuck, loop_for->continues[i]);
         }
-        loop_depth--;
+
+        for (int i = 0; i < loop_for->break_count; i++)
+        {
+            patch_jump(chuck, loop_for->breaks[i]);
+        }
         WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
+        loop_depth--;
         break;
-    // TODO
-    // case AST_FOR: {
-        
-    //     LoopContext* loop_for = &loop_stack[loop_depth++];
-    //     offset = current_offset(chuck);
-    //     loop_for->loop_offset = offset;
-    //     loop_for->break_count = 0;
-    //     loop_for->continue_count = 0;
-
-    //     WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
-
-    //     compile(node->for_node.iter, chuck);
-    //     WRITE_CHUCK(chuck, OP_GET_ITER);
-    //     // push iter object to __iter variable
-    //     char tmp[200];
-    //     snprintf(tmp, sizeof(tmp), "__iter_%d", iter_count++);
-    //     int iter_slot = add_ident(chuck, strdup(tmp));
-    //     WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-    //     WRITE_CHUCK(chuck, iter_slot);
-    //     WRITE_CHUCK(chuck, 1);
-
-    //     WRITE_CHUCK(chuck, OP_GET_GLOBAL);
-    //     WRITE_CHUCK(chuck, iter_slot);
-        
-    //     WRITE_CHUCK(chuck, OP_ITER_NEXT);
-
-    //     exit_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
-            
-    //     int var_id = add_ident(chuck, node->for_node.ident);
-    //     WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-    //     WRITE_CHUCK(chuck, var_id);
-    //     WRITE_CHUCK(chuck, 0);
-
-    //     if (node->for_node.index != NULL)
-    //     {
-    //         int idx = add_ident(chuck, node->for_node.index);
-    //         WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-    //         WRITE_CHUCK(chuck, idx);
-    //         WRITE_CHUCK(chuck, 0);
-    //     }
-
-    //     compile(node->for_node.block, chuck);
-        
-    //     emit_loop(chuck, offset);
-    //     patch_jump(chuck, exit_jmp);
-        
-    //     for (int i = 0; i < loop_for->continue_count; i++)
-    //     {
-    //         patch_jump(chuck, loop_for->continues[i]);
-    //     }
-
-    //     for (int i = 0; i < loop_for->break_count; i++)
-    //     {
-    //         patch_jump(chuck, loop_for->breaks[i]);
-    //     }
-    //     WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
-    //     loop_depth--;
-    //     break;
-    // }
+    }
     case AST_LOOP:
         LoopContext* loop_p = &loop_stack[loop_depth++];
         
