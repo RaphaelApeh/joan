@@ -37,7 +37,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control.joan",
-				"match": "\\b(if|elseif|else|fn|class|struct|assert|match|const|let|while|for|break|continue|is|in|and|or|as|not|using|loop|then|enum|return)\\b"
+				"match": "\\b(if|elseif|else|fn|class|struct|assert|match|const|let|while|for|break|continue|is|in|and|or|as|not|import|loop|then|enum|return)\\b"
 			}]
 		},
 		"typewords": {

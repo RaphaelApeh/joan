@@ -97,6 +97,8 @@ double tonumber(JnObject* obj);
 void print_source_lines(char* source, int line, int column, int context);
 void print_source_line(char* source, int line, int column);
 
+char* cat_path(char* path);
+
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);
 param_t* param_init(void);

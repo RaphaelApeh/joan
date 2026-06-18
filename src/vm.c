@@ -275,6 +275,10 @@ InterpretResult vm_run(JnVM* vm)
                     return die(vm, "Invalid binary");
                 PUSH(vm, a);
                 break;
+            case OP_IMPORT: 
+                char* lib = READ_IDENT();
+                char* path = cat_path(lib);
+                break;
             case OP_ARRAY:
                 count = READ_BYTE();
                 JnArrayObject* arr = NULL;
@@ -731,8 +735,7 @@ InterpretResult vm_run(JnVM* vm)
             }
             case OP_ERROR_MSG:
                 ident = READ_IDENT();
-                printf("%s\n", ident);
-                return INTERPRET_RUNTIME_ERROR;
+                return vm_error(vm, JN_RAISE_EXCPETION(SYNTAX_ERROR, ident));
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
@@ -851,6 +854,11 @@ void compile(AST* node, Chuck* chuck)
                 write_chuck_loc(chuck, OP_ERROR, line, column);
                 break;
         }
+        break;
+    case AST_IMPORT:
+        idx = add_ident(chuck, node->import_node.lib);
+        WRITE_CHUCK(chuck, OP_IMPORT);
+        WRITE_CHUCK(chuck, idx);
         break;
     case AST_BINARY:
         compile(node->binary.left, chuck);

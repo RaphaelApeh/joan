@@ -3,6 +3,14 @@
 #include <Joan.h>
 #include "object.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#define sleep Sleep
+
+#elif
+#include <unistd.h>
+#endif
+
 #define MAX_OBJECT_ARGS 50
 
 struct Jn_CModule {
@@ -60,12 +68,21 @@ static JnObject* native_gets(JN_Args args)
 
 static JnObject* native_put(JN_Args args)
 {
-    assert(false && "NOT_IMPLEMENT_ERROR");
+    if (args.count > 1 || args.count < 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "put() require only one argument but got %d.", args.count);
+    print_JnObject(args.args[0]);
+    return JN_RETURN_NONE;
 }
 
 static JnObject* native_sleep(JN_Args args)
 {
-    assert(false && "NOT_IMPLEMENT_ERROR");
+    if (args.count > 1 || args.count < 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "sleep() require only one argument but got %d.", args.count);
+    if (!JN_AS_INT(args.args[0]))
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "sleep() takes an int type but got TODO.");
+    
+    sleep(JN_AS_INT(args.args[0]));
+    return JN_RETURN_NONE;
 }
 
 
@@ -115,5 +132,7 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filename));
     Jn_register_fn(state, "len", "Returns the length of an iterable", native_len);
     Jn_register_fn(state, "gets", "Get user input.", native_gets);
+    Jn_register_fn(state, "put", "print object without a new-line.", native_put);
+    Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     // add other built-in functions
 }

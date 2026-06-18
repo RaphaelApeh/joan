@@ -173,6 +173,11 @@ JN_API int Jn_exec_REPL(char* source)
     return 0;
 }
 
+JN_API void Jn_import_module(char* path)
+{
+    
+}
+
 JN_API void Jn_program_close(void)
 {
     J_State* state = &Jn_globalState;

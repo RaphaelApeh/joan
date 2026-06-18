@@ -167,8 +167,8 @@ joan_token_t identifier(joan_lexer_t* l)
     }
     else if (strcmp(t.lexeme, "of") == 0)
         t.type = TOKEN_OF;
-    else if (strcmp(t.lexeme, "using") == 0)
-        t.type = TOKEN_USING;
+    else if (equal(t.lexeme, "import"))
+        t.type = TOKEN_IMPORT;    
     else if (strcmp(t.lexeme, "enum") == 0)
         t.type = TOKEN_ENUM;
     else if (strcmp(t.lexeme, "as") == 0)

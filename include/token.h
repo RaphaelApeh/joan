@@ -89,7 +89,7 @@ typedef enum {
 
     TOKEN_FN,
     TOKEN_DO,
-    TOKEN_USING,
+    TOKEN_IMPORT,
     TOKEN_ENUM,
     TOKEN_CONST,
     TOKEN_RETURN,

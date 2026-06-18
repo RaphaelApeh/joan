@@ -135,12 +135,9 @@ AST* parse_block(joan_parser_t* p)
 void advance_parser_c(joan_parser_t* p)
 {
     p->curr = p->next;
-    while (true)
-    {
+    do {
         p->next = next_token(p->l);
-        if (p->next.type != TOKEN_NEWLINE || p->next.type != TOKEN_SIMICOLON);
-            break;
-    }
+    } while(p->next.type == TOKEN_NEWLINE || p->next.type == TOKEN_SIMICOLON);
 }
 
 AST* parse_error(joan_parser_t* p, const char* msg, ...)
@@ -355,11 +352,7 @@ static AST* parse_reassign(joan_parser_t* p, AST* node)
 static AST* parse_call(joan_parser_t* p, AST* callee)
 {
     //e.g main(1, None, true)
-    //TODO:
-    if (callee->type != AST_IDENTIFIER)
-        return parse_error(p, "Expected an identifier.");
     advance_parser_c(p); // (
-    AST* ast = ast_call(p, callee);
     AST* args[20]  = {0}; // TODO
     size_t len = 0;
     while(!match(p, TOKEN_RPARN))
@@ -370,6 +363,9 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
         if (match(p, TOKEN_RPARN))
             break;
     }
+    AST* ast = ast_create(p, AST_CALL);
+    ast->call.callee = callee;
+    ast->call.params = NULL;
     ast->call.pos_args = args;
     ast->call.pos_count = len;
     return ast;
@@ -522,7 +518,6 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         if (check(p, TOKEN_LPARN))
         {
             left = parse_call(p, left);
-            continue;
         }
 
         if (match(p, TOKEN_AT) && check(p, TOKEN_IF))
@@ -533,13 +528,6 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         if (check(p, TOKEN_RANGE))
             return parse_range(p, left);
 
-        if (match(p, TOKEN_SIMICOLON))
-        {
-            AST* block = new_block(p);
-            add_block(block, left);
-            add_block(block, parse_stmt(p));
-            return block;
-        }
         //TODO
         if (check(p, TOKEN_SETTER) || check(p, TOKEN_DOT))
         {
@@ -583,7 +571,7 @@ static AST* parse_hashmap(joan_parser_t* p)
             continue;
         if (match(p, TOKEN_RBRACE))
             break;
-        return parse_error(p, "Something went wrong");
+        return parse_error(p, "expected a closing '}'.");
     }
     ast->hmp_node.keys = keys;
     ast->hmp_node.values = values;
@@ -612,7 +600,7 @@ AST* parse_array(joan_parser_t* p)
             advance_parser_c(p);
             break;
         }
-        return parse_error(p, "<something went wrong>");
+        return parse_error(p, "Expected a closing bracket '['.");
     }
     return arr;
 }
@@ -668,6 +656,18 @@ static AST* parse_lambda(joan_parser_t* p)
     return ast;
 }
 
+static AST* parse_import(joan_parser_t* p)
+{
+    advance_parser_c(p);
+    if (!check(p, TOKEN_STRING)) return parse_error(p, "Expected an import path.");
+    char* lib = GET_LEX(p);
+    advance_parser_c(p);
+    AST* ast = ast_create(p, AST_IMPORT);
+    ast->import_node.lib = lib;
+    ast->import_node.alias = NULL; // TODO
+    return ast;
+}
+
 AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
@@ -698,6 +698,8 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             if (check(p, TOKEN_LBRACE))
                 return parse_hashmap(p);
+            else if (check(p, TOKEN_IMPORT))
+                return parse_import(p);
         case TOKEN_STRING:
             ast = ast_literal(p,  jn_obj_string(t.lexeme));
             advance_parser_c(p);

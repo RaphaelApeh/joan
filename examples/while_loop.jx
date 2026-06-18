@@ -1,15 +1,7 @@
-let x = false
-let count = 0
-while !x {
-    println count
-    count += 1
-    if count == 10 {
-        x = true
-    }
-}
-
-while true {
-    println "Hello World"
-    break
-}
-println "Done"
+arr := [1, 2, 3, 4]
+l := len(arr)
+n := 0
+while n < l{
+    println arr[n]
+    n += 1
+}  

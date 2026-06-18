@@ -132,7 +132,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 #define JN_AS_HM(obj) obj->hashmap
 #define JN_ITER_INIT(obj) jn_obj_iter(obj)
-#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT_ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX_ERROR" : (type) ==   ASSERT_ERROR ? "ASSERT_ERROR" : (type) == TYPE_ERROR ? "TYPE_ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT_IMPLEMENT_ERROR" : "UNDEFINE_ERROR")
+#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX ERROR" : (type) ==   ASSERT_ERROR ? "ASSERTION ERROR" : (type) == TYPE_ERROR ? "TYPE ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT IMPLEMENT ERROR" : "UNDEFINE ERROR")
 // State
 
 struct JN_Args

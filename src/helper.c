@@ -6,6 +6,13 @@
 #include "ast.h"
 
 
+#ifdef _WIN32
+    #include <direct.h>
+
+    #define getcwd _getcwd
+#else
+    #include <unistd.h>
+#endif
 
 unsigned long djb2_hash(unsigned char* str)
 {
@@ -188,4 +195,20 @@ void print_source_line(char* source, int line, int column)
     for (int i = 1; i < column; ++i)
         putchar(' ');
     printf("^\n");
+}
+
+
+char* cat_path(char* path)
+{
+    char s[1 << 10];
+    char* p = path;
+    char* cwd = getcwd(NULL, 0);
+    if (*p == '.')
+    {
+        p++;
+        if (*p == '/' || *p == '\\') p++;
+    }else if(*p == '/' || *p == '\\') p++;
+
+    snprintf(s, sizeof(s), "%s/%s.jt", cwd, p);
+    return strdup(s);
 }

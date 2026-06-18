@@ -62,6 +62,7 @@ typedef enum{
     AST_CONTINUE,
     AST_CLASS,
     AST_DO,
+    AST_IMPORT,
     AST_COMMENT,
 
     AST_ERROR,
@@ -246,9 +247,9 @@ typedef struct AST{
         } lambda_node;
 
         struct {
-            AST* lib;
-            AST* alias;
-        } using_stmt;
+            char* lib;
+            char* alias;
+        } import_node;
 
         struct {
             AST* condition;
