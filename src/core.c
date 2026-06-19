@@ -173,9 +173,10 @@ JN_API int Jn_exec_REPL(char* source)
     return 0;
 }
 
-JN_API void Jn_import_module(char* path)
+JN_API JnObject* Jn_import_module(J_State* state, char* path)
 {
     
+    return NULL;
 }
 
 JN_API void Jn_program_close(void)

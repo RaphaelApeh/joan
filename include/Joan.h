@@ -273,6 +273,8 @@ unsigned long djb2_hash(unsigned char* str);
 
 JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count);
 
+JN_API JnObject* Jn_import_module(J_State* state, char* path);
+
 // Register native function
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);

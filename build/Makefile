@@ -183,30 +183,6 @@ src/ast.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/ast.c.s
 .PHONY : src/ast.c.s
 
-src/builtins/function.obj: src/builtins/function.c.obj
-.PHONY : src/builtins/function.obj
-
-# target to build an object file
-src/builtins/function.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.obj
-.PHONY : src/builtins/function.c.obj
-
-src/builtins/function.i: src/builtins/function.c.i
-.PHONY : src/builtins/function.i
-
-# target to preprocess a source file
-src/builtins/function.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.i
-.PHONY : src/builtins/function.c.i
-
-src/builtins/function.s: src/builtins/function.c.s
-.PHONY : src/builtins/function.s
-
-# target to generate assembly for a file
-src/builtins/function.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/builtins/function.c.s
-.PHONY : src/builtins/function.c.s
-
 src/core.obj: src/core.c.obj
 .PHONY : src/core.obj
 
@@ -447,29 +423,29 @@ src/object.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/object.c.s
 .PHONY : src/object.c.s
 
-src/parser.obj: src/parser.c.obj
-.PHONY : src/parser.obj
+src/parse.obj: src/parse.c.obj
+.PHONY : src/parse.obj
 
 # target to build an object file
-src/parser.c.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parser.c.obj
-.PHONY : src/parser.c.obj
+src/parse.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parse.c.obj
+.PHONY : src/parse.c.obj
 
-src/parser.i: src/parser.c.i
-.PHONY : src/parser.i
+src/parse.i: src/parse.c.i
+.PHONY : src/parse.i
 
 # target to preprocess a source file
-src/parser.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parser.c.i
-.PHONY : src/parser.c.i
+src/parse.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parse.c.i
+.PHONY : src/parse.c.i
 
-src/parser.s: src/parser.c.s
-.PHONY : src/parser.s
+src/parse.s: src/parse.c.s
+.PHONY : src/parse.s
 
 # target to generate assembly for a file
-src/parser.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parser.c.s
-.PHONY : src/parser.c.s
+src/parse.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parse.c.s
+.PHONY : src/parse.c.s
 
 src/repl.obj: src/repl.c.obj
 .PHONY : src/repl.obj
@@ -583,9 +559,6 @@ help:
 	@echo ... src/ast.obj
 	@echo ... src/ast.i
 	@echo ... src/ast.s
-	@echo ... src/builtins/function.obj
-	@echo ... src/builtins/function.i
-	@echo ... src/builtins/function.s
 	@echo ... src/core.obj
 	@echo ... src/core.i
 	@echo ... src/core.s
@@ -616,9 +589,9 @@ help:
 	@echo ... src/object.obj
 	@echo ... src/object.i
 	@echo ... src/object.s
-	@echo ... src/parser.obj
-	@echo ... src/parser.i
-	@echo ... src/parser.s
+	@echo ... src/parse.obj
+	@echo ... src/parse.i
+	@echo ... src/parse.s
 	@echo ... src/repl.obj
 	@echo ... src/repl.i
 	@echo ... src/repl.s

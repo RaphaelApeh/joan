@@ -4,6 +4,4 @@ println  "a" in hm // true
 println "invalid" in hm // false
 println "invalid" not in hm // true
 // Example
-if "a" in hm {
-    println hm["a"]
-}
+if "a" in hm then println hm["a"]

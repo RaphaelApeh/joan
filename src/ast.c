@@ -6,7 +6,7 @@
 #include "helper.h"
 #include "token.h"
 #include "object.h"
-#include "parser.h"
+#include "parse.h"
 
 
 AST* ast_create(joan_parser_t* p, AST_TYPE type)

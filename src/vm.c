@@ -278,6 +278,11 @@ InterpretResult vm_run(JnVM* vm)
             case OP_IMPORT: 
                 char* lib = READ_IDENT();
                 char* path = cat_path(lib);
+                
+                JnObject* mod = Jn_import_module(NULL, path);
+                free(path);
+                if (NULL == mod) break;
+                PUSH(vm, mod);
                 break;
             case OP_ARRAY:
                 count = READ_BYTE();

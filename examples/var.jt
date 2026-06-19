@@ -1,6 +1,6 @@
 let name = "John Doe"
 let x = 43
-const pi = 3.14
+pi := 3.14
 
 //pi = None // Error
 x = 10 // OK

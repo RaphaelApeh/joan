@@ -4,7 +4,7 @@
 //#include "gc.h"
 #include "object.h"
 #include "env.h"
-#include "parser.h"
+#include "parse.h"
 
 #define _STACK_MAX 1024
 #define _LOOP_MAX 256
