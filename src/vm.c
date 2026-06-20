@@ -470,7 +470,14 @@ InterpretResult vm_run(JnVM* vm)
             case OP_RANGE:
                 int has_step = READ_BYTE();
                 op = READ_BYTE();
-                int start = JN_AS_INT(pop(vm)); int stop = JN_AS_INT(pop(vm));
+                JnObject *start_obj = pop(vm), *stop_obj = pop(vm);
+                if (
+                    !JN_IS_INT(start_obj) && !JN_IS_CHAR(start_obj)
+                    && !JN_IS_INT(stop_obj) && !JN_IS_CHAR(stop_obj)
+                )
+                    return vm_error(vm, JN_RAISE_EXCPETION(TYPE_ERROR, "range object require a int or char"));
+                
+                int start = JN_AS_INT(start_obj); int stop = JN_AS_INT(stop_obj);
                 int step = 0;
                 if (has_step)
                     step = JN_AS_INT(pop(vm));
@@ -1069,8 +1076,10 @@ void compile(AST* node, Chuck* chuck)
     case AST_BREAK:
         if (loop_depth <= 0)
         {
-            fprintf(stderr, "SystemError: add 'break' outside a loop.\n");
-            exit(72);
+            id = add_ident(chuck, "cannot add 'break' outside a loop.");
+            write_chuck_loc(chuck, OP_ERROR_MSG, line, column);
+            write_chuck_loc(chuck, id, line, column);
+            break;
         }
         jump = emit_jump(chuck, OP_JUMP);
         loop = &loop_stack[loop_depth - 1];
@@ -1083,8 +1092,10 @@ void compile(AST* node, Chuck* chuck)
     case AST_CONTINUE:
         if (loop_depth <= 0)
         {
-            fprintf(stderr, "SystemError: add 'continue' outside a loop.\n");
-            exit(72);
+            id = add_ident(chuck, "cannot add 'continue' outside a loop.");
+            write_chuck_loc(chuck, OP_ERROR_MSG, line, column);
+            write_chuck_loc(chuck, id, line, column);
+            break;
         }
         loop = &loop_stack[loop_depth - 1];
         jump = emit_jump(chuck, OP_JUMP);

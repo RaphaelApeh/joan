@@ -128,7 +128,7 @@ JN_API void Jn_load_Cfunctions(J_State* state)
 
     Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_BOOL(win));
     Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_BOOL(apple));
-    Jn_register(state, "__LINUS__", "Check if it is a Linus system.", JN_RETURN_BOOL(linux));
+    Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_BOOL(linux));
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filename));
     Jn_register_fn(state, "len", "Returns the length of an iterable", native_len);
     Jn_register_fn(state, "gets", "Get user input.", native_gets);

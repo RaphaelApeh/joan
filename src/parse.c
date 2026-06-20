@@ -126,8 +126,11 @@ AST* parse_block(joan_parser_t* p)
 {
     advance_parser_c(p);
     AST* block = new_block(p);
-    while (!match(p, TOKEN_RBRACE))
+    while (!check(p, TOKEN_RBRACE) && !check(p, TOKEN_EOF))
+    {
         add_block(block, parse_stmt(p));
+    }
+    match(p, TOKEN_RBRACE);
     return block;
 }
 

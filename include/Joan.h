@@ -97,6 +97,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, ARRAY_TYPE)
 #define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
 #define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
+#define JN_IS_CHAR(obj) _JN_CHECK_TYPE(obj, CHAR_TYPE)
 #define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
 #define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
