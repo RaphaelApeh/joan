@@ -142,11 +142,14 @@ void advance_parser_c(joan_parser_t* p)
 
 AST* parse_error(joan_parser_t* p, const char* msg, ...)
 {
+    char buffer[256];
     va_list args;
     va_start(args, msg);
-    //TODO: code  
+    vsnprintf(buffer, sizeof(buffer), msg, args);
     va_end(args);
-    return ast_error(p, msg);
+    AST* err = ast_error(p, strdup(buffer));
+    advance_parser_c(p);
+    return err;
 }
 
 static AST* parse_loop(joan_parser_t* p)
@@ -672,10 +675,11 @@ AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
     AST* ast = NULL;
+    char* msg = t.lexeme;
     switch (t.type)
     {
         case TOKEN_INT:
-            int i = *((int *) t.v);
+            long i = *((long *) t.v);
              JnObject* v =  jn_obj_int(i);
             advance_parser_c(p);
             return ast_literal(p, v);
@@ -705,14 +709,10 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast;
         case TOKEN_CHAR:
-            int c;
-            if ((c = strlen(t.lexeme)) > 1 ||
-                c < 1    
-            )
-                return parse_error(p, "invalid char literal.");
+            char c = *((char *)t.v);
             ast = ast_literal(
                 p,
-                JN_RETURN_CHAR(*t.lexeme) 
+                JN_RETURN_CHAR(c) 
             );
             advance_parser_c(p);
             return ast;
@@ -772,10 +772,10 @@ AST* parse_value(joan_parser_t* p)
             return ast_println(p, out);
         }
         case TOKEN_ERROR: {
-            return parse_error(p, t.lexeme);
+            return parse_error(p, msg);
         }
         default:
-            return parse_error(p, "Error: Got an invalid expression '%s'.", t.lexeme);
+            return parse_error(p, "Error: Got an invalid expression '%s'.", msg);
     }
 }
 

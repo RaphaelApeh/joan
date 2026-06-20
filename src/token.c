@@ -1,12 +1,15 @@
 #include <strings.h>
 #include <ctype.h>
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include "token.h"
 #include "lexer.h"
 
 #define CHECK_TOK(lex, str) ((strcmp((lex), (str))) == 0)
+
+static joan_token_t make_error(joan_lexer_t* l, char* msg, ...);
 
 static bool peek_advance(joan_lexer_t* l, char c)
 {
@@ -36,7 +39,7 @@ joan_token_t number(joan_lexer_t* l)
     {
         advance(l);
         if (!isxdigit(peek(l)))
-            return make_token(l, TOKEN_ERROR);
+            return make_error(l, "token is not an hex.");
         
         while(isxdigit(peek(l)))
             advance(l);
@@ -88,9 +91,9 @@ joan_token_t token_string(joan_lexer_t* l)
         joan_token_t t;
         t.type = TOKEN_ERROR;
         t.lexeme = "unterminated string literal.";
-        int* i = malloc(sizeof(int));
-        *i = -1;
-        t.v = i;
+        t.v = NULL;
+        t.line = l->line;
+        t.column = l->column;
         return t;
     }
     joan_token_t t = make_token(l, TOKEN_STRING);
@@ -103,29 +106,55 @@ joan_token_t token_string(joan_lexer_t* l)
 
 static joan_token_t token_char(joan_lexer_t* l)
 {
+    char c;
     l->start = l->curr;
-    char q = '\'';
-    while (*l->curr && *l->curr != q)
-    {
-        if (*l->curr == '\\' && *l->curr)
-            l->curr += 2;
-        else
-            l->curr++;
-    }
+    joan_token_t t;
     if (*l->curr == '\0')
     {
-        joan_token_t t;
         t.type = TOKEN_ERROR;
-        t.lexeme = "unterminated char literal.";
-        int* i = malloc(sizeof(int));
-        *i = -1;
-        t.v = i;
+        t.lexeme = strdup("unterminated char literal.");
+        t.line = l->line;
+        t.column = l->column;
+        t.v = NULL;
         return t;
     }
-    joan_token_t t = make_token(l, TOKEN_CHAR);
-    char c = *l->curr++;
-    if (q != c)
-        return make_token(l, TOKEN_ERROR);
+    if (*l->curr == '\\')
+    {
+        advance(l);
+        switch(*l->curr)
+        {
+            case 'n': c = '\n'; break;
+            case 't': c = '\t'; break;
+            case 'r': c = '\r'; break;
+            case '\\': c = '\\'; break;
+            case '\'': c = '\''; break;
+            case '\0': c = '\0'; break;
+            default:
+            t.type = TOKEN_ERROR;
+            t.lexeme = strdup("invalid escape sequence.");
+            t.v = NULL;
+            return t;
+        }
+        advance(l);
+    }else {
+        c = *l->curr;
+        advance(l);
+    }
+    if (*l->curr != '\'')
+    {
+        t.type = TOKEN_ERROR;
+        t.lexeme = strdup("char literal contains more than one character.");
+        t.v = NULL;
+        t.line = l->line;
+        t.column = l->column;
+        return t;
+    }
+    advance(l);
+    t = make_token(l, TOKEN_CHAR);
+    //TODO
+    char* v = malloc(1);
+    *v = c;
+    t.v = v;
     return t;
 }
 
@@ -209,6 +238,22 @@ joan_token_t identifier(joan_lexer_t* l)
 }
 
 
+static joan_token_t make_error(joan_lexer_t* l, char* msg, ...)
+{
+    joan_token_t t;
+    char buffer[256];
+    va_list arg; va_start(arg, msg);
+    vsnprintf(buffer, sizeof(buffer), msg, arg);
+    va_end(arg);
+
+    t.type = TOKEN_ERROR;
+    t.lexeme = strdup(buffer);
+    t.v = NULL;
+    t.line = l->line;
+    t.column = l->column;
+    return t;
+}
+
 joan_token_t make_token(joan_lexer_t* l, J_TokenType type)
 {
     joan_token_t t;
@@ -218,9 +263,7 @@ joan_token_t make_token(joan_lexer_t* l, J_TokenType type)
     memcpy(copy, l->start, len);
     copy[len] = '\0';
     t.lexeme = copy;
-    int* i = malloc(sizeof(int));
-    *i = 0;
-    t.v = i;
+    t.v = NULL;
     t.line = l->line;
     t.column = l->column;
     return t;
@@ -234,6 +277,7 @@ joan_token_t make_comment(joan_lexer_t* l)
         advance(l);
     return make_token(l, TOKEN_COMMENT);
 }
+
 joan_token_t next_token(joan_lexer_t* l)
 {
     strip_ws(l);
@@ -395,6 +439,8 @@ joan_token_t next_token(joan_lexer_t* l)
             return make_token(l, TOKEN_BITOR);
         case '#':
             return make_token(l, TOKEN_HASH);
+        default:
+            return make_error(l, "Invalid token '%c'.", c);
     }
-    return make_token(l, TOKEN_ERROR);
+    return make_error(l, "Invalid token");
 }
