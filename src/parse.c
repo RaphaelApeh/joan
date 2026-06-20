@@ -682,7 +682,7 @@ AST* parse_value(joan_parser_t* p)
     switch (t.type)
     {
         case TOKEN_INT:
-            long i = *((long *) t.v);
+            long i = t.i;
              JnObject* v =  jn_obj_int(i);
             advance_parser_c(p);
             return ast_literal(p, v);
@@ -698,7 +698,7 @@ AST* parse_value(joan_parser_t* p)
             ast->comment = strdup(t.lexeme);
             return ast;
         case TOKEN_FLOAT:
-            double d = *((double *) t.v);
+            double d = t.d;
             advance_parser_c(p);
             return ast_literal(p,  jn_obj_float(d));
         case TOKEN_HASH:
@@ -712,7 +712,7 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast;
         case TOKEN_CHAR:
-            char c = *((char *)t.v);
+            char c = t.c;
             ast = ast_literal(
                 p,
                 JN_RETURN_CHAR(c) 

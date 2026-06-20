@@ -107,8 +107,13 @@ typedef enum {
 } J_TokenType;
 
 typedef struct joan_token_t{
-    J_TokenType type;
     char* lexeme;
+    J_TokenType type;
+    union{
+        double d;
+        long i;
+        char c;
+    };
     void* v;
     int line;
     int column;

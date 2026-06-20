@@ -44,9 +44,7 @@ joan_token_t number(joan_lexer_t* l)
         while(isxdigit(peek(l)))
             advance(l);
         joan_token_t _t = make_token(l, TOKEN_INT);
-        long* i = malloc(sizeof(long));
-        *i = strtol(_t.lexeme, NULL, 0);
-        _t.v = i;
+        _t.i = strtol(_t.lexeme, NULL, 0);
         return _t;
     }
     while(isdigit(peek(l))) advance(l);
@@ -55,17 +53,13 @@ joan_token_t number(joan_lexer_t* l)
         advance(l);
         while (isdigit(peek(l))) advance(l);
         joan_token_t t = make_token(l, TOKEN_FLOAT);
-        double* d = malloc(sizeof(double));
         // *d = atof(t.lexeme);
-        *d = strtod(t.lexeme, NULL);
-        t.v = d;
+        t.d = strtod(t.lexeme, NULL);
         return t;
     }
     joan_token_t t = make_token(l, TOKEN_INT);
-    int* i = malloc(sizeof(int));
     // *i = atoi(t.lexeme);
-    *i = strtol(t.lexeme, NULL, 10);
-    t.v = i;
+    t.i = strtol(t.lexeme, NULL, 10);
     return t;
 }
 
@@ -128,11 +122,13 @@ static joan_token_t token_char(joan_lexer_t* l)
             case 'r': c = '\r'; break;
             case '\\': c = '\\'; break;
             case '\'': c = '\''; break;
-            case '\0': c = '\0'; break;
+            case '0': c = '\0'; break;
             default:
             t.type = TOKEN_ERROR;
             t.lexeme = strdup("invalid escape sequence.");
             t.v = NULL;
+            t.line = l->line;
+            t.column = l->column;
             return t;
         }
         advance(l);
@@ -151,10 +147,7 @@ static joan_token_t token_char(joan_lexer_t* l)
     }
     advance(l);
     t = make_token(l, TOKEN_CHAR);
-    //TODO
-    char* v = malloc(1);
-    *v = c;
-    t.v = v;
+    t.c = c;
     return t;
 }
 
