@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "Joan.h"
 #include "repl.h"
+#include "vendor/linenoise.h" // TODO
 #define OPTPARSE_IMPLEMENTATION
 #include "vendor/optparse.h"
 
