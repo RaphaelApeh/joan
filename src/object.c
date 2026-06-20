@@ -287,7 +287,7 @@ char* Jn_object_cstring(JnObject* obj)
             snprintf(buffer, sizeof(buffer), "%c", JN_AS_CHAR(obj));
             goto buf;
         default:
-            return strdup("<error>"); // TODO
+            return strdup("<object>");
     }
     buf:
         return strdup(buffer);

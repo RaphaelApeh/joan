@@ -218,9 +218,16 @@ typedef struct Jn_Hashmap{
 } Jn_Hashmap;
 
 typedef struct {
-    Jn_Hashmap* map; // store all values in a hashmap
+    Jn_environ* env;
     const char* ident;
 } Jn_Enum;
+
+
+typedef struct {
+    Jn_environ* env;
+    char *name, *path;
+    char* alias;
+} JnModule;
 
 typedef enum {
     RUNTIME_ERROR, ASSERT_ERROR, SYS_ERROR, IMPORT_ERROR, SYNTAX_ERROR,
@@ -246,6 +253,7 @@ typedef struct JnObject{
         Jn_Hashmap* hashmap;
         JnNativeObject* native_fn;
         Jn_Enum* enum_n;
+        JnModule* module;   
         JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
