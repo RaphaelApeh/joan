@@ -519,6 +519,78 @@ src/token.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/token.c.s
 .PHONY : src/token.c.s
 
+src/vendor/linenoise/ConvertUTF.obj: src/vendor/linenoise/ConvertUTF.cpp.obj
+.PHONY : src/vendor/linenoise/ConvertUTF.obj
+
+# target to build an object file
+src/vendor/linenoise/ConvertUTF.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/ConvertUTF.cpp.obj
+.PHONY : src/vendor/linenoise/ConvertUTF.cpp.obj
+
+src/vendor/linenoise/ConvertUTF.i: src/vendor/linenoise/ConvertUTF.cpp.i
+.PHONY : src/vendor/linenoise/ConvertUTF.i
+
+# target to preprocess a source file
+src/vendor/linenoise/ConvertUTF.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/ConvertUTF.cpp.i
+.PHONY : src/vendor/linenoise/ConvertUTF.cpp.i
+
+src/vendor/linenoise/ConvertUTF.s: src/vendor/linenoise/ConvertUTF.cpp.s
+.PHONY : src/vendor/linenoise/ConvertUTF.s
+
+# target to generate assembly for a file
+src/vendor/linenoise/ConvertUTF.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/ConvertUTF.cpp.s
+.PHONY : src/vendor/linenoise/ConvertUTF.cpp.s
+
+src/vendor/linenoise/linenoise.obj: src/vendor/linenoise/linenoise.cpp.obj
+.PHONY : src/vendor/linenoise/linenoise.obj
+
+# target to build an object file
+src/vendor/linenoise/linenoise.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/linenoise.cpp.obj
+.PHONY : src/vendor/linenoise/linenoise.cpp.obj
+
+src/vendor/linenoise/linenoise.i: src/vendor/linenoise/linenoise.cpp.i
+.PHONY : src/vendor/linenoise/linenoise.i
+
+# target to preprocess a source file
+src/vendor/linenoise/linenoise.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/linenoise.cpp.i
+.PHONY : src/vendor/linenoise/linenoise.cpp.i
+
+src/vendor/linenoise/linenoise.s: src/vendor/linenoise/linenoise.cpp.s
+.PHONY : src/vendor/linenoise/linenoise.s
+
+# target to generate assembly for a file
+src/vendor/linenoise/linenoise.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/linenoise.cpp.s
+.PHONY : src/vendor/linenoise/linenoise.cpp.s
+
+src/vendor/linenoise/wcwidth.obj: src/vendor/linenoise/wcwidth.cpp.obj
+.PHONY : src/vendor/linenoise/wcwidth.obj
+
+# target to build an object file
+src/vendor/linenoise/wcwidth.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/wcwidth.cpp.obj
+.PHONY : src/vendor/linenoise/wcwidth.cpp.obj
+
+src/vendor/linenoise/wcwidth.i: src/vendor/linenoise/wcwidth.cpp.i
+.PHONY : src/vendor/linenoise/wcwidth.i
+
+# target to preprocess a source file
+src/vendor/linenoise/wcwidth.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/wcwidth.cpp.i
+.PHONY : src/vendor/linenoise/wcwidth.cpp.i
+
+src/vendor/linenoise/wcwidth.s: src/vendor/linenoise/wcwidth.cpp.s
+.PHONY : src/vendor/linenoise/wcwidth.s
+
+# target to generate assembly for a file
+src/vendor/linenoise/wcwidth.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/linenoise/wcwidth.cpp.s
+.PHONY : src/vendor/linenoise/wcwidth.cpp.s
+
 src/vendor/tigr.obj: src/vendor/tigr.c.obj
 .PHONY : src/vendor/tigr.obj
 
@@ -625,6 +697,15 @@ help:
 	@echo ... src/token.obj
 	@echo ... src/token.i
 	@echo ... src/token.s
+	@echo ... src/vendor/linenoise/ConvertUTF.obj
+	@echo ... src/vendor/linenoise/ConvertUTF.i
+	@echo ... src/vendor/linenoise/ConvertUTF.s
+	@echo ... src/vendor/linenoise/linenoise.obj
+	@echo ... src/vendor/linenoise/linenoise.i
+	@echo ... src/vendor/linenoise/linenoise.s
+	@echo ... src/vendor/linenoise/wcwidth.obj
+	@echo ... src/vendor/linenoise/wcwidth.i
+	@echo ... src/vendor/linenoise/wcwidth.s
 	@echo ... src/vendor/tigr.obj
 	@echo ... src/vendor/tigr.i
 	@echo ... src/vendor/tigr.s
