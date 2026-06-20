@@ -1,6 +1,9 @@
 #include <string.h>
+#include <stdlib.h>
 #include "Joan.h"
 #include "repl.h"
+#define OPTPARSE_IMPLEMENTATION
+#include "vendor/optparse.h"
 
 int _JN_INIT_PROGRAM = false;
 
@@ -19,28 +22,51 @@ static int buffer_count = 0;
 struct Command parse_args(char** args, int argc)
 {
     struct Command c = {0};
+    int opt;
     if (argc == 0) // No Arguments
     {
         c.type = C_REPL;
         return c;
     }
-    char* arg = args[0];
-    if (strcmp(arg, "--help") == 0 || strcmp(arg, "-h") == 0)
+    struct optparse_long longopts[] = {
+        {"help", 'h', OPTPARSE_NONE},
+        {"version", 'v', OPTPARSE_NONE},
+        {"repl", 'r', OPTPARSE_OPTIONAL},
+        {"file", 'f', OPTPARSE_REQUIRED},
+        {"debug", 'd', OPTPARSE_NONE},
+        {"command", 'c', OPTPARSE_NONE},
+        {"inter", 'i', OPTPARSE_REQUIRED},
+        {0}
+    };
+    struct optparse opts;
+    optparse_init(&opts, args);
+    while ((opt = optparse_long(&opts, longopts, NULL)) != -1)
     {
-        c.type = C_HELP;
-    } else if (strcmp(arg, "--version") == 0 || strcmp(arg, "-v") == 0)
-        c.type = C_VERSION;
-    else if (strcmp(arg, "-r") == 0)
-    {
-        if (argc < 1)
+        switch (opt)
         {
-            c.type = C_ERROR;
-            return c;
+            case 'h':
+                c.type = C_HELP;
+                break;
+            case 'v':
+                c.type = C_VERSION;
+                break;
+            case 'r':
+                c.type = C_REPL;
+                break;
+            case 'f':
+                c.type = C_RUN;
+                c.filename = opts.optarg;
+                break;
+            case 'i':
+                c.type = C_RUN_REPL;
+                c.filename = opts.optarg;
+                break;
+            case '?':
+                fprintf(stderr, "Invalid input.");
+                exit(EXIT_FAILURE);
+            default:
+                c.type = C_ERROR;
         }
-        c.type = C_RUN_REPL;
-    }
-    else {
-        c.type = C_RUN;
     }
     return c;
 }

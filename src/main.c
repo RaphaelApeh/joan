@@ -1,6 +1,7 @@
 #include "Joan.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include "repl.h"
 #include "env.h"
 
@@ -35,6 +36,7 @@ void usage(void)
     "Usage: joan [options] [file]\n"
     "Options: \n"
     "-v --version output joan version\n"
+    "-f --file run a script\n"
     "-r  execute a program and run on repl\n"
     "-h --help output help information\n\n"
     "Examples: \n"
@@ -53,10 +55,9 @@ void version(void)
 int main(int argc, char** argv)
 {
     char** new_argv = argv + 1;
-    argc -= 1;
-    char* filename = NULL;
+    int new_argc = argc - 1;
     char* source = NULL;
-    struct Command c = parse_args(new_argv, argc);
+    struct Command c = parse_args(argv, argc);
 
     switch (c.type)
     {
@@ -73,17 +74,16 @@ int main(int argc, char** argv)
             return 0;
         }
         case C_RUN_REPL:
-            filename = new_argv[1];
-            if (!filename) return -1;
+            if (!c.filename) return -1;
             Jn_program_init();
-            Jn_execute_main(filename);
+            Jn_execute_main(c.filename);
             Jn_repl();
             Jn_program_close();
             return 0;
         case C_RUN:
-            filename = new_argv[0];
             Jn_program_init();
-            Jn_execute_main(filename);
+            assert(c.filename);
+            Jn_execute_main(c.filename);
             Jn_program_close();
             return 0;
     }
