@@ -519,6 +519,30 @@ src/token.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/token.c.s
 .PHONY : src/token.c.s
 
+src/vendor/tigr.obj: src/vendor/tigr.c.obj
+.PHONY : src/vendor/tigr.obj
+
+# target to build an object file
+src/vendor/tigr.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/tigr.c.obj
+.PHONY : src/vendor/tigr.c.obj
+
+src/vendor/tigr.i: src/vendor/tigr.c.i
+.PHONY : src/vendor/tigr.i
+
+# target to preprocess a source file
+src/vendor/tigr.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/tigr.c.i
+.PHONY : src/vendor/tigr.c.i
+
+src/vendor/tigr.s: src/vendor/tigr.c.s
+.PHONY : src/vendor/tigr.s
+
+# target to generate assembly for a file
+src/vendor/tigr.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/tigr.c.s
+.PHONY : src/vendor/tigr.c.s
+
 src/vm.obj: src/vm.c.obj
 .PHONY : src/vm.obj
 
@@ -601,6 +625,9 @@ help:
 	@echo ... src/token.obj
 	@echo ... src/token.i
 	@echo ... src/token.s
+	@echo ... src/vendor/tigr.obj
+	@echo ... src/vendor/tigr.i
+	@echo ... src/vendor/tigr.s
 	@echo ... src/vm.obj
 	@echo ... src/vm.i
 	@echo ... src/vm.s

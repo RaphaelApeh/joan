@@ -6220,7 +6220,9 @@ int tigrGL33Init(Tigr* bmp) {
                                WGL_STENCIL_BITS_ARB,
                                8,
                                0 };
-    int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 3, WGL_CONTEXT_MINOR_VERSION_ARB, 3, 0 };
+    // I need to update my opengl version
+    // int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 3, WGL_CONTEXT_MINOR_VERSION_ARB, 3, 0 };
+    int attribs[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 2, WGL_CONTEXT_MINOR_VERSION_ARB, 1, 0 };
     if (!wglChoosePixelFormat(gl->dc, attribList, NULL, 1, &pixel_format, &num_formats)) {
         tigrError(bmp, "Cannot choose OpenGL pixel format.\n");
         return -1;

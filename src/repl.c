@@ -23,9 +23,15 @@ struct Command parse_args(char** args, int argc)
 {
     struct Command c = {0};
     int opt;
-    if (argc == 0) // No Arguments
+    if (argc == 1) // No Arguments
     {
         c.type = C_REPL;
+        return c;
+    }
+    if (argc == 2 && *(args[1]) != '-' )
+    {
+        c.filename = args[1];
+        c.type = C_RUN;
         return c;
     }
     struct optparse_long longopts[] = {
@@ -35,7 +41,7 @@ struct Command parse_args(char** args, int argc)
         {"file", 'f', OPTPARSE_REQUIRED},
         {"debug", 'd', OPTPARSE_NONE},
         {"command", 'c', OPTPARSE_NONE},
-        {"inter", 'i', OPTPARSE_REQUIRED},
+        {"interative", 'i', OPTPARSE_REQUIRED},
         {0}
     };
     struct optparse opts;
@@ -62,8 +68,9 @@ struct Command parse_args(char** args, int argc)
                 c.filename = opts.optarg;
                 break;
             case '?':
-                fprintf(stderr, "Invalid input.");
-                exit(EXIT_FAILURE);
+                fprintf(stderr, "%s: %s\n\n", args[0], opts.errmsg);
+                c.type = C_ERROR;
+                break;
             default:
                 c.type = C_ERROR;
         }
