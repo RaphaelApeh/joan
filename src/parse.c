@@ -364,17 +364,17 @@ static AST* parse_reassign(joan_parser_t* p, AST* node)
 static AST* parse_call(joan_parser_t* p, AST* callee)
 {
     //e.g main(1, None, true)
-    advance_parser_c(p); // (
-    AST* args[20]  = {0}; // TODO
+    AST* args[20]; // TODO
     size_t len = 0;
-    while(!match(p, TOKEN_RPARN))
+    while(true)
     {
+        printf("TOKEN: %d\n", p->curr.type);
         args[len++] = parse_expr(p);
         if (match(p, TOKEN_COMMA))
             continue;
-        if (match(p, TOKEN_RPARN))
-            break;
+        if (match(p, TOKEN_RPARN)) break;
     }
+    printf("END TOKEN: %d\n", p->curr.type);
     AST* ast = ast_create(p, AST_CALL);
     ast->call.callee = callee;
     ast->call.params = NULL;
@@ -510,9 +510,10 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
 
     while (true)
     {
-        if (check(p, TOKEN_LPARN))
+        if (match(p, TOKEN_LPARN))
         {
             left = parse_call(p, left);
+            continue;
         }
 
         if (match(p, TOKEN_AT) && check(p, TOKEN_IF))
@@ -548,15 +549,21 @@ static AST* parse_hashmap(joan_parser_t* p)
     // TODO
     if (!match(p, TOKEN_LBRACE)) // {
         return parse_error(p, "Expected an opening '{'");
-    AST* keys[256]; // TODO
-    AST* values[256]; // TODO
-    size_t len = 0;    
+    AST** keys = malloc(sizeof(AST *) * 30);
+    AST** values = malloc(sizeof(AST *) * 30);
+    size_t len= 0, cap = 30;    
     AST* ast = ast_create(p, AST_HASHMAP);
 
     while (true)
     {
         if (match(p, TOKEN_RBRACE))
             break;
+        if (len > cap)
+        {
+            cap *= 2;
+            keys = realloc(keys, sizeof(AST *) * cap);
+            values = realloc(values, sizeof(AST *) * cap);
+        }
         keys[len] = parse_expr(p);
         if (!match(p, TOKEN_COLON))
             return parse_error(p, "Expected an ':'");
@@ -700,10 +707,9 @@ AST* parse_value(joan_parser_t* p)
             return ast_literal(p,  jn_obj_float(d));
         case TOKEN_HASH:
             advance_parser_c(p);
-            if (check(p, TOKEN_LBRACE))
-                return parse_hashmap(p);
-            else if (check(p, TOKEN_IMPORT))
-                return parse_import(p);
+            if (!check(p, TOKEN_LBRACE))
+                return parse_error(p, "Expected '}'.");
+            return parse_hashmap(p);
         case TOKEN_STRING:
             ast = ast_literal(p,  jn_obj_string(t.lexeme));
             advance_parser_c(p);

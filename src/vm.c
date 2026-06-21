@@ -328,6 +328,7 @@ InterpretResult vm_run(JnVM* vm)
                 // PUSH(vm, o);
                 break;
             case OP_HM:
+                printf("Hello 2\n");
                 count = READ_BYTE();
                 Jn_Hashmap* map = NULL;
                 for (int i = count - 1; i >= 0; --i)
@@ -339,6 +340,7 @@ InterpretResult vm_run(JnVM* vm)
                 JnObject* obj = JN_OBJECT(HASHMAP_TYPE);
                 obj->hashmap = map;
                 PUSH(vm, obj);
+                printf("Hello 3\n");
                 break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
@@ -561,17 +563,19 @@ InterpretResult vm_run(JnVM* vm)
                 JnObject* idx_key = pop(vm);
                 if (!array || !idx_key)
                     return die(vm, "None value array or pos.");
-                if (JN_IS_ARRAY(array) && idx_key->type != INT_TYPE && idx_key->type != RANGE_TYPE)
-                    return die(vm, "pos is not an int");
-                int index = (idx_key->type == INT_TYPE) ? idx_key->int32: range_len(&idx_key->range);
+                int index;
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
+                        if (idx_key->type != INT_TYPE && idx_key->type != RANGE_TYPE)
+                            return die(vm, "getter attrib is not of type int or range.");
+                        index = (idx_key->type == INT_TYPE) ? idx_key->int32 : range_len(&idx_key->range);
                         o = JN_GET_ARRAY(array->arr, index);
                         if (o == NULL) return die(vm, "Invalid array index.");
                         PUSH(vm, o);
                         break;
                     case STR_TYPE:
+                        index = JN_AS_INT(idx_key);
                         if (index < 0)
                         {
                             index += array->str->len;
@@ -584,11 +588,10 @@ InterpretResult vm_run(JnVM* vm)
                         o = jn_obj_string(str);
                         PUSH(vm, o);
                         break;
-                    case ITER_TYPE:
-                        // if (index < 0 || index >= array->iter->count)
-                        //     return die(vm, "pos is > or < array length");
-                        // o = array->iter->items[index];
-                        // PUSH(vm, o);
+                    case RANGE_TYPE:
+                        if (!JN_IS_INT(idx_key))
+                            return die(vm, "expected an int.");
+                        PUSH(vm, JN_RETURN_INT(range_at(&array->range, JN_AS_INT(idx_key))));
                         break;
                     case HASHMAP_TYPE:
                     Jn_HashEntry* entry = JN_HASHMAP_GET((array->hashmap), idx_key);
@@ -628,8 +631,6 @@ InterpretResult vm_run(JnVM* vm)
                     case HASHMAP_TYPE:
                         JN_HASMAP_PUT(array->hashmap, pos, value);
                         break;
-                    case ITER_TYPE:
-                        return die(vm, "Iter object does not support index setting.");
                     default:
                         return die(vm, "type does not support index setting.");
                  }
@@ -1054,7 +1055,7 @@ void compile(AST* node, Chuck* chuck)
         patch_jump(chuck, end_jump);
         break;
     case AST_HASHMAP:
-        
+        printf("Hello 1\n");
         for (size_t i = 0; i < node->hmp_node.count; ++i)
         {
             compile(node->hmp_node.keys[i], chuck);
@@ -1095,28 +1096,32 @@ void compile(AST* node, Chuck* chuck)
     case AST_FOR:
         loop = &loop_stack[loop_depth++];
         
-        offset = current_offset(chuck);
-        loop->loop_offset = offset;
         loop->break_count = 0;
         loop->continue_count = 0;
         
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
+
         compile(node->for_node.init, chuck);
-        
+
+        offset = current_offset(chuck);
+        loop->loop_offset = offset;
+
         compile(node->for_node.cond, chuck);
         exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
         
         compile(node->for_node.block, chuck);
 
+        int continue_target = current_offset(chuck);
+
+        for (int i = 0; i < loop->continue_count; ++i)
+        {
+            patch_jump_to(chuck, loop->continues[i], continue_target);
+        }
         compile(node->for_node.incr, chuck);
 
         emit_loop(chuck, offset);
         patch_jump(chuck, exit_jump);
-        for (int i = 0; i < loop->continue_count; i++)
-        {
-            patch_jump(chuck, loop->continues[i]);
-        }
-        
+
         for (int i = 0; i < loop->break_count; i++)
         {
             patch_jump(chuck, loop->breaks[i]);

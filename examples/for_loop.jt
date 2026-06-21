@@ -1,18 +1,8 @@
-hm := #{'a': 1, 1: 12, 23.2: false}
-arr := ["Hello", 32, 0xff]
+arr := 0..30:2
+l := len(arr)
 
-// With index
-for i := 0; i < 4; i += 1 {
-    println i
+for i := 0; i < l; i += 1 {
+    println arr[i]
 }
-
-// I GIVE UP
-// for key in arr{
-//     println "value: {}" << key
-// }
-
-// for x in hm {
-//     println x
-// }
 
 println "Done"

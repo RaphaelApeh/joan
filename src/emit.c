@@ -25,6 +25,25 @@ static void chuck_grow(Chuck* chuck)
     );
 }
 
+
+void patch_jump_to(Chuck* chuck, int jump_offset, int target_offset)
+{
+    assert(chuck != NULL);
+    int dist = target_offset - jump_offset - 3;
+    if (dist < 0)
+    {
+        fprintf(stderr, "patch_jump_to: backward jumps not allowed.\n");
+        exit(EXIT_FAILURE);
+    }
+    if (dist > UINT16_MAX)
+    {
+        fprintf(stderr, "patch_jump_to: jump too large.\n");
+        exit(EXIT_FAILURE);
+    }
+    chuck->code[jump_offset + 1] = (dist >> 8) & 0xff;
+    chuck->code[jump_offset + 2] = dist & 0xff;
+}
+
 void write_chuck(Chuck* chuck, uint8_t byte)
 {
     CHECK_CHUCK();

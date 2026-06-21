@@ -11,5 +11,6 @@ int add_constant(Chuck* chuck, JnObject* object);
 int current_offset(Chuck* chuck);
 int emit_jump(Chuck* chuck, uint8_t instrction);
 void patch_jump(Chuck* chuck, int offset);
+void patch_jump_to(Chuck* chuck, int jump_offset, int target_offset);
 void emit_loop(Chuck* chuck, int loop_start);
 #endif
