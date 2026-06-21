@@ -4,8 +4,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include "ast.h"
 #include "Joan.h"
 #include "object.h"
+#include "opcode.h"
+#include "emit.h"
 #include "helper.h"
 #include "vm.h"
 #include "gc.h"
@@ -200,6 +203,27 @@ JnObject* jn_intern_obj(JnObject* obj)
     new_entry->obj = obj;
     new_entry->next = intern_pool[idx];
     intern_pool[idx] = new_entry;
+    return obj;
+}
+
+
+JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
+{
+    Chuck* chuck = JN_ALLOC(sizeof(Chuck));
+    chuck_init(chuck);
+    chuck->env = env;
+    compile(expr, chuck);
+    write_chuck_loc(chuck, OP_RETURN, 0, 0);
+    write_chuck_loc(chuck, OP_END, 0, 0);
+    JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
+    fn->chuck = chuck;
+    fn->env = Jn_environ_init(env);
+    fn->params = params;
+    fn->arity = arity;
+    fn->name = "<lambda>";
+    fn->is_lambda = 1;
+    JnObject* obj = jn_obj_new(FUNCTION_TYPE);
+    obj->fn = fn;
     return obj;
 }
 

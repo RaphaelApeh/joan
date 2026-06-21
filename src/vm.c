@@ -128,6 +128,24 @@ static JnObject* vm_peek(JnVM* vm, int d) {return vm->sp[-1 - d];}
 
 static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
+
+static JnObject* call_lambda(JnVM* vm, JnObject* obj, JnObject** args)
+{
+    JnFunctionObject* fn = obj->fn;
+    JnVM child;
+    Jnvm_init(&child, fn->chuck);
+    child.env = fn->env;
+    child.chuck = fn->chuck;
+    for (int i = 0; i < fn->arity; ++i)
+    {
+        environ_insert(child.env, fn->params[i], args[i]);
+    }
+    InterpretResult r = vm_run(&child);
+    if (r == INTERPRET_OK)
+        return pop(&child);
+    return JN_RAISE_EXCPETION(SYS_ERROR, "Something went wrong :(");
+}
+
 static JnObject *a, *b, *key, *value, *array, *pos;
 
 InterpretResult vm_run(JnVM* vm)
@@ -719,40 +737,20 @@ InterpretResult vm_run(JnVM* vm)
                         break;
                     }
                     case FUNCTION_TYPE: {
-                        //  TODO
                         JnFunctionObject* fn = o->fn;
-                        if (fn->name == NULL)
-                            fn->name = "<lambda>";
                         if (count != fn->arity)
                             return die(
                                 vm, 
                                 "function '%s' expected %d args but got %d",
                                 fn->name, fn->arity, count
                             );
-                        if (vm->frame_count >= _FRAME_MAX)
-                            return die(vm, "Stack Overflow");
-                        CallFrame* current = &vm->frames[vm->frame_count++];
-                        current->fn = fn;
-                        current->ip = vm->ip;
-                        current->env = vm->env;
-                        current->slots = vm->sp;
-                        local = Jn_environ_init(fn->env);
-
-                        for (int i = fn->arity - 1; i >= 0; --i)
-                        {
-                            environ_insert(local, fn->params[i], args[i]);
-                        }
-                        vm->env = local;
-                        vm->ip = fn->chuck->code;
-
-                        // push(vm, JN_RETURN_NONE);
-                        printf("Hello World1\n");
+                        JnObject* res = call_lambda(vm, o, args);
+                        PUSH(vm, res);
                         break;
                     }
                     default: 
                         return die(vm, "Invalid function call.");
                 }
-                printf("Hello world 2\n");
                 break;
             }
             case OP_ERROR_MSG:
@@ -761,20 +759,8 @@ InterpretResult vm_run(JnVM* vm)
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
-                printf("Hwwllo\n");
                 o = pop(vm);
-                if (vm->frame_count == 0)
-                {
-                    PUSH(vm, o);
-                    return INTERPRET_OK;
-                }
-                Jn_environ* old = vm->env;
-                CallFrame* frame = &vm->frames[--vm->frame_count];
-                vm->ip = frame->ip;
-                vm->env = frame->env;
-                vm->sp = frame->slots;
-                free(old);
-                printf("RETURN TYPE %d\n", o->type);
+                vm->sp = vm->stack;
                 PUSH(vm, o);
                 break;
             case OP_ERROR:
@@ -1009,19 +995,11 @@ void compile(AST* node, Chuck* chuck)
 
         break;
     case AST_LAMBDA:
-        Chuck* lamda_chuck = malloc(sizeof(Chuck));
-        assert(lamda_chuck != NULL);
-        chuck_init(lamda_chuck);
-        lamda_chuck->env = chuck->env;
-        compile(node->lambda_node.expr, lamda_chuck);
-        WRITE_CHUCK(lamda_chuck, OP_RETURN);
-        WRITE_CHUCK(lamda_chuck, OP_END);
-        JnObject* lambda_obj = jn_obj_function(
-            lamda_chuck, 
-            chuck->env,
-            node->lambda_node.args, 
-            node->lambda_node.count, 
-            NULL // lambda functions
+        JnObject* lambda_obj = jn_obj_lambda(
+            node->lambda_node.expr,
+            node->lambda_node.args,
+            node->lambda_node.count,
+            chuck->env
         );
         idx = add_constant(chuck, lambda_obj);
         WRITE_CHUCK(chuck, OP_CONSTANT);

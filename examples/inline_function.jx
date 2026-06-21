@@ -1,2 +1,2 @@
-add :=  |a| => 1 + 1
-println add(1)
+add := |a, b| => a + b
+println add(1, 2)

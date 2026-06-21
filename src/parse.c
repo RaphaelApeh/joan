@@ -634,6 +634,7 @@ static AST* parse_lambda(joan_parser_t* p)
     Inline function
     Example:
         add :=  |a, b| => a + b
+        no_arg := |None| => something
         add(32, 12)
     */
     advance_parser_c(p);
@@ -641,6 +642,13 @@ static AST* parse_lambda(joan_parser_t* p)
     char** args = malloc(sizeof(char *) * cap);
     do {
         if (match(p, TOKEN_BITOR))  break;
+        if (len == 0 && match(p, TOKEN_NONE))
+        {
+            if (!check(p, TOKEN_BITOR))
+                return parse_error(p, "Expected a closing '|'.");
+            advance_parser_c(p);
+            break;
+        }
         if (!check(p, TOKEN_IDENTIFIER)) return parse_error(p, "lambda expect an identifer but got %s.", GET_LEX(p));
         if (len >= cap)
         {

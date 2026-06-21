@@ -51,7 +51,7 @@ joan_token_t number(joan_lexer_t* l)
     if (peek(l) == '.' && isdigit(peek_next(l)))
     {
         advance(l);
-        while (isdigit(peek(l))) advance(l);
+        while (isdigit(peek(l)) || peek(l) == 'f') advance(l);
         joan_token_t t = make_token(l, TOKEN_FLOAT);
         // *d = atof(t.lexeme);
         t.d = strtod(t.lexeme, NULL);
