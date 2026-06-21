@@ -669,9 +669,10 @@ InterpretResult vm_run(JnVM* vm)
                         break;
                     }
                     PUSH(vm, JN_RETURN_INT(_iter->index));
-                    tmp = JN_AS_ARRAY(target)->items[_iter->index++];
+                    tmp = JN_AS_ARRAY(target)->items[_iter->index];
                     assert(tmp != NULL);
                     PUSH(vm, tmp);
+                    _iter->index++;
                     PUSH(vm, JN_RETURN_BOOL(true));
                     break;
                 case HASHMAP_TYPE:
@@ -681,8 +682,9 @@ InterpretResult vm_run(JnVM* vm)
                         break;
                     }
                     PUSH(vm, JN_RETURN_INT(_iter->index));
-                    tmp = target->hashmap->buckets[_iter->index++].key;
+                    tmp = target->hashmap->buckets[_iter->index].key;
                     PUSH(vm, tmp);
+                    _iter->index++;
                     PUSH(vm, JN_RETURN_BOOL(true));
                     break;
                 default:
@@ -690,11 +692,8 @@ InterpretResult vm_run(JnVM* vm)
                 }
                 break;
             case OP_CALL:{
-                count = READ_BYTE(); o = pop(vm);
-                if (NULL == o)
-                    return die(vm, "undefine function '%s'.", ident);
-                if (o->type != FUNCTION_TYPE && o->type != NATIVE_TYPE)
-                    return die(vm, "%s is not a callable.", ident);
+                count = READ_BYTE();
+
                 JnObject* args[20];
                 size_t len = 0;
                 for (int i = count - 1; i >= 0; --i)
@@ -702,6 +701,13 @@ InterpretResult vm_run(JnVM* vm)
                     args[i] = pop(vm);
                     len++;
                 }
+                o = pop(vm);
+
+                if (NULL == o)
+                    return die(vm, "undefine function.");
+                if (o->type != FUNCTION_TYPE && o->type != NATIVE_TYPE)
+                    return die(vm, "object is not a callable.");
+
                 switch (o->type)
                 {
                     case NATIVE_TYPE: {
@@ -729,6 +735,7 @@ InterpretResult vm_run(JnVM* vm)
                         current->fn = fn;
                         current->ip = vm->ip;
                         current->env = vm->env;
+                        current->slots = vm->sp;
                         local = Jn_environ_init(fn->env);
 
                         for (int i = fn->arity - 1; i >= 0; --i)
@@ -738,11 +745,14 @@ InterpretResult vm_run(JnVM* vm)
                         vm->env = local;
                         vm->ip = fn->chuck->code;
 
+                        // push(vm, JN_RETURN_NONE);
+                        printf("Hello World1\n");
                         break;
                     }
                     default: 
                         return die(vm, "Invalid function call.");
                 }
+                printf("Hello world 2\n");
                 break;
             }
             case OP_ERROR_MSG:
@@ -751,6 +761,7 @@ InterpretResult vm_run(JnVM* vm)
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
+                printf("Hwwllo\n");
                 o = pop(vm);
                 if (vm->frame_count == 0)
                 {
@@ -758,10 +769,12 @@ InterpretResult vm_run(JnVM* vm)
                     return INTERPRET_OK;
                 }
                 Jn_environ* old = vm->env;
-                CallFrame* frame = &vm->frames[vm->frame_count - 1];
+                CallFrame* frame = &vm->frames[--vm->frame_count];
                 vm->ip = frame->ip;
                 vm->env = frame->env;
+                vm->sp = frame->slots;
                 free(old);
+                printf("RETURN TYPE %d\n", o->type);
                 PUSH(vm, o);
                 break;
             case OP_ERROR:
@@ -818,12 +831,11 @@ void compile(AST* node, Chuck* chuck)
         write_chuck_loc(chuck, node->member.tok, line, column);
         break;
     case AST_CALL:
-        
+        compile(node->call.callee, chuck);        
         for (int i = 0; i < node->call.pos_count; i++)
         {
             compile(node->call.pos_args[i], chuck);
         }
-        compile(node->call.callee, chuck);
         write_chuck_loc(chuck, OP_CALL, line, column);
         write_chuck_loc(chuck, node->call.pos_count, line, column);
         break;
@@ -1006,11 +1018,11 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(lamda_chuck, OP_END);
         JnObject* lambda_obj = jn_obj_function(
             lamda_chuck, 
+            chuck->env,
             node->lambda_node.args, 
             node->lambda_node.count, 
             NULL // lambda functions
         );
-        lambda_obj->fn->env = chuck->env;
         idx = add_constant(chuck, lambda_obj);
         WRITE_CHUCK(chuck, OP_CONSTANT);
         WRITE_CHUCK(chuck, idx);
@@ -1102,16 +1114,11 @@ void compile(AST* node, Chuck* chuck)
         loop->continues[loop->continue_count++] = jump;
         break;
 
-    case AST_FOR: {
+    case AST_FOR:
         
         LoopContext* loop_for = &loop_stack[loop_depth++];
         loop_for->break_count = 0;
         loop_for->continue_count = 0;
-                offset = current_offset(chuck);
-        loop_for->loop_offset = offset;
-
-
-        WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
 
         compile(node->for_node.iter, chuck);
         WRITE_CHUCK(chuck, OP_GET_ITER);
@@ -1122,6 +1129,11 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_SET_GLOBAL);
         WRITE_CHUCK(chuck, iter_slot);
         WRITE_CHUCK(chuck, 0);
+
+        loop_start = current_offset(chuck);
+        loop_for->loop_offset = loop_start;
+
+        WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
 
         WRITE_CHUCK(chuck, OP_GET_GLOBAL);
         WRITE_CHUCK(chuck, iter_slot);
@@ -1145,7 +1157,9 @@ void compile(AST* node, Chuck* chuck)
 
         compile(node->for_node.block, chuck);
 
-        emit_loop(chuck, offset);
+        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
+        
+        emit_loop(chuck, loop_start);
         patch_jump(chuck, exit_jmp);
 
                 
@@ -1158,10 +1172,8 @@ void compile(AST* node, Chuck* chuck)
         {
             patch_jump(chuck, loop_for->breaks[i]);
         }
-        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
         loop_depth--;
         break;
-    }
     case AST_LOOP:
         LoopContext* loop_p = &loop_stack[loop_depth++];
         

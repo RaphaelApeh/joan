@@ -2,12 +2,12 @@ hm := #{'a': 1, 1: 12, 23.2: false}
 arr := ["Hello", 32, 0xff]
 
 // With index
-for i, key in arr{
+for key in arr{
     println "value: {}" << key
 }
 
 for x in hm {
-        println x
+    println x
 }
 
 println "Done"

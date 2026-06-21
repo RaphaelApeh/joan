@@ -203,11 +203,18 @@ JnObject* jn_intern_obj(JnObject* obj)
     return obj;
 }
 
-JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name)
+JnObject* jn_obj_function(
+    Chuck* chuck, 
+    Jn_environ* env,
+    char** params, 
+    int arity, 
+    char* name
+)
 {
     JnObject* obj =  jn_obj_new(FUNCTION_TYPE);
     JnFunctionObject* fn = malloc(sizeof(JnFunctionObject));
     fn->arity = arity;
+    fn->env = env;
     fn->chuck = chuck;
     fn->name = name;
     fn->is_lambda = name == NULL;

@@ -113,6 +113,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     jn_init_parser(state->parser, &l);
     state->vm->global = state->globals;
     state->vm->env = state->globals;
+    state->vm->chuck->env = state->vm->env;
     assert(state->parser->arena && "Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");

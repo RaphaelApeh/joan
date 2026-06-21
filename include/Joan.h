@@ -316,7 +316,7 @@ JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
-JnObject* jn_obj_function(Chuck* chuck, char** params, int arity, char* name);
+JnObject* jn_obj_function(Chuck* chuck, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
