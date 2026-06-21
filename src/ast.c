@@ -113,14 +113,6 @@ void ast_array_add(AST* arr, AST* element)
     arr->array.elements[arr->array.count++] = element;
 }
 
-AST* ast_for(joan_parser_t* p, char* ident, AST* iter, AST* block)
-{
-    AST* ast = ast_create(p, AST_FOR);
-    ast->for_node.block = block;
-    ast->for_node.ident = ident;
-    ast->for_node.iter = iter;
-    return ast;
-}
 
 AST* ast_assign(
     joan_parser_t* p,

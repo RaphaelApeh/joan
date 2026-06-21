@@ -775,7 +775,7 @@ InterpretResult vm_run(JnVM* vm)
 
 void compile(AST* node, Chuck* chuck)
 {
-    int id, idx, jump, offset, loop_start, exit_jmp;
+    int id, idx, jump, offset, loop_start, exit_jmp, exit_jump;
     LoopContext* loop;
     int line = node->line;
     int column = node->col;
@@ -1093,63 +1093,35 @@ void compile(AST* node, Chuck* chuck)
         break;
 
     case AST_FOR:
+        loop = &loop_stack[loop_depth++];
         
-        LoopContext* loop_for = &loop_stack[loop_depth++];
-        loop_for->break_count = 0;
-        loop_for->continue_count = 0;
-
-        compile(node->for_node.iter, chuck);
-        WRITE_CHUCK(chuck, OP_GET_ITER);
-        // push iter object to __iter variable
-        char tmp[200];
-        snprintf(tmp, sizeof(tmp), "__iter_%d", iter_count++);
-        int iter_slot = add_ident(chuck, strdup(tmp));
-        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        WRITE_CHUCK(chuck, iter_slot);
-        WRITE_CHUCK(chuck, 0);
-
-        loop_start = current_offset(chuck);
-        loop_for->loop_offset = loop_start;
-
+        offset = current_offset(chuck);
+        loop->loop_offset = offset;
+        loop->break_count = 0;
+        loop->continue_count = 0;
+        
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
-
-        WRITE_CHUCK(chuck, OP_GET_GLOBAL);
-        WRITE_CHUCK(chuck, iter_slot);
+        compile(node->for_node.init, chuck);
         
-        WRITE_CHUCK(chuck, OP_ITER_NEXT);
-
-        exit_jmp = emit_jump(chuck, OP_JUMP_IF_FALSE);
-            
-        int var_id = add_ident(chuck, node->for_node.ident);
-        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        WRITE_CHUCK(chuck, var_id);
-        WRITE_CHUCK(chuck, 0);
-
-        if (node->for_node.index != NULL)
-        {
-            int idx = add_ident(chuck, node->for_node.index);
-            WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-            WRITE_CHUCK(chuck, idx);
-            WRITE_CHUCK(chuck, 0);
-        }
-
+        compile(node->for_node.cond, chuck);
+        exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        
         compile(node->for_node.block, chuck);
 
-        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
+        compile(node->for_node.incr, chuck);
+
+        emit_loop(chuck, offset);
+        patch_jump(chuck, exit_jump);
+        for (int i = 0; i < loop->continue_count; i++)
+        {
+            patch_jump(chuck, loop->continues[i]);
+        }
         
-        emit_loop(chuck, loop_start);
-        patch_jump(chuck, exit_jmp);
-
-                
-        for (int i = 0; i < loop_for->continue_count; i++)
+        for (int i = 0; i < loop->break_count; i++)
         {
-            patch_jump(chuck, loop_for->continues[i]);
+            patch_jump(chuck, loop->breaks[i]);
         }
-
-        for (int i = 0; i < loop_for->break_count; i++)
-        {
-            patch_jump(chuck, loop_for->breaks[i]);
-        }
+        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
         loop_depth--;
         break;
     case AST_LOOP:
@@ -1182,7 +1154,7 @@ void compile(AST* node, Chuck* chuck)
         loop->continue_count = 0;
         
         compile(node->while_node.cond, chuck);
-        int exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
         compile(node->while_node.block, chuck);
         emit_loop(chuck, offset);
         patch_jump(chuck, exit_jump);

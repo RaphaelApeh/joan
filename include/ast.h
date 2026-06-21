@@ -230,9 +230,8 @@ typedef struct AST{
         } if_node;
 
         struct {
-            AST* iter;
+            AST *init, *cond, *incr;
             AST* block;
-            char* ident, *index;
         } for_node;
 
         struct {
@@ -296,9 +295,6 @@ AST* ast_array(joan_parser_t* p);
 void ast_array_add(AST* arr, AST* element);
 
 AST* ast_identifier(joan_parser_t* p, const char* identifier);
-//LOOP
-AST* ast_for(joan_parser_t* p, char* ident, AST* iter, AST* block);
-
 
 //ASSIGN: v = true; const x = 4
 AST* ast_assign(
