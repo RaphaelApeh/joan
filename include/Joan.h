@@ -283,7 +283,7 @@ unsigned long djb2_hash(unsigned char* str);
 
 JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count);
 
-JN_API JnObject* Jn_import_module(J_State* state, char* path);
+JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
 
 // Register native function
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
@@ -319,6 +319,7 @@ JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
 JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
+JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);

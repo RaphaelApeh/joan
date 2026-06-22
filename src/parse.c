@@ -684,13 +684,28 @@ static AST* parse_lambda(joan_parser_t* p)
 
 static AST* parse_import(joan_parser_t* p)
 {
+    /*
+    Example:
+        import "./task" // local
+        import math // std lib
+    */
     advance_parser_c(p);
-    if (!check(p, TOKEN_STRING)) return parse_error(p, "Expected an import path.");
-    char* lib = GET_LEX(p);
+    bool is_std = false;
+    char* lib = NULL;
+    if (check(p, TOKEN_STRING)) 
+        lib = GET_LEX(p);
+    else if (check(p, TOKEN_IDENTIFIER))
+    {
+        is_std = true;
+        lib = GET_LEX(p);
+    }
+    else 
+        return parse_error(p, "Expected an import path.");
     advance_parser_c(p);
     AST* ast = ast_create(p, AST_IMPORT);
     ast->import_node.lib = lib;
-    ast->import_node.alias = NULL; // TODO
+    ast->import_node.is_std = is_std;
+    ast->import_node.alias = NULL; // TODO: add alias later
     return ast;
 }
 
@@ -792,6 +807,8 @@ AST* parse_value(joan_parser_t* p)
             return parse_array(p);
         case TOKEN_BITOR:
             return parse_lambda(p);
+        case TOKEN_IMPORT:
+            return parse_import(p);
         case TOKEN_PRINTLN: {
             advance_parser_c(p);
             AST* out = NULL;

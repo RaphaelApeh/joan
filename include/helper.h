@@ -4,6 +4,14 @@
 #include <stdint.h>
 #include "arena.h"
 
+#ifdef _WIN32
+    #include <direct.h>
+
+    #define getcwd _getcwd
+#else
+    #include <unistd.h>
+#endif
+
 typedef struct AST AST;
 typedef uint64_t u64;
 typedef struct JnObject JnObject;
@@ -15,6 +23,10 @@ typedef struct J_DArray_Obj J_DArray_Obj;
 #define RESET "\x1b[0m"
 #define RED "\x1b[31m"
 #define GREEN "\x1b[31m"
+
+
+#define JOAN_PATH getenv("JOAN_PATH")
+#define JN_STD_PATH getenv("JN_STD_PATH")
 
 #define PUSH_ITEM(arr, obj) do {\
     if ((arr)->size >= (arr)->capacity)\
@@ -96,9 +108,7 @@ double tonumber(JnObject* obj);
 
 void print_source_lines(char* source, int line, int column, int context);
 void print_source_line(char* source, int line, int column);
-
-char* cat_path(char* path);
-
+bool file_exists(const char* filename);
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);
 param_t* param_init(void);

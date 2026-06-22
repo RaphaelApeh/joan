@@ -1,4 +1,4 @@
-#import "var"
+import math
 
-println "ee"
-x
+
+println "Hello World"

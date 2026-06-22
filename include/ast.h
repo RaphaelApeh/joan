@@ -247,7 +247,8 @@ typedef struct AST{
 
         struct {
             char* lib;
-            char* alias;
+            char* alias; // TODO: user-define alias
+            int is_std;
         } import_node;
 
         struct {

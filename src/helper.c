@@ -1,18 +1,10 @@
+#include <sys/stat.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include "object.h"
 #include "helper.h"
 #include "ast.h"
-
-
-#ifdef _WIN32
-    #include <direct.h>
-
-    #define getcwd _getcwd
-#else
-    #include <unistd.h>
-#endif
 
 unsigned long djb2_hash(unsigned char* str)
 {
@@ -197,18 +189,8 @@ void print_source_line(char* source, int line, int column)
     printf("^\n");
 }
 
-
-char* cat_path(char* path)
+bool file_exists(const char* filename)
 {
-    char s[1 << 10];
-    char* p = path;
-    char* cwd = getcwd(NULL, 0);
-    if (*p == '.')
-    {
-        p++;
-        if (*p == '/' || *p == '\\') p++;
-    }else if(*p == '/' || *p == '\\') p++;
-
-    snprintf(s, sizeof(s), "%s/%s.jt", cwd, p);
-    return strdup(s);
+    struct stat st;
+    return stat(filename, &st) == 0;
 }

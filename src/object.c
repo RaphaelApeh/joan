@@ -252,6 +252,18 @@ JnObject* jn_obj_function(
     return obj;
 }
 
+JnObject* jn_obj_module(char* name, char* path, Jn_environ* env)
+{
+    JnObject* obj = jn_obj_new(MODULE_TYPE);
+    JnModule* mod = malloc(sizeof(JnModule));
+    mod->name = name;
+    mod->env = env;
+    mod->path = path;
+    mod->alias = NULL; // TODO
+    obj->module = mod;
+    return obj;
+}
+
 JnObject* jn_obj_enum(Jn_Hashmap* map, char** fields, int count)
 {
     assert(map != NULL);

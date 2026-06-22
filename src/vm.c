@@ -295,12 +295,12 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_IMPORT: 
                 char* lib = READ_IDENT();
-                char* path = cat_path(lib);
-                
-                JnObject* mod = Jn_import_module(NULL, path);
-                free(path);
-                if (NULL == mod) break;
-                PUSH(vm, mod);
+                bool is_std = READ_BYTE();
+                bool exists = file_exists(lib);
+                o = Jn_import_module(NULL, lib, is_std);
+                Jn_environ_E* entt = environ_get(o->module->env, "PI");
+                assert(entt != NULL);
+                print_JnObject(entt->value);
                 break;
             case OP_ARRAY:
                 count = READ_BYTE();
@@ -860,6 +860,7 @@ void compile(AST* node, Chuck* chuck)
         idx = add_ident(chuck, node->import_node.lib);
         WRITE_CHUCK(chuck, OP_IMPORT);
         WRITE_CHUCK(chuck, idx);
+        WRITE_CHUCK(chuck, node->import_node.is_std);
         break;
     case AST_BINARY:
         compile(node->binary.left, chuck);

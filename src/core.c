@@ -174,10 +174,49 @@ JN_API int Jn_exec_REPL(char* source)
     return 0;
 }
 
-JN_API JnObject* Jn_import_module(J_State* state, char* path)
+JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
 {
+    if (state == NULL)
+    {
+        state = Jn_get_state();
+    }
+    assert(state != NULL);
+    char buff[100];
+    char* filename;
+    snprintf(buff, sizeof buff, "%s.jt", path);
+    assert(JN_STD_PATH);
+    if (is_std)
+        filename = strcat(JN_STD_PATH, buff);
+    else
+        filename = buff;
     
-    return NULL;
+    bool exists = file_exists(filename);
+
+    if (!exists)
+        return  JN_RAISE_EXCPETION(IMPORT_ERROR, "cannot import %s.", filename);
+    
+    J_Source src = read_source_file(filename);
+    joan_lexer_t l;
+    J_init_lexer(&l, src.source);
+    jn_init_parser(state->parser, &l);
+    Jn_environ* env = Jn_environ_init(NULL);
+    JnVM vm = {0};
+    Chuck chuck = {0};
+    chuck.env = env;
+    vm.chuck = &chuck;
+    chuck_init(&chuck);
+    Jnvm_init(&vm, &chuck);
+    while(state->parser->curr.type != TOKEN_EOF)
+    {
+        AST* stmt = parse_stmt(state->parser);
+        compile(stmt, &chuck);
+    }
+    write_chuck(&chuck, OP_END);
+
+    InterpretResult i = vm_run(&vm);
+    if (i != INTERPRET_OK)
+        return JN_RAISE_EXCPETION(SYS_ERROR, "extra error message.");
+    return jn_obj_module(path, strdup(filename), env);
 }
 
 JN_API void Jn_program_close(void)
