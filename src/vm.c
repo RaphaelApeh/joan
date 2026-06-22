@@ -95,7 +95,7 @@ static int vm_error(JnVM* vm, JnObject* obj)
         " '%s':%d:%d \n\t",  ctx->source.filename ? ctx->source.filename: "main",
         ctx->cur_line, ctx->column
     );
-    printf("%s\n", obj->expection.error_msg);
+    printf("%s\n\n", obj->expection.error_msg);
     print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
     return INTERPRET_ERROR;
 }
@@ -112,7 +112,7 @@ static InterpretResult die(JnVM* vm, const char* msg, ...)
         ctx->cur_line, ctx->column
     );
     vfprintf(stderr, msg, arg);
-    fputc('\n', stderr);
+    printf("\n\n");
     va_end(arg);
     print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
     return INTERPRET_RUNTIME_ERROR;

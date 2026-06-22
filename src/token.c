@@ -271,6 +271,18 @@ joan_token_t make_comment(joan_lexer_t* l)
     return make_token(l, TOKEN_COMMENT);
 }
 
+joan_token_t make_comment_block(joan_lexer_t* l)
+{
+    l->curr += 2;
+    l->start = l->curr;
+    advance(l);
+    while (!(peek(l) == '*' && peek_next(l) == '/') && !at_end(l))
+        advance(l);
+    advance(l);
+    advance(l);
+    return make_token(l, TOKEN_COMMENT);
+}
+
 joan_token_t next_token(joan_lexer_t* l)
 {
     strip_ws(l);
@@ -407,6 +419,8 @@ joan_token_t next_token(joan_lexer_t* l)
                 return make_comment(l);
             else if (peek_advance(l, '='))
                 return make_token(l, TOKEN_ASLASH);
+            else if (peek(l) == '*')
+                return make_comment_block(l);
             return make_token(l, TOKEN_SLASH);
         case '?':
             return make_token(l, TOKEN_QUESTION);

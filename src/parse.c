@@ -397,7 +397,9 @@ static AST* parse_for(joan_parser_t* p)
     */
    advance_parser_c(p); // for
     AST* init = parse_expr(p);
+    SKIP(p, TOKEN_SIMICOLON, "you forgot to add ';' in the forloop.");
     AST* cond = parse_expr(p);
+    SKIP(p, TOKEN_SIMICOLON, "Yes, you need to add ';' after the loop condition.");
     AST* incr = parse_expr(p);
     AST* block = NULL;
     if (match(p, TOKEN_THEN))

@@ -1,0 +1,39 @@
+/*
+>>> Standard Math library
+*/
+
+const PI = 3.141592653589793
+const min = |a, b| => a @if a < b else b
+
+const max = |a, b| => a @if a > b else b
+
+fn abs(n){
+    // Calculate the absolute value of a number.
+    return -n @if n < 0 else n
+}
+
+fn sqr(n) {
+    // Calculate the square root of a given number.
+    return n ** 0.5
+}
+
+fn floor(n){
+    // Round a number up to the previous integer
+    if n >= 0 then return n
+    else return n // toint(n) Not yet define
+}
+
+fn ceil(n){
+    // Round a number up to the next integer
+    floored := floor(n)
+    if (n > floored) then floored + 1
+    else return floored
+}
+
+fn factorial(n){
+    if n <= 1 {
+        return 1
+    } else {
+        return n * n - 1 //factorial(n - 1) TODO: fix parser issue.
+    }
+}

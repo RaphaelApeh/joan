@@ -1,0 +1,52 @@
+/*
+MIT License
+
+Copyright (c) 2026 Raphael Apeh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+// Main Standard Lib
+
+
+fn is_digit(c){
+    return c >= '0' and c <= '9'
+}
+
+fn is_alpha(c){
+    return c >= 'A' or c >= 'a' and c <= 'Z' or c <= 'Z'
+}
+
+fn is_upper(c){
+    return c >= 'A' and c <= 'Z'
+}
+
+fn is_lower(c){
+    return c >= 'a' and c <= 'z'
+}
+fn is_whitespace(c) {
+    // TODO: new syntax -> '\n', '\r', '\t' => then ..
+    match c {
+        ' ' => then return true
+        '\n' => then return true
+        '\r' => then return true
+        '\t' => then return true
+        else then return false
+    }
+}
