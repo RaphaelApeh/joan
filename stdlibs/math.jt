@@ -34,6 +34,6 @@ fn factorial(n){
     if n <= 1 {
         return 1
     } else {
-        return n * n - 1 //factorial(n - 1) TODO: fix parser issue.
+        return n * factorial(n - 1)
     }
 }

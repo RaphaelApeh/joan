@@ -314,21 +314,7 @@ InterpretResult vm_run(JnVM* vm)
                 o->arr = arr;
                 PUSH(vm, o);
                 break;
-            case OP_ITER:
-                // count = READ_BYTE();
-                // iter = ObjectIter(count);
-                // for (int i = count - 1; i >= 0; --i)
-                // {
-                //     //PUSHItem(iter, pop(vm));
-                //     iter->items[i] = pop(vm);
-                //     iter->count++;
-                // }
-                // o = jn_obj_new(ITER_TYPE);
-                // o->iter = iter;
-                // PUSH(vm, o);
-                break;
             case OP_HM:
-                printf("Hello 2\n");
                 count = READ_BYTE();
                 Jn_Hashmap* map = NULL;
                 for (int i = count - 1; i >= 0; --i)
@@ -340,7 +326,6 @@ InterpretResult vm_run(JnVM* vm)
                 JnObject* obj = JN_OBJECT(HASHMAP_TYPE);
                 obj->hashmap = map;
                 PUSH(vm, obj);
-                printf("Hello 3\n");
                 break;
             case OP_REASSIGN:
                 ident = READ_IDENT();
@@ -1050,7 +1035,6 @@ void compile(AST* node, Chuck* chuck)
         patch_jump(chuck, end_jump);
         break;
     case AST_HASHMAP:
-        printf("Hello 1\n");
         for (size_t i = 0; i < node->hmp_node.count; ++i)
         {
             compile(node->hmp_node.keys[i], chuck);

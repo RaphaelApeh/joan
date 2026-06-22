@@ -167,6 +167,9 @@ static AST* parse_loop(joan_parser_t* p)
     AST* ast = ast_create(p, AST_LOOP);
     if (check(p, TOKEN_LBRACE))
         ast->loop_stmt.block = parse_block(p);
+    else {
+        return parse_error(p, "Expected loop block.");
+    }
     return ast;
 }
 
@@ -364,7 +367,7 @@ static AST* parse_reassign(joan_parser_t* p, AST* node)
 static AST* parse_call(joan_parser_t* p, AST* callee)
 {
     //e.g main(1, None, true)
-    AST* args[20]; // TODO
+    AST** args = arena_alloc(p->arena, sizeof(AST *) * 20);
     size_t len = 0, cap = 20;
     AST* ast = ast_create(p, AST_CALL);
     if (match(p, TOKEN_RPARN))
@@ -376,6 +379,11 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
         return ast;
     }
     do {
+        if (len >= cap)
+        {
+            cap *= 2;
+            args = realloc(args, sizeof(AST*) * cap);
+        }
         args[len++] = parse_expr(p);
     } while (match(p, TOKEN_COMMA));
 
@@ -557,8 +565,8 @@ static AST* parse_hashmap(joan_parser_t* p)
     // TODO
     if (!match(p, TOKEN_LBRACE)) // {
         return parse_error(p, "Expected an opening '{'");
-    AST** keys = malloc(sizeof(AST *) * 30);
-    AST** values = malloc(sizeof(AST *) * 30);
+    AST** keys = arena_alloc(p->arena, sizeof(AST *) * 30);
+    AST** values = arena_alloc(p->arena, sizeof(AST *) * 30);
     size_t len= 0, cap = 30;    
     AST* ast = ast_create(p, AST_HASHMAP);
 

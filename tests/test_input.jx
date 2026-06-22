@@ -1,7 +1,5 @@
-// Get user input and dispaly it.
-let username = gets("Enter your username: ")
-if username == "" {
-    println "Error username was not provided."
-} else {
-    println "Hi " + username
+loop {
+    name := gets("Enter your name: ")
+    if name == "exit" then break
+    println name
 }
