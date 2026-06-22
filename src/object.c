@@ -245,8 +245,8 @@ JnObject* jn_obj_function(
     fn->env = Jn_environ_init(env);
     fn->params = params;
     fn->arity = arity;
+    fn->is_lambda = false;
     fn->name = name;
-    fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(FUNCTION_TYPE);
     obj->fn = fn;
     return obj;
@@ -362,7 +362,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "<Enum>");
             break;
         case FUNCTION_TYPE:
-            fprintf(stdout, "<function '%s' args=%d>", obj->fn->name != NULL ? obj->fn->name : "<lambda>", obj->fn->arity);
+            fprintf(stdout, "<function '%s' args=%d>",obj->fn->name, obj->fn->arity);
             break;
         case ITER_TYPE:
             fprintf(stderr, "<iter '");

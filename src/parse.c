@@ -146,7 +146,7 @@ void advance_parser_c(joan_parser_t* p)
     p->curr = p->next;
     do {
         p->next = next_token(p->l);
-    } while(p->next.type == TOKEN_NEWLINE || p->next.type == TOKEN_SIMICOLON);
+    } while(p->next.type == TOKEN_NEWLINE);
 }
 
 AST* parse_error(joan_parser_t* p, const char* msg, ...)
@@ -729,8 +729,14 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast;
         case TOKEN_RETURN:
-            advance_parser_c(p);
+            advance_parser(p);
             ast = ast_create(p, AST_RETURN);
+            if (check(p, TOKEN_SIMICOLON))
+            {
+                advance_parser_c(p);
+                ast->return_stmt.value = NULL;
+                return ast;
+            }
             ast->return_stmt.value = parse_expr(p);
             return ast;
         case TOKEN_IDENTIFIER:

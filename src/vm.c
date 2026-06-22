@@ -129,7 +129,7 @@ static JnObject* vm_peek(JnVM* vm, int d) {return vm->sp[-1 - d];}
 static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
 
-static JnObject* call_lambda(JnVM* vm, JnObject* obj, JnObject** args)
+static JnObject* call_function(JnVM* vm, JnObject* obj, JnObject** args)
 {
     JnFunctionObject* fn = obj->fn;
     JnVM child;
@@ -143,7 +143,7 @@ static JnObject* call_lambda(JnVM* vm, JnObject* obj, JnObject** args)
     InterpretResult r = vm_run(&child);
     if (r == INTERPRET_OK)
         return pop(&child);
-    return JN_RAISE_EXCPETION(SYS_ERROR, "Something went wrong :(");
+    return JN_RAISE_EXCPETION(SYS_ERROR, "Extra error to annoy you. Good luck debugging :).");
 }
 
 static JnObject *a, *b, *key, *value, *array, *pos;
@@ -745,7 +745,7 @@ InterpretResult vm_run(JnVM* vm)
                                 "function '%s' expected %d args but got %d",
                                 fn->name, fn->arity, count
                             );
-                        JnObject* res = call_lambda(vm, o, args);
+                        JnObject* res = call_function(vm, o, args);
                         PUSH(vm, res);
                         break;
                     }
@@ -830,6 +830,11 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
         for (size_t i = 0; i < node->block.count; i++)
         {
+            // if (node->block.statements[i]->type == AST_RETURN)  
+            // {
+            //     compile(node->block.statements[i], chuck);
+            //     break;
+            // }
             compile(node->block.statements[i], chuck);
         }
         write_chuck_loc(chuck, OP_SCOPE_EXIT, line, column);
@@ -1007,7 +1012,18 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, idx);
         break;
     case AST_FUNCTION:
-        
+        JnObject* fn_obj = jn_obj_function(
+            node->fn_node.block,
+            chuck->env, node->fn_node.params, node->fn_node.count, node->fn_node.name
+        );
+        idx = add_constant(chuck, fn_obj);
+        WRITE_CHUCK(chuck, OP_CONSTANT);
+        WRITE_CHUCK(chuck, idx);
+
+        id = add_ident(chuck, node->fn_node.name);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, id);
+        WRITE_CHUCK(chuck, 0);
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);
@@ -1056,7 +1072,13 @@ void compile(AST* node, Chuck* chuck)
         loop->breaks[loop->break_count++] = jump;
         break;
     case AST_RETURN:
-        compile(node->return_stmt.value, chuck);
+        if (node->return_stmt.value != NULL)
+            compile(node->return_stmt.value, chuck);
+        else {
+            idx = add_constant(chuck, JN_RETURN_NONE);
+            WRITE_CHUCK(chuck, OP_CONSTANT);
+            WRITE_CHUCK(chuck, idx);
+        }
         WRITE_CHUCK(chuck, OP_RETURN);
         break;
     case AST_CONTINUE:

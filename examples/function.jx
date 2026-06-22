@@ -1,7 +1,9 @@
-// TODO
-fn add(a, b) {
-    ddd
-    return None
+// functions
+let x = 1
+
+fn main() {
+    println x
+    return; // return nothing or None
 }
 
-println add(32, 13)
+main()

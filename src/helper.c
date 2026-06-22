@@ -161,7 +161,7 @@ void print_source_lines(char* source, int line, int column, int context)
             {
                 printf("   | ");
                 for (int i = 1; i < column; ++i)    putchar(' ');
-                printf("^^^\n");
+                printf("^^\n");
             }
 
         }
