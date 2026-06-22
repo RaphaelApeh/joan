@@ -365,17 +365,23 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
 {
     //e.g main(1, None, true)
     AST* args[20]; // TODO
-    size_t len = 0;
-    while(true)
-    {
-        printf("TOKEN: %d\n", p->curr.type);
-        args[len++] = parse_expr(p);
-        if (match(p, TOKEN_COMMA))
-            continue;
-        if (match(p, TOKEN_RPARN)) break;
-    }
-    printf("END TOKEN: %d\n", p->curr.type);
+    size_t len = 0, cap = 20;
     AST* ast = ast_create(p, AST_CALL);
+    if (match(p, TOKEN_RPARN))
+    {
+        ast->call.callee = callee;
+        ast->call.params = NULL;
+        ast->call.pos_args = args;
+        ast->call.pos_count = 0;
+        return ast;
+    }
+    do {
+        args[len++] = parse_expr(p);
+    } while (match(p, TOKEN_COMMA));
+
+    if (!match(p, TOKEN_RPARN))
+        return parse_error(p, "Expected ')'.");
+
     ast->call.callee = callee;
     ast->call.params = NULL;
     ast->call.pos_args = args;
@@ -788,14 +794,16 @@ AST* parse_value(joan_parser_t* p)
 AST* parse_prec(joan_parser_t* p, precedence prec)
 {
     AST* left = parse_value(p);
-    left = parse_postfix(p, left);
-    while (prec < get_prec(p->curr.type))
+    while (true)
     {
+        left = parse_postfix(p, left);
+        precedence next_pr = get_prec(p->curr.type);
+        if (prec >= next_pr)
+            break;
         J_TokenType op = p->curr.type;
-        precedence op_prec = get_prec(op);
         advance_parser_c(p);
-        AST* rhs = parse_prec(p, op_prec);
-        left = ast_binary(p, left, op, rhs);
+        AST* right = parse_prec(p, next_pr);
+        left = ast_binary(p, left, op, right);
     }
     return  left;
 }

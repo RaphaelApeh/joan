@@ -1006,29 +1006,8 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_CONSTANT);
         WRITE_CHUCK(chuck, idx);
         break;
-    case AST_FUNCTION: 
-        // Chuck fn_chuck;
-        // fn_chuck.env = chuck->env;
-        // chuck_init(&fn_chuck);
-        // compile(node->fn_node.block, &fn_chuck);
-        // // idx = add_constant(&fn_chuck, obj_none());
-        // // WRITE_CHUCK(&fn_chuck, OP_CONSTANT);
-        // // WRITE_CHUCK(&fn_chuck, idx);
-        // WRITE_CHUCK(&fn_chuck, OP_END);
-        // JnObject* objFn = jn_obj_function(
-        //     &fn_chuck,
-        //     node->fn_node.params,
-        //     node->fn_node.count,
-        //     node->fn_node.name
-        // );
-        // idx = add_constant(chuck, objFn);
-        // WRITE_CHUCK(chuck, OP_CONSTANT);
-        // WRITE_CHUCK(chuck, idx);
-
-        // id = add_ident(chuck, node->fn_node.name);
-        // WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        // WRITE_CHUCK(chuck, id);
-        // WRITE_CHUCK(chuck, 1);
+    case AST_FUNCTION:
+        
         break;
     case AST_IF:
         compile(node->if_node.condition, chuck);

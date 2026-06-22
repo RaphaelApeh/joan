@@ -228,21 +228,26 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
 }
 
 JnObject* jn_obj_function(
-    Chuck* chuck, 
+    AST* block,
     Jn_environ* env,
     char** params, 
     int arity, 
     char* name
 )
 {
-    JnObject* obj =  jn_obj_new(FUNCTION_TYPE);
-    JnFunctionObject* fn = malloc(sizeof(JnFunctionObject));
-    fn->arity = arity;
-    fn->env = env;
+    Chuck* chuck = JN_ALLOC(sizeof(Chuck));
+    chuck_init(chuck);
+    chuck->env = env;
+    compile(block, chuck);
+    write_chuck_loc(chuck, OP_END, 0, 0);
+    JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
     fn->chuck = chuck;
-    fn->name = name;
-    fn->is_lambda = name == NULL;
+    fn->env = Jn_environ_init(env);
     fn->params = params;
+    fn->arity = arity;
+    fn->name = name;
+    fn->is_lambda = 1;
+    JnObject* obj = jn_obj_new(FUNCTION_TYPE);
     obj->fn = fn;
     return obj;
 }
