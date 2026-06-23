@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 #include <assert.h>
 #include "eval.h"
 #include "helper.h"
@@ -129,6 +130,8 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
                 return eval_bin(lhs, rhs, +);
             case EVAL_MUL:
                 return eval_bin(lhs, rhs, *);
+            case EVAL_POW:
+                return JN_RETURN_INT(pow(tonumber(lhs), tonumber(rhs)));
             case EVAL_EQUAL:
                 return eval_bin_bool(lhs, rhs, ==);
             case EVAL_SUB:

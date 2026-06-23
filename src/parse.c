@@ -105,6 +105,7 @@ precedence get_prec(J_TokenType type)
     case TOKEN_LSHIFT:
     case TOKEN_PERCENTAGE:
     case TOKEN_BITAND:
+    case TOKEN_POW:
     case TOKEN_BITOR:
     case TOKEN_BITAC:
     case TOKEN_MINUS:

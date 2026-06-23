@@ -412,6 +412,11 @@ InterpretResult vm_run(JnVM* vm)
                         return die(vm, "invalid operator.");
                 }
                 break;
+            case OP_POW:
+                a = pop(vm); b = pop(vm);
+                a = eval_binary(b, a, EVAL_POW);
+                PUSH(vm, a);
+                break;
             case OP_IN:
                 a = pop(vm);
                 b = pop(vm);
@@ -956,6 +961,9 @@ void compile(AST* node, Chuck* chuck)
                 WRITE_CHUCK(chuck, OP_AND); break;
             case TOKEN_OR:
                 WRITE_CHUCK(chuck, OP_OR); break;
+            case TOKEN_POW:
+                WRITE_CHUCK(chuck, OP_POW);
+                break;
             default:
                 break;
         }

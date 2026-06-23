@@ -9,6 +9,7 @@ typedef enum{
     EVAL_DIV,
     EVAL_LSHIFT,
     EVAL_RSHIFT,
+    EVAL_POW, // **
     EVAL_GTE, // >=
     EVAL_GT, // >
     EVAL_LT, // <

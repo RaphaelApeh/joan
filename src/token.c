@@ -356,7 +356,8 @@ joan_token_t next_token(joan_lexer_t* l)
             {
                 advance(l);
                 return make_token(l, TOKEN_ASTAR);
-            }
+            } else if (peek_advance(l, '*'))
+                return make_token(l, TOKEN_POW);
             return make_token(l, TOKEN_STAR);
         case '=':
             if (peek(l) == '='){

@@ -2,6 +2,7 @@
 >>> Standard Math library
 */
 
+const E = 2.7182818284590452354
 const PI = 3.141592653589793
 const min = |a, b| => a @if a < b else b
 
@@ -12,7 +13,7 @@ fn abs(n){
     return -n @if n < 0 else n
 }
 
-fn sqr(n) {
+fn sqrt(n) {
     // Calculate the square root of a given number.
     return n ** 0.5
 }

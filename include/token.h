@@ -25,6 +25,7 @@ typedef enum {
     TOKEN_MINUS,
     TOKEN_STAR,
     TOKEN_SLASH,
+    TOKEN_POW,
     TOKEN_COMMA,
     TOKEN_SIMICOLON,
     TOKEN_DOT,
