@@ -115,7 +115,7 @@ typedef struct AST{
         struct {
             AST* callie;
             AST* setter;
-            char* field;
+            AST* field;
             J_TokenType tok;
             bool is_setter;
             bool is_call;

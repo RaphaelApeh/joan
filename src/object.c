@@ -364,6 +364,9 @@ void print_JnObject(JnObject* obj)
         case HASHMAP_TYPE:
             print_hashmap(obj);
             break;
+        case MODULE_TYPE:
+            fprintf(stderr, "<Module '%s' at '%s'>", obj->module->name, obj->module->path);
+            break;
         case NONE_TYPE:
             fprintf(stderr, "None");
             break;

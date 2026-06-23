@@ -298,9 +298,8 @@ InterpretResult vm_run(JnVM* vm)
                 bool is_std = READ_BYTE();
                 bool exists = file_exists(lib);
                 o = Jn_import_module(NULL, lib, is_std);
-                Jn_environ_E* entt = environ_get(o->module->env, "PI");
-                assert(entt != NULL);
-                print_JnObject(entt->value);
+                if (o == NULL) return die(vm, "Import error.");
+                PUSH(vm, o);
                 break;
             case OP_ARRAY:
                 count = READ_BYTE();
@@ -457,20 +456,19 @@ InterpretResult vm_run(JnVM* vm)
                     return vm_error(vm, JN_RAISE_EXCPETION(ASSERT_ERROR, msg));
                 break;
             case OP_MEMBER:
-                char* field = READ_IDENT(); o = pop(vm); op = READ_BYTE();
-                printf("FIeld member %s, Object type %d Token %d\n", ident, o->type, op);
-                // I assuming every object is an enum object: TODO
-                switch (op)
+                char* field = READ_IDENT(); o = pop(vm);
+                switch (o->type)
                 {
-                    case TOKEN_EXR:
-                        // TODO
-                        break;
-                    case TOKEN_DOT:
-                        break; // instance call
-                    default:
-                        return die(vm, "Got an invalid member token %d\n", op);
+                case MODULE_TYPE:
+                    Jn_environ_E* entt = environ_get(o->module->env, field);
+                    if (entt == NULL)
+                        return die(vm, "member does not have field '%s'.", field);
+                    PUSH(vm, entt->value);
+                    break;
+                
+                default:
+                    return die(vm, "Object does not support member attribute.");
                 }
-                PUSH(vm, jn_obj_none()); // for now
                 break;
             case OP_RANGE:
                 int has_step = READ_BYTE();
@@ -797,10 +795,21 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_MEMBER:
         compile(node->member.callie, chuck);
-        idx = add_ident(chuck, node->member.field);
-        write_chuck_loc(chuck, OP_MEMBER, line, column);
-        write_chuck_loc(chuck, idx, line, column);
-        write_chuck_loc(chuck, node->member.tok, line, column);
+        // compile(node->member.field, chuck);
+        if (node->member.field->type == AST_IDENTIFIER)
+        {
+            id = add_ident(chuck, (char *)node->member.field->identifier);
+        }else if (node->member.field->type = AST_CALL){
+            
+        }else {
+            id = add_ident(chuck, "Invalid member attribute.");
+            write_chuck_loc(chuck, OP_ERROR_MSG, line, column);
+            write_chuck_loc(chuck, id, line, column);
+            break;
+        }
+        WRITE_CHUCK(chuck, OP_MEMBER);
+        WRITE_CHUCK(chuck, id);
+        // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
         break;
     case AST_CALL:
         compile(node->call.callee, chuck);        
@@ -861,6 +870,10 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_IMPORT);
         WRITE_CHUCK(chuck, idx);
         WRITE_CHUCK(chuck, node->import_node.is_std);
+
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, idx);
+        WRITE_CHUCK(chuck, 0);
         break;
     case AST_BINARY:
         compile(node->binary.left, chuck);
