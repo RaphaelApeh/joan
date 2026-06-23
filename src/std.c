@@ -74,6 +74,46 @@ static JnObject* native_put(JN_Args args)
     return JN_RETURN_NONE;
 }
 
+static JnObject* native_toint(JN_Args args)
+{
+    if (args.count > 1 || args.count < 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "toint() require only one argument but got %d.", args.count);
+    switch(args.args[0]->type)
+    {
+        case STR_TYPE:
+            return JN_RETURN_INT(strtol(JN_AS_STRING(args.args[0])->chars, NULL, 10));
+        case INT_TYPE:
+            return args.args[0];
+        case FLOAT_TYPE:
+            return JN_RETURN_INT((long)JN_AS_FLOAT(args.args[0]));
+        case BOOL_TYPE:
+            return JN_RETURN_INT(args.args[0]->bool8);
+        default:
+            return JN_RAISE_EXCPETION(TYPE_ERROR, "toint() does not support this type 'TODO'. ");
+    }
+    return NULL; // ERROR
+}
+
+static JnObject* native_tofloat(JN_Args arg)
+{
+    if (arg.count > 1 || arg.count < 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "tofloat() require only one argument but got %d.", arg.count);
+    switch(arg.args[0]->type)
+    {
+        case STR_TYPE:
+            return JN_RETURN_FLOAT(strtod(JN_AS_STRING(arg.args[0])->chars, NULL));
+        case INT_TYPE:
+            return JN_RETURN_FLOAT((double)JN_AS_INT(arg.args[0]));
+        case FLOAT_TYPE:
+            return arg.args[0];
+        case BOOL_TYPE:
+            return JN_RETURN_FLOAT(JN_AS_BOOL(arg.args[0]));
+        default:
+            return JN_RAISE_EXCPETION(TYPE_ERROR, "tofloat() does not support this type 'TODO'. ");
+    }
+    return NULL;
+}
+
 static JnObject* native_sleep(JN_Args args)
 {
     if (args.count > 1 || args.count < 1)
@@ -133,6 +173,8 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "len", "Returns the length of an iterable", native_len);
     Jn_register_fn(state, "gets", "Get user input.", native_gets);
     Jn_register_fn(state, "put", "print object without a new-line.", native_put);
+    Jn_register_fn(state, "toint", "Convert an object to int.", native_toint);
+    Jn_register_fn(state, "tofloat", "Convert an object to float.", native_tofloat);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     // add other built-in functions
 }

@@ -192,10 +192,10 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
         filename = strdup(buff);
     
     bool exists = file_exists(filename);
-    printf("FILENAME %s\n", filename);
     if (!exists)
         return  JN_RAISE_EXCPETION(IMPORT_ERROR, "cannot import %s.", filename);
     
+    J_State st = {0};
     J_Context* cxt = Jn_get_context();
     J_Source old = cxt->source;
     J_Source src = read_source_file(filename);
@@ -207,9 +207,12 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     JnVM vm = {0};
     Chuck chuck = {0};
     chuck.env = env;
+    st.globals = env;
+    st.cxt = *cxt;
     vm.chuck = &chuck;
     chuck_init(&chuck);
     Jnvm_init(&vm, &chuck);
+    Jn_load_Cfunctions(&st);
     while(state->parser->curr.type != TOKEN_EOF)
     {
         AST* stmt = parse_stmt(state->parser);

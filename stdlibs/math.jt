@@ -15,7 +15,8 @@ fn abs(n){
 
 fn sqrt(n) {
     // Calculate the square root of a given number.
-    return n ** 0.5
+    d := tofloat(n) ** 0.5
+    return d
 }
 
 fn floor(n){

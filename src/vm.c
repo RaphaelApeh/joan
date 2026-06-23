@@ -1234,5 +1234,3 @@ void compile(AST* node, Chuck* chuck)
         break;
     }
 }
-
-#undef err

@@ -80,6 +80,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
 #define JN_RETURN_STRING(s) jn_obj_string((s))
 #define JN_RETURN_CHAR(c) jn_obj_char((c))
+#define JN_RETURN_FLOAT(d) jn_obj_float(d)
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
 #define JN_OBJECT_RANGE(start, stop, step) jn_obj_range(start, stop, step)
 #define JN_OBJECT_VALUE(obj) // TODO 
@@ -89,6 +90,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_FLOAT(obj) (obj)->float32
 #define JN_AS_ARRAY(obj) (obj)->arr
 #define JN_AS_ITER(obj) (obj)->iter
+#define JN_AS_BOOL(obj) (obj)->bool8
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
