@@ -179,14 +179,10 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_THEN;
     else if (strcmp(t.lexeme, "let") == 0)
         t.type = TOKEN_LET;
+    else if(strcmp(t.lexeme, "not_in") == 0)
+        t.type = TOKEN_NOT_IN;
     else if (strcmp(t.lexeme, "not") == 0)
-    {
-        tmp = next_token(l);
-        if (tmp.type == TOKEN_IN)
-            t.type = TOKEN_NOT_IN;
-        else
-            t.type = TOKEN_NOT;
-    }
+        t.type = TOKEN_NOT;
     else if (strcmp(t.lexeme, "of") == 0)
         t.type = TOKEN_OF;
     else if (equal(t.lexeme, "import"))

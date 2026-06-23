@@ -570,10 +570,7 @@ InterpretResult vm_run(JnVM* vm)
                         }
                         if (index >= array->str->len)
                             return die(vm, "invalid index got %d.", index);
-                        char* str = malloc(2);
-                        str[0] = array->str->chars[index];
-                        str[1] = '\0';
-                        o = jn_obj_string(str);
+                        o = JN_RETURN_CHAR((array->str->chars[index]));
                         PUSH(vm, o);
                         break;
                     case RANGE_TYPE:
@@ -610,11 +607,9 @@ InterpretResult vm_run(JnVM* vm)
                     case STR_TYPE:
                         if (index >= array->str->len)
                                 return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
-                        if (value->type != STR_TYPE)
-                            return die(vm, "string index expect a string value.");
-                        if (value->str->len > 0)
-                            return die(vm, "Can only set a char to a string.");
-                        array->str->chars[index] = value->str->chars[0];
+                        if (!JN_IS_CHAR(value))
+                            return die(vm, "string index expect a char type.");
+                        array->str->chars[index] = JN_AS_CHAR(value);
                         break;
                     case HASHMAP_TYPE:
                         JN_HASMAP_PUT(array->hashmap, pos, value);

@@ -34,6 +34,17 @@ static uint64_t hash_object(JnObject* obj)
     }
 }
 
+
+static bool compare(char* str, char c)
+{
+    for (int i = 0; str[i] != '\0'; ++i)
+    {
+        if (str[i] == c)
+            return true;
+    }
+    return false;
+}
+
 static char* format_string(char* fmt, JnObject* obj)
 {
     int len = 0;
@@ -169,6 +180,22 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
         // TODO: add support for multiple objects.
         char* s = format_string(lhs->str->chars, rhs);
         return JN_RETURN_STRING(s);
+    }
+    if (JN_IS_CHAR(lhs) && JN_IS_STRING(rhs))
+    {
+        switch (op)
+        {
+        case EVAL_ADD:
+            return JN_RAISE_EXCPETION(TYPE_ERROR, "'+' is not supported for a char and string type.");
+        case EVAL_IN:
+            is_true = compare(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs));
+            return JN_RETURN_BOOL(is_true);
+        case EVAL_NOT_IN:
+            is_true = compare(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs));
+            return JN_RETURN_BOOL(!is_true);        
+        default:
+            return JN_RAISE_EXCPETION(TYPE_ERROR, "char does not support this operator for string.");
+        }
     }
     if (lhs->type == STR_TYPE && rhs->type == STR_TYPE)
     {

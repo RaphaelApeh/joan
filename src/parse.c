@@ -716,6 +716,9 @@ AST* parse_value(joan_parser_t* p)
             ast = parse_expr(p);
             if (check(p, TOKEN_RPARN))
                 advance_parser_c(p);
+            else {
+                return parse_error(p, "Expected ')'.");
+            }
             return ast;
         case TOKEN_COMMENT:
             advance_parser_c(p);
@@ -779,7 +782,7 @@ AST* parse_value(joan_parser_t* p)
             advance_parser(p);
             ast = ast_create(p, AST_UNARY);
             ast->unary.op = TOKEN_NOT;
-            ast->unary.right = parse_value(p);
+            ast->unary.right = parse_expr(p);
             return ast;
         case TOKEN_TRUE:
             ast = ast_literal(p,  jn_obj_bool(true));

@@ -402,6 +402,8 @@ bool is_truthy(JnObject* obj)
     {
     case BOOL_TYPE:
         return obj->bool8;
+    case CHAR_TYPE:
+        return JN_AS_CHAR(obj) != '\0';
     case INT_TYPE:  
         return obj->int32 != 0;
     case FLOAT_TYPE:
