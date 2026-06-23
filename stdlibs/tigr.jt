@@ -1,0 +1,28 @@
+/*
+ TODO
+*/
+assert false, "Currently in developemnt"
+
+TPixel := struct {
+    r, g, b, a
+}
+
+// tigrWindow(int w, int h, const char *title, int flags)
+
+#c_define tigrWindow(w, h, title, flags)
+
+
+// int tigrClosed(Tigr *bmp)
+
+#c_define tigrClosed(None)
+
+// void tigrPrint(Tigr *dest, TigrFont *font, int x, int y, TPixel color, const char *text, ...)
+
+#c_define tigrPrint(font, x, y, color, text)
+
+// void tigrUpdate(Tigr *bmp)
+
+#c_define tigrUpdate(None)
+
+// void tigrFree(Tigr *bmp)
+#c_define tigrFree(None)

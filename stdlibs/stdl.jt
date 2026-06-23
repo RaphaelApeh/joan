@@ -40,6 +40,17 @@ fn is_upper(c){
 fn is_lower(c){
     return c >= 'a' and c <= 'z'
 }
+
+fn to_lower(c)
+{
+    return tochar(c + 32)
+}
+
+fn to_upper(c)
+{
+    return tochar(c - 32)
+}
+
 fn is_whitespace(c) {
     // TODO: new syntax -> '\n', '\r', '\t' => then ..
     match c {

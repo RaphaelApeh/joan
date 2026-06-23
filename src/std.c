@@ -114,6 +114,24 @@ static JnObject* native_tofloat(JN_Args arg)
     return NULL;
 }
 
+static JnObject* native_tochar(JN_Args arg)
+{
+    if (arg.count > 1 || arg.count < 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "tochar() require only one argument but got %d.", arg.count);
+    switch(arg.args[0]->type)
+    {
+        case INT_TYPE:
+            return JN_RETURN_CHAR((char) JN_AS_INT(arg.args[0]));
+        case CHAR_TYPE:
+            return arg.args[0];
+        case FLOAT_TYPE:
+            return JN_RETURN_CHAR((char) JN_AS_FLOAT(arg.args[0]));
+        default:
+            return JN_RAISE_EXCPETION(TYPE_ERROR, "tochar() does not support this type '%d'. ", arg.args[0]->type);
+    }
+    return NULL;
+}
+
 static JnObject* native_sleep(JN_Args args)
 {
     if (args.count > 1 || args.count < 1)
@@ -175,6 +193,7 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "put", "print object without a new-line.", native_put);
     Jn_register_fn(state, "toint", "Convert an object to int.", native_toint);
     Jn_register_fn(state, "tofloat", "Convert an object to float.", native_tofloat);
+    Jn_register_fn(state, "tochar", "Convert an object to char.", native_tochar);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     // add other built-in functions
 }
