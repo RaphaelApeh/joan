@@ -177,6 +177,8 @@ static uint64_t hash_object(JnObject* obj)
             return ( int )obj->j_char;
         case ITER_TYPE:
             return hash_object(obj->iter->obj) * obj->iter->index;
+        case MODULE_TYPE:
+            return (uint64_t) djb2_hash(obj->module->name);
         default:
             return 0;
     }

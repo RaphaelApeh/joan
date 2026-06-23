@@ -88,6 +88,11 @@ void Jn_freeObject(JnObject* obj)
             Jn_freeObject(obj->iter->obj);
             free(obj->iter);
             break;
+        case MODULE_TYPE:
+            free(obj->module->env->buckets);
+            free(obj->module->env);
+            free(obj->module);
+            break;
     }
     free(obj);
 }

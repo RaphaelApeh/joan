@@ -185,17 +185,21 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     char* filename;
     snprintf(buff, sizeof buff, "%s.jt", path);
     assert(JN_STD_PATH);
+    char* std_path = strdup(JN_STD_PATH);
     if (is_std)
-        filename = strcat(JN_STD_PATH, buff);
+        filename = strcat(std_path, buff);
     else
-        filename = buff;
+        filename = strdup(buff);
     
     bool exists = file_exists(filename);
-
+    printf("FILENAME %s\n", filename);
     if (!exists)
         return  JN_RAISE_EXCPETION(IMPORT_ERROR, "cannot import %s.", filename);
     
+    J_Context* cxt = Jn_get_context();
+    J_Source old = cxt->source;
     J_Source src = read_source_file(filename);
+    cxt->source = src;
     joan_lexer_t l;
     J_init_lexer(&l, src.source);
     jn_init_parser(state->parser, &l);
@@ -212,11 +216,11 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
         compile(stmt, &chuck);
     }
     write_chuck(&chuck, OP_END);
-
+    cxt->source = old;
     InterpretResult i = vm_run(&vm);
     if (i != INTERPRET_OK)
         return JN_RAISE_EXCPETION(SYS_ERROR, "extra error message.");
-    return jn_obj_module(path, strdup(filename), env);
+    return jn_obj_module(path, filename, env);
 }
 
 JN_API void Jn_program_close(void)
