@@ -315,12 +315,10 @@ static AST* parse_fn(joan_parser_t* p)
         if (match(p, TOKEN_COMMA))
             continue;
     }
-    if (match(p, TOKEN_THEN))
-        block = parse_expr(p);
-    else if (check(p, TOKEN_LBRACE))
+    if (check(p, TOKEN_LBRACE))
         block = parse_block(p);
     else
-        return parse_error(p, "No function body.");
+        return parse_error(p, "Invalid function body.");
     AST* ast = ast_create(p, AST_FUNCTION);
     ast->fn_node.block = block;
     ast->fn_node.name = ident;
@@ -389,7 +387,7 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
     } while (match(p, TOKEN_COMMA));
 
     if (!match(p, TOKEN_RPARN))
-        return parse_error(p, "Expected ')'.");
+        return parse_error(p, "Invalid syntax expected ')'.");
 
     ast->call.callee = callee;
     ast->call.params = NULL;
@@ -705,6 +703,28 @@ static AST* parse_import(joan_parser_t* p)
     return ast;
 }
 
+
+static AST* parse_c_define(joan_parser_t* p)
+{
+    /*
+    EXAMPLE
+        #c_define len(obj)
+    */
+    advance_parser_c(p);
+    if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected an identifer (got %s).", GET_LEX(p));
+    char* ident = GET_LEX(p);
+    AST* callee = parse_value(p);
+    advance_parser_c(p);
+    AST* call_node = parse_call(p, callee);
+    if (call_node->type == AST_ERROR)
+        return call_node;
+    AST* ast = ast_create(p, AST_DEFINE);
+    ast->c_define_node.ident = ident;
+    ast->c_define_node.call_node = call_node;
+    return ast;
+}
+
 AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
@@ -737,9 +757,11 @@ AST* parse_value(joan_parser_t* p)
             return ast_literal(p,  jn_obj_float(d));
         case TOKEN_HASH:
             advance_parser_c(p);
-            if (!check(p, TOKEN_LBRACE))
-                return parse_error(p, "Expected '}'.");
-            return parse_hashmap(p);
+            if (check(p, TOKEN_LBRACE))
+                return parse_hashmap(p);
+            else if (check(p, TOKEN_DEFINE))
+                return parse_c_define(p);
+            return parse_error(p, "Error invalid expression");
         case TOKEN_STRING:
             ast = ast_literal(p,  jn_obj_string(t.lexeme));
             advance_parser_c(p);

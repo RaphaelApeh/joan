@@ -874,6 +874,9 @@ void compile(AST* node, Chuck* chuck)
                 break;
         }
         break;
+    case AST_DEFINE:
+        printf("Hello World\n");
+        break;
     case AST_IMPORT:
         idx = add_ident(chuck, node->import_node.lib);
         WRITE_CHUCK(chuck, OP_IMPORT);

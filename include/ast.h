@@ -42,6 +42,7 @@ typedef enum{
     AST_MODULE,
     AST_GETTER,
     AST_SETTER,
+    AST_DEFINE,
     AST_INSTANCE,
     AST_ASSERT,
     AST_ENUM,
@@ -137,6 +138,11 @@ typedef struct AST{
             AST* out;
         } println;
 
+        struct {
+            char* ident;
+            AST* call_node;
+        } c_define_node;
+        
         struct {
             AST* callee;
 

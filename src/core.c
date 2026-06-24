@@ -258,7 +258,7 @@ JN_API void Jn_program_close(void)
     arena_free(state->arena);
     free(state->arena);
     free(state->parser);
-    // chuck_free(state->vm->chuck);
+    chuck_free(state->vm->chuck);
     // vm_free(state->vm);
     free(state->vm->chuck);
     free(state->vm);

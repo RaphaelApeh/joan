@@ -177,7 +177,7 @@ Jn_CModule math_mod[] = {
     {NULL, NULL, NULL} // required
 }
 
-Jn_CRegistry* math_lib = register_module("math", math_mod) 
+Jn_CRegistry* math_lib = register_module("math", state, math_mod) 
 */
 struct Jn_CModule {
     char *name, *doc;
@@ -188,6 +188,9 @@ typedef struct {
     Jn_CModule* modules;
     char* mod_name;
 } Jn_CRegistry;
+
+JN_API JnObject* make_native(char* name, Jn_CFunction fn);
+JN_API Jn_CRegistry* register_module(char* name, J_State* state, Jn_CModule* module);
 
 // Object Type
 typedef struct Chuck Chuck;
