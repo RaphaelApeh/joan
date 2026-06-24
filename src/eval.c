@@ -34,17 +34,6 @@ static uint64_t hash_object(JnObject* obj)
     }
 }
 
-
-static bool compare(char* str, char c)
-{
-    for (int i = 0; str[i] != '\0'; ++i)
-    {
-        if (str[i] == c)
-            return true;
-    }
-    return false;
-}
-
 static char* format_string(char* fmt, JnObject* obj)
 {
     int len = 0;
@@ -77,6 +66,7 @@ static char* format_string(char* fmt, JnObject* obj)
 JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
 {
     bool is_true = false;
+    char* str = NULL;
     if (NULL == lhs || NULL == rhs)
         goto end;
     
@@ -188,10 +178,12 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
         case EVAL_ADD:
             return JN_RAISE_EXCPETION(TYPE_ERROR, "'+' is not supported for a char and string type.");
         case EVAL_IN:
-            is_true = compare(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs));
+            str = memchr(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs), JN_AS_STRING(rhs)->len);
+            is_true = str != NULL;
             return JN_RETURN_BOOL(is_true);
         case EVAL_NOT_IN:
-            is_true = compare(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs));
+            str = memchr(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs), JN_AS_STRING(rhs)->len);
+            is_true = str == NULL;
             return JN_RETURN_BOOL(!is_true);        
         default:
             return JN_RAISE_EXCPETION(TYPE_ERROR, "char does not support this operator for string.");
@@ -199,7 +191,6 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
     }
     if (lhs->type == STR_TYPE && rhs->type == STR_TYPE)
     {
-        char* str = NULL;
         switch (op)
         {
             case EVAL_ADD:
@@ -231,6 +222,10 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
         default:
             goto end;
         }
+    }
+    if (JN_IS_CHAR(lhs) && JN_IS_BOOL(rhs))
+    {
+        return lhs;
     }
     return JN_RAISE_EXCPETION(TYPE_ERROR, "Invalid type %d %d.", lhs->type, rhs->type);
     end:

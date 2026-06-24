@@ -140,7 +140,6 @@ void jn_obj_reassign(JnObject* obj1, JnObject* obj2)
             obj1->int32 = obj2->int32;
             break;
         case STR_TYPE:
-            printf("Hello World 1\n");
             obj1->str = malloc(sizeof(JnStringObject));
             memcpy(obj1->str, obj2->str, sizeof(*obj2->str));
             break;

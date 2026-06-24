@@ -32,7 +32,7 @@
             {
                 "scope": "function.call.joan",
                 "settings": {
-                    "foreground": "#d1c516",
+                    "foreground": "#2293c0",
                     "fontStyle": "bold"
                 }
             },

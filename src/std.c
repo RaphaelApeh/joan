@@ -13,11 +13,6 @@
 
 #define MAX_OBJECT_ARGS 50
 
-struct Jn_CModule {
-    char* var_name;
-    char* doc;
-    Jn_CFunction fn;
-};
 
 JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count)
 {
@@ -86,6 +81,8 @@ static JnObject* native_toint(JN_Args args)
             return args.args[0];
         case FLOAT_TYPE:
             return JN_RETURN_INT((long)JN_AS_FLOAT(args.args[0]));
+        case CHAR_TYPE:
+            return JN_RETURN_INT((unsigned int)JN_AS_CHAR(args.args[0]));
         case BOOL_TYPE:
             return JN_RETURN_INT(args.args[0]->bool8);
         default:

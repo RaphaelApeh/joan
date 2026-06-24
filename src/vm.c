@@ -839,14 +839,7 @@ void compile(AST* node, Chuck* chuck)
     case AST_BLOCK:
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
         for (size_t i = 0; i < node->block.count; i++)
-        {
-            // if (node->block.statements[i]->type == AST_RETURN)  
-            // {
-            //     compile(node->block.statements[i], chuck);
-            //     break;
-            // }
             compile(node->block.statements[i], chuck);
-        }
         write_chuck_loc(chuck, OP_SCOPE_EXIT, line, column);
         break;
     case AST_PRINTLN:
