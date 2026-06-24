@@ -676,12 +676,13 @@ static AST* parse_import(joan_parser_t* p)
 {
     /*
     Example:
-        import "./task" // local
+        import "./task" as task // local
         import math // std lib
     */
     advance_parser_c(p);
     bool is_std = false;
     char* lib = NULL;
+    char* alias = NULL;
     if (check(p, TOKEN_STRING)) 
         lib = GET_LEX(p);
     else if (check(p, TOKEN_IDENTIFIER))
@@ -692,10 +693,15 @@ static AST* parse_import(joan_parser_t* p)
     else 
         return parse_error(p, "Expected an import path.");
     advance_parser_c(p);
+    if (!is_std && match(p, TOKEN_AS))
+    {
+        alias = GET_LEX(p);
+        advance_parser_c(p);
+    }
     AST* ast = ast_create(p, AST_IMPORT);
     ast->import_node.lib = lib;
     ast->import_node.is_std = is_std;
-    ast->import_node.alias = NULL; // TODO: add alias later
+    ast->import_node.alias = alias;
     return ast;
 }
 

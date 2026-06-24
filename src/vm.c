@@ -879,7 +879,10 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_IMPORT);
         WRITE_CHUCK(chuck, idx);
         WRITE_CHUCK(chuck, node->import_node.is_std);
-
+        if (node->import_node.alias != NULL)
+        {
+            idx = add_ident(chuck, node->import_node.alias);
+        }
         WRITE_CHUCK(chuck, OP_SET_GLOBAL);
         WRITE_CHUCK(chuck, idx);
         WRITE_CHUCK(chuck, 0);

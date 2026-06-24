@@ -13,7 +13,13 @@
 J_State Jn_globalState;
 static bool __set = false;
 
+struct Module_Reg {
+    JnObject* module;
+    char* name;
+};
 
+struct Module_Reg module_register[300];
+static int module_count = 0;
 // Helper function to read file content
 
 
@@ -174,6 +180,19 @@ JN_API int Jn_exec_REPL(char* source)
     return 0;
 }
 
+
+static JnObject* find_module(char* name)
+{
+    for (int i = 0; i < module_count; ++i)
+    {
+        struct Module_Reg* mod = &module_register[i];
+        if (strcmp(mod->name, name) == 0)
+            return mod->module;
+    }
+    return NULL;
+}
+
+
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
 {
     if (state == NULL)
@@ -194,7 +213,9 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     bool exists = file_exists(filename);
     if (!exists)
         return  JN_RAISE_EXCPETION(IMPORT_ERROR, "cannot import %s.", filename);
-    
+    JnObject* mod = find_module(filename);
+    if (NULL != mod)
+        return mod;
     J_State st = {0};
     J_Context* cxt = Jn_get_context();
     J_Source old = cxt->source;
@@ -223,7 +244,9 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     InterpretResult i = vm_run(&vm);
     if (i != INTERPRET_OK)
         return JN_RAISE_EXCPETION(SYS_ERROR, "extra error message.");
-    return jn_obj_module(path, filename, env);
+    JnObject* obj = jn_obj_module(path, filename, env);
+    module_register[module_count++] = (struct Module_Reg){obj, filename};
+    return obj;
 }
 
 JN_API void Jn_program_close(void)
