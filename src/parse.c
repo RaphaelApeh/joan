@@ -333,6 +333,7 @@ static AST* parse_assign(joan_parser_t* p)
 {
     char* ident;
     bool is_const = false;
+    AST* type = NULL;
     if (match(p, TOKEN_CONST))
         is_const = true;
     if (!is_const && !match(p, TOKEN_LET))
@@ -343,9 +344,18 @@ static AST* parse_assign(joan_parser_t* p)
         advance_parser_c(p);
     }else
         return parse_error(p, "Expected an identifier.");
+    
+    if (match(p, TOKEN_COLON))
+    {
+        type = parse_value(p);
+    }
+    
     if (!match(p, TOKEN_EQUAL))
         return parse_error(p, "Expected an '=' operator but got '%s'.", p->curr.lexeme);
-    return ast_assign(p, ident, is_const,  parse_expr(p));
+    
+    AST* ast = ast_assign(p, ident, is_const,  parse_expr(p));
+    ast->assign.type = type;
+    return ast;
 }
 
 static AST* parse_reassign(joan_parser_t* p, AST* node)

@@ -130,6 +130,53 @@ JnObject* jn_obj_error(int type, char* msg, ...)
     return obj;
 }
 
+JnObject* jn_obj_type(char* type_name, JnTypeObject type)
+{
+    JnObject* obj = jn_obj_new(OBJECT_TYPE);
+    obj->type_obj.type_name = type_name;
+    obj->type_obj.type = type;
+    obj->type_obj.is_union = false; // DEFAULT
+    obj->type_obj.union_types = NULL; // DEFAULT NULL
+    return obj;
+}
+
+bool type_check(JnObject* obj, JnObject* type)
+{
+    if (!obj || !type) return false;
+    // TODO: add union support
+    if (type->type == NONE_TYPE && JN_IS_NONE(obj)) return true;
+    if (obj->type == type->type_obj.type)
+        return true;
+    return false;
+}
+
+char* jn_obj_to_string(JnObject* obj)
+{
+    if (!obj) return NULL;
+    char* type = NULL;
+    switch (obj->type)
+    {
+        case ARRAY_TYPE:
+            type = "Array"; break;
+        case INT_TYPE:
+            type = "int"; break;
+        case STR_TYPE:
+            type = "string"; break;
+        case BOOL_TYPE:
+            type = "bool"; break;
+        case CHAR_TYPE:
+            type = "char"; break;
+        case HASHMAP_TYPE:
+            type = "hashmap"; break;
+        case MODULE_TYPE:
+            type = "module"; break;
+        case OBJECT_TYPE:
+            type = obj->type_obj.type_name; break;
+        default:
+            type = "<object>"; break;
+    }
+    return strdup(type);
+}
 void jn_obj_reassign(JnObject* obj1, JnObject* obj2)
 {
     assert(obj1 != NULL && obj2 != NULL);
@@ -178,6 +225,8 @@ static uint64_t hash_object(JnObject* obj)
             return hash_object(obj->iter->obj) * obj->iter->index;
         case MODULE_TYPE:
             return (uint64_t) djb2_hash(obj->module->name);
+        case OBJECT_TYPE:
+            return djb2_hash(obj->type_obj.type_name); // TODO
         default:
             return 0;
     }
@@ -385,6 +434,8 @@ void print_JnObject(JnObject* obj)
             print_JnObject(obj->iter->obj);
             fprintf(stderr, "' >");
             break;
+        case OBJECT_TYPE:
+            fprintf(stderr, "<%s>", obj->type_obj.type_name); break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;

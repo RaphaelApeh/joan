@@ -537,10 +537,22 @@ InterpretResult vm_run(JnVM* vm)
             case OP_DUP:
                 JnObject* top = *(vm->sp - 1);
                 PUSH(vm, top); break;
+            case OP_ASSIGN:
+                o = pop(vm);
+                JnObject* type = pop(vm);
+                ident = READ_IDENT();
+                bool is_const = (bool)READ_BYTE();
+                if (o == NULL || ident == NULL || type == NULL)
+                    return die(vm, "Object not set.");
+                if (!type_check(o, type))
+                    return vm_error(vm, JN_RAISE_EXCPETION(TYPE_ERROR, "Expected '%s' but got '%s'.", JN_OBJ_TO_STRING(type), JN_OBJ_TO_STRING(o)));
+                o->constant = is_const;
+                environ_insert(vm->env, ident, o);
+                break;
             case OP_SET_GLOBAL:
                 o = pop(vm);
                 ident = READ_IDENT();
-                bool is_const = (bool)READ_BYTE();
+                is_const = (bool)READ_BYTE();
                 if (o == NULL || ident == NULL)
                     return die(vm, "Object not set.");
                 o->constant = is_const;
@@ -1210,10 +1222,26 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, id);
         WRITE_CHUCK(chuck, node->reassign.op);
         break;
+    // case AST_ASSIGN:
+    //     compile(node->assign.value, chuck);
+    //     id = add_ident(chuck, node->assign.name);
+    //     WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+    //     WRITE_CHUCK(chuck, id);
+    //     WRITE_CHUCK(chuck, (uint8_t)node->assign.is_const);
+    //     break;
     case AST_ASSIGN:
+        if (node->assign.type == NULL)
+        {
+            id = add_constant(chuck, JN_RETURN_NONE);
+            WRITE_CHUCK(chuck, OP_CONSTANT);
+            WRITE_CHUCK(chuck, id);
+        }
+        else {
+            compile(node->assign.type, chuck);
+        }
         compile(node->assign.value, chuck);
         id = add_ident(chuck, node->assign.name);
-        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, OP_ASSIGN);
         WRITE_CHUCK(chuck, id);
         WRITE_CHUCK(chuck, (uint8_t)node->assign.is_const);
         break;

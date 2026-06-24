@@ -46,6 +46,7 @@ typedef enum{
     ITER_TYPE,
     INSTANCE_TYPE,
     MODULE_TYPE,
+    OBJECT_TYPE,
     ENUM_TYPE,
     ERROR_TYPE,
 } JnTypeObject;
@@ -74,6 +75,7 @@ typedef struct Jn_environ Jn_environ;
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define JN_OBJECT(type) jn_obj_new(type)
+#define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
 #define JN_RAISE_EXCPETION(t, msg, ...) jn_obj_error(t, msg, ##__VA_ARGS__)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_INT(i) jn_obj_int((i))
@@ -81,6 +83,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_RETURN_STRING(s) jn_obj_string((s))
 #define JN_RETURN_CHAR(c) jn_obj_char((c))
 #define JN_RETURN_FLOAT(d) jn_obj_float(d)
+#define JN_RETURN_TYPE_OBJECT(t_n, t) jn_obj_type(t_n, t)
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
 #define JN_OBJECT_RANGE(start, stop, step) jn_obj_range(start, stop, step)
 #define JN_OBJECT_VALUE(obj) // TODO 
@@ -92,6 +95,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_ITER(obj) (obj)->iter
 #define JN_AS_BOOL(obj) (obj)->bool8
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
+#define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, NONE_TYPE)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
 #define JN_IS_INT(obj) _JN_CHECK_TYPE(obj, INT_TYPE)
@@ -293,6 +297,12 @@ typedef struct JnObject{
         int line, col;
         JN_CERROR_TYPE type;
     } expection;
+    struct {
+        char* type_name;
+        JnTypeObject type;
+        bool is_union;
+        JnTypeObject** union_types;
+    } type_obj;
     const char* doc;
     JnTypeObject type;
     int marked;
@@ -342,9 +352,11 @@ JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
+JnObject* jn_obj_type(char* type_name, JnTypeObject type);
 JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
+char* jn_obj_to_string(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);

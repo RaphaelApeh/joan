@@ -189,10 +189,10 @@ typedef struct AST{
         } index;
 
         struct {
-            char* name;
             AST* value;
+            AST* type;
+            char* name;
             bool is_const;
-            //TODO: char** sub_types; //NULL
         } assign;
 
         struct {

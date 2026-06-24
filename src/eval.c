@@ -227,7 +227,7 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
     {
         return lhs;
     }
-    return JN_RAISE_EXCPETION(TYPE_ERROR, "Invalid type %d %d.", lhs->type, rhs->type);
+    return JN_RAISE_EXCPETION(TYPE_ERROR, "Type '%s' does not support operation with '%s'.", JN_OBJ_TO_STRING(lhs), JN_OBJ_TO_STRING(rhs));
     end:
         return NULL;
 }

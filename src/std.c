@@ -181,6 +181,13 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     #endif
     char* filename = state->cxt.source.filename ? (char *)state->cxt.source.filename : "main";
 
+    // type
+    Jn_register(state, "int", NULL, JN_RETURN_TYPE_OBJECT("int", INT_TYPE));
+    Jn_register(state, "string", NULL, JN_RETURN_TYPE_OBJECT("string", STR_TYPE));
+    Jn_register(state, "float", NULL, JN_RETURN_TYPE_OBJECT("float", FLOAT_TYPE));
+    Jn_register(state, "bool", NULL, JN_RETURN_TYPE_OBJECT("bool", BOOL_TYPE));
+    Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT("char", CHAR_TYPE));
+
     Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_BOOL(win));
     Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_BOOL(apple));
     Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_BOOL(linux));
