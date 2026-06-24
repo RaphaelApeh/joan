@@ -169,6 +169,26 @@ typedef struct J_State
     bool running;
 } J_State;
 
+
+/*
+
+Jn_CModule math_mod[] = {
+    {"PI", NULL, JN_RETURN_FLOAT(3.14)}
+    {NULL, NULL, NULL} // required
+}
+
+Jn_CRegistry* math_lib = register_module("math", math_mod) 
+*/
+struct Jn_CModule {
+    char *name, *doc;
+    JnObject* obj;
+};
+
+typedef struct {
+    Jn_CModule* modules;
+    char* mod_name;
+} Jn_CRegistry;
+
 // Object Type
 typedef struct Chuck Chuck;
 typedef JnObject* (* NativeFn) (JnObject** argv, size_t argc);
