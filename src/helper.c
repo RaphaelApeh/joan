@@ -1,10 +1,97 @@
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include "object.h"
 #include "helper.h"
 #include "ast.h"
+
+#define CHAR_EQUAL(a, b) (tolower((a)) == tolower((b)))
+
+static int levenshtein(const char* str1, const char* str2)
+{
+    int str1_len = strlen(str1), str2_len = strlen(str2);
+
+    int matrix[str1_len + 1][str2_len + 1];
+
+    for (int i = 0; i <= str1_len; ++i)
+        matrix[i][0] = i;
+    
+    for (int i = 0; i <= str2_len; ++i)
+        matrix[0][i] = i;
+
+    for (int i = 1; i <= str1_len; ++i)
+    {
+        for (int j = 1; j <= str2_len; ++j)
+        {
+            int cost = CHAR_EQUAL(str1[i - 1], str2[j + 1]) ? 0 : 1;
+            int del = matrix[i - 1][j] + 1;
+            int ins = matrix[i][j - 1] + 1;
+            int sub = matrix[i - 1][j - 1] + cost;
+            int min = del;
+            if (ins < min)
+                min = ins;
+            if (sub < min)
+                min = sub;
+
+            matrix[i][j] = min;
+        }
+    }
+    return matrix[str1_len][str2_len];
+}
+
+static float prefix_bonus(const char* a, const char* b)
+{
+    int n = 0;
+    while(*a && *b)
+    {
+        if (tolower(*a) != tolower(*b))
+            break;
+        n++; a++; b++;
+    }
+    return n * 0.08f;
+}
+
+static float length_score(const char* a, const char* b)
+{
+    int len_a = strlen(a), len_b = strlen(b);
+
+    int diff = abs(len_a - len_b);
+    int max = len_a > len_b ? len_a: len_b;
+    return 1.0f - ((float) diff / max);
+}
+
+
+static float similarity_score(const char* a, const char* b)
+{
+    int dist = levenshtein(a, b);
+
+    int max_len = strlen(a);
+    if (strlen(b) > max_len)
+        max_len = strlen(b);
+
+    float e_score = 1.0f - ((float)dist/max_len);
+    float prefix = prefix_bonus(a, b);
+
+    float len_score = length_score(a, b);
+    float final = (e_score * 0.7f) + (len_score * 0.2f) * (prefix);
+
+    if (final > 1)
+        final = 1;
+    return final;
+}
+
+static int cmp_match(const void* a, const void* b)
+{
+    struct FuzzMatch *m1 = (struct FuzzMatch *)a;
+    struct FuzzMatch *m2 = (struct FuzzMatch *)b;
+    if (m2->score > m1->score)
+        return 1;
+    if (m2->score < m1->score)
+        return -1;
+    return 0;
+}
 
 unsigned long djb2_hash(unsigned char* str)
 {
@@ -193,4 +280,23 @@ bool file_exists(const char* filename)
 {
     struct stat st;
     return stat(filename, &st) == 0;
+}
+
+
+int fuzzy_match(const char* word, char** list_words, int size, struct FuzzMatch* matches)
+{
+    int found = 0;
+    for (int i = 0; i < size; ++i)
+    {
+        float score = similarity_score(word, list_words[i]);
+        if (score < MIN_SCORE)
+            continue;
+        matches[found].word = list_words[i];
+        matches[found].score = score;
+        found++;
+    }
+    qsort(matches, found, sizeof(struct FuzzMatch), cmp_match);
+    if (found > MAX_MATCHES)
+        found = MAX_MATCHES;
+    return found;
 }

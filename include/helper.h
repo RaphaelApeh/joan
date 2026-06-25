@@ -37,6 +37,17 @@ typedef struct J_DArray_Obj J_DArray_Obj;
     (arr)->items[(arr)->size++] = (obj);    \
     } while(false)
 
+#define MAX_MATCHES 5
+#define MIN_SCORE 0.45f
+
+struct FuzzMatch {
+    char* word;
+    float score;
+};
+
+
+int fuzzy_match(const char* word, char** list_words, int size, struct FuzzMatch* matches);
+
 typedef struct param_o
 {
     char* ident;
