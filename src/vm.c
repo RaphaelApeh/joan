@@ -807,7 +807,6 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_MEMBER:
         compile(node->member.callie, chuck);
-        // compile(node->member.field, chuck);
         if (node->member.field->type == AST_IDENTIFIER)
         {
             id = add_ident(chuck, (char *)node->member.field->identifier);
@@ -815,7 +814,7 @@ void compile(AST* node, Chuck* chuck)
             WRITE_CHUCK(chuck, id);
             // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
             break;
-        } else if (node->member.field->type = AST_CALL){
+        } else if (node->member.field->type == AST_CALL){
             AST* call = node->member.field;
             if (call->call.callee->type != AST_IDENTIFIER)
             {
@@ -1222,29 +1221,29 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, id);
         WRITE_CHUCK(chuck, node->reassign.op);
         break;
-    // case AST_ASSIGN:
-    //     compile(node->assign.value, chuck);
-    //     id = add_ident(chuck, node->assign.name);
-    //     WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-    //     WRITE_CHUCK(chuck, id);
-    //     WRITE_CHUCK(chuck, (uint8_t)node->assign.is_const);
-    //     break;
     case AST_ASSIGN:
-        if (node->assign.type == NULL)
-        {
-            id = add_constant(chuck, JN_RETURN_NONE);
-            WRITE_CHUCK(chuck, OP_CONSTANT);
-            WRITE_CHUCK(chuck, id);
-        }
-        else {
-            compile(node->assign.type, chuck);
-        }
         compile(node->assign.value, chuck);
         id = add_ident(chuck, node->assign.name);
-        WRITE_CHUCK(chuck, OP_ASSIGN);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
         WRITE_CHUCK(chuck, id);
         WRITE_CHUCK(chuck, (uint8_t)node->assign.is_const);
         break;
+    // case AST_ASSIGN:
+    //     if (node->assign.type == NULL)
+    //     {
+    //         id = add_constant(chuck, JN_RETURN_NONE);
+    //         WRITE_CHUCK(chuck, OP_CONSTANT);
+    //         WRITE_CHUCK(chuck, id);
+    //     }
+    //     else {
+    //         compile(node->assign.type, chuck);
+    //     }
+    //     compile(node->assign.value, chuck);
+    //     id = add_ident(chuck, node->assign.name);
+    //     WRITE_CHUCK(chuck, OP_ASSIGN);
+    //     WRITE_CHUCK(chuck, id);
+    //     WRITE_CHUCK(chuck, (uint8_t)node->assign.is_const);
+    //     break;
     case AST_ARRAY_INDEX:
         compile(node->index.pos, chuck);
         compile(node->index.array, chuck);

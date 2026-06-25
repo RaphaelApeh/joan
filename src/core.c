@@ -222,8 +222,10 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     J_Source src = read_source_file(filename);
     cxt->source = src;
     joan_lexer_t l;
+    joan_parser_t p = {0};
+    p.arena = state->arena;
     J_init_lexer(&l, src.source);
-    jn_init_parser(state->parser, &l);
+    jn_init_parser(&p, &l);
     Jn_environ* env = Jn_environ_init(NULL);
     JnVM vm = {0};
     Chuck chuck = {0};
@@ -234,9 +236,9 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     chuck_init(&chuck);
     Jnvm_init(&vm, &chuck);
     Jn_load_Cfunctions(&st);
-    while(state->parser->curr.type != TOKEN_EOF)
+    while(p.curr.type != TOKEN_EOF)
     {
-        AST* stmt = parse_stmt(state->parser);
+        AST* stmt = parse_stmt(&p);
         compile(stmt, &chuck);
     }
     write_chuck(&chuck, OP_END);
