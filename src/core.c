@@ -75,6 +75,21 @@ JN_API J_Context* Jn_get_context(void)
     return &state->cxt;
 }
 
+void set_sumbols(J_State* state, char* str)
+{
+    if (state == NULL)
+    {
+        state = Jn_get_state();
+    }
+    assert(state != NULL);
+    assert(state->symbols != NULL);
+    if (state->symbols_count >= state->symbols_capacity)
+    {
+        state->symbols_capacity *= 2;
+        state->symbols = realloc(state->symbols, sizeof(char *) * state->symbols_capacity);
+    }
+    state->symbols[state->symbols_count++] = str;
+}
 
 JN_API void Jn_program_init(void)
 {
@@ -84,6 +99,9 @@ JN_API void Jn_program_init(void)
     __set = true;
     state->vm = malloc(sizeof(JnVM));
     state->gc = malloc(sizeof(GC));
+    state->symbols_count = 0;
+    state->symbols_capacity = 56;
+    state->symbols = malloc(sizeof(char *) * 56);
     assert(state->vm != NULL);
     assert(state->gc != NULL);
     state->arena = malloc(sizeof(Arena));
@@ -261,10 +279,10 @@ JN_API void Jn_program_close(void)
     free(state->arena);
     free(state->parser);
     chuck_free(state->vm->chuck);
-    // vm_free(state->vm);
     free(state->vm->chuck);
     free(state->vm);
     free(state->gc);
+    free(state->symbols);
     if (state->cxt.source.filename != NULL)
         free((void *)state->cxt.source.filename);
     free(state->cxt.source.source);

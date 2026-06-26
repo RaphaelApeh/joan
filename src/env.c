@@ -67,6 +67,7 @@ void environ_insert(Jn_environ* env, char* key, JnObject* obj)
         env->capacity *= 2;
         env->buckets = realloc(env->buckets, sizeof(Jn_environ_E) * env->capacity);
     }
+    set_sumbols(NULL, key);
     env->buckets[env->size].used = true;
     env->buckets[env->size].key = strdup(key);
     env->buckets[env->size].value = obj;

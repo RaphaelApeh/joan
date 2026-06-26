@@ -207,6 +207,30 @@ src/core.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.s
 .PHONY : src/core.c.s
 
+src/cstring.obj: src/cstring.c.obj
+.PHONY : src/cstring.obj
+
+# target to build an object file
+src/cstring.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/cstring.c.obj
+.PHONY : src/cstring.c.obj
+
+src/cstring.i: src/cstring.c.i
+.PHONY : src/cstring.i
+
+# target to preprocess a source file
+src/cstring.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/cstring.c.i
+.PHONY : src/cstring.c.i
+
+src/cstring.s: src/cstring.c.s
+.PHONY : src/cstring.s
+
+# target to generate assembly for a file
+src/cstring.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/cstring.c.s
+.PHONY : src/cstring.c.s
+
 src/emit.obj: src/emit.c.obj
 .PHONY : src/emit.obj
 
@@ -658,6 +682,9 @@ help:
 	@echo ... src/core.obj
 	@echo ... src/core.i
 	@echo ... src/core.s
+	@echo ... src/cstring.obj
+	@echo ... src/cstring.i
+	@echo ... src/cstring.s
 	@echo ... src/emit.obj
 	@echo ... src/emit.i
 	@echo ... src/emit.s

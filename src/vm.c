@@ -59,13 +59,6 @@ void chuck_free(Chuck* chuck)
     free(chuck->idents);
 }
 
-void vm_free(JnVM* vm)
-{
-    assert(vm != NULL);
-    free(vm->sp);
-    free(vm->ip);
-}
-
 static inline int vm_line(JnVM* vm)
 {
     size_t ip = (size_t)(vm->ip - vm->chuck->code);
@@ -83,6 +76,7 @@ static int vm_error(JnVM* vm, JnObject* obj)
 {
     assert(obj != NULL && JN_IS_ERROR(obj));
     J_Context* ctx = Jn_get_context();
+    J_State* state = Jn_get_state();
     ctx->cur_line = vm_line(vm);
     ctx->column = vm_column(vm);
     obj->expection.filename = (char *)ctx->source.filename;
@@ -96,6 +90,27 @@ static int vm_error(JnVM* vm, JnObject* obj)
         ctx->cur_line, ctx->column
     );
     printf("%s\n\n", obj->expection.error_msg);
+    if (obj->expection.type == UNDEFINE_ERROR)
+    {
+        struct FuzzMatch matches[300]; // TODO
+        int n = fuzzy_match(
+            obj->expection.var_name,
+            state->symbols,
+            state->symbols_count,
+            matches
+        );
+        if (n > 0)
+        {
+            printf("\nDid you mean: ");
+            for (int i = 0; i < n; ++i)
+            {
+                if (i > 0)
+                    putchar(',');
+                printf(" %s", matches[i].word);
+            }
+            printf("\n");
+        }
+    }
     print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
     return INTERPRET_ERROR;
 }
@@ -495,7 +510,11 @@ InterpretResult vm_run(JnVM* vm)
                 ident = READ_IDENT();
                 Jn_environ_E* ent = environ_get(vm->env, ident);
                 if (ent == NULL)
-                    return die(vm, "Seem like you did not define a variable '%s'.", ident);
+                {
+                    JnObject* err_obj = JN_RAISE_EXCPETION(UNDEFINE_ERROR, "Seem like you did not define a variable '%s'.", ident);
+                    err_obj->expection.var_name = ident;
+                    return vm_error(vm, err_obj);
+                }
                 assert(ent->value != NULL);
                 PUSH(vm, jn_intern_obj(ent->value));
                 break;

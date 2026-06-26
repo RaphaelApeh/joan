@@ -172,11 +172,14 @@ typedef struct J_State
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     Jn_environ* globals;
+    char** symbols;
     J_Context cxt;
+    size_t symbols_count, symbols_capacity;
     bool running;
 } J_State;
 
 
+void set_sumbols(J_State* state, char* str);
 /*
 
 Jn_CModule math_mod[] = {
@@ -307,7 +310,7 @@ typedef struct JnObject{
     };
     JnObject* next;
     struct {
-        char *filename, *error_msg;
+        char *filename, *error_msg, *var_name;
         int line, col;
         JN_CERROR_TYPE type;
     } expection;

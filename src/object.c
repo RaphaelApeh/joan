@@ -127,6 +127,7 @@ JnObject* jn_obj_error(int type, char* msg, ...)
     obj->expection.col = 0;
     obj->expection.line = 0;
     obj->expection.filename = NULL;
+    obj->expection.var_name = NULL;
     return obj;
 }
 
@@ -312,11 +313,11 @@ JnObject* jn_obj_struct(char* name, Jn_Hashmap* fields)
     return obj;
 }
 
-JnObject* jn_obj_instance(JnObject* obj, Jn_Hashmap* fields)
+JnObject* jn_obj_instance(JnObject* from_obj, Jn_Hashmap* fields)
 {
     JnObject* obj = jn_obj_new(INSTANCE_TYPE);
     JnInstance* instance = JN_ALLOC(sizeof(JnInstance));
-    instance->obj = obj;
+    instance->obj = from_obj;
     instance->fields = fields;
     obj->instance = instance;
     return obj;
