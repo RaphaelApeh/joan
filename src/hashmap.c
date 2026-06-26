@@ -92,3 +92,21 @@ void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value)
 {
     get_or_insert_hash_entry(map, key, value);
 }
+
+
+void Jn_hashmap_from_string(Jn_Hashmap* map, const char* str, JnObject* value)
+{
+    assert(str != NULL && value != NULL && map != NULL);
+    JnObject* str_obj = JN_RETURN_STRING(str);
+    Jn_hashmap_put(map, str_obj, value);
+}
+
+JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)
+{
+    assert(map != NULL);
+    size_t size = map->size;
+    if (index < 0)
+        index += size;
+    return map->buckets[index].value;
+}
+

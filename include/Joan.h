@@ -48,6 +48,7 @@ typedef enum{
     MODULE_TYPE,
     OBJECT_TYPE,
     ENUM_TYPE,
+    STRUCT_TYPE,
     ERROR_TYPE,
 } JnTypeObject;
 
@@ -85,6 +86,8 @@ typedef struct Jn_environ Jn_environ;
 #define JN_RETURN_FLOAT(d) jn_obj_float(d)
 #define JN_RETURN_TYPE_OBJECT(t_n, t) jn_obj_type(t_n, t)
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
+#define JN_RETURN_STRUCT(name, fields) jn_obj_struct((name), fields)
+#define JN_RETURN_INSTANCE(obj, fields) jn_obj_instance((obj), (fields))
 #define JN_OBJECT_RANGE(start, stop, step) jn_obj_range(start, stop, step)
 #define JN_OBJECT_VALUE(obj) // TODO 
 #define JN_AS_CHAR(obj) (obj)->j_char
@@ -253,6 +256,15 @@ typedef struct {
     const char* ident;
 } Jn_Enum;
 
+typedef struct {
+    char* name;
+    Jn_Hashmap* fields;
+} JnStruct;
+
+typedef struct {
+    JnObject* obj;
+    Jn_Hashmap* fields;
+} JnInstance;
 
 typedef struct {
     Jn_environ* env;
@@ -284,7 +296,9 @@ typedef struct JnObject{
         Jn_Hashmap* hashmap;
         JnNativeObject* native_fn;
         Jn_Enum* enum_n;
-        JnModule* module;   
+        JnModule* module;
+        JnStruct* struct_obj;
+        JnInstance* instance;
         JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
@@ -356,16 +370,20 @@ JnObject* jn_obj_type(char* type_name, JnTypeObject type);
 JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
+JnObject* jn_obj_struct(char* name, Jn_Hashmap* fields);
+JnObject* jn_obj_instance(JnObject* obj, Jn_Hashmap* fields);
 char* jn_obj_to_string(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
 
-//Hashmap Get
+//Hashmap Functions
 Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
 void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);
 void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value);
+JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index);
+void Jn_hashmap_from_string(Jn_Hashmap* map, const char* str, JnObject* value);
 
 #ifdef __cplusplus
 }

@@ -1,2 +1,4 @@
 *.jx linguist-language=rust
 *.jt linguist-language=rust
+
+*.cpp diff=cpp

@@ -302,6 +302,26 @@ JnObject* jn_obj_function(
     return obj;
 }
 
+JnObject* jn_obj_struct(char* name, Jn_Hashmap* fields)
+{
+    JnObject* obj = jn_obj_new(STRUCT_TYPE);
+    JnStruct* struct_obj = JN_ALLOC(sizeof(JnStruct));
+    struct_obj->fields = fields;
+    struct_obj->name = name;
+    obj->struct_obj = struct_obj;
+    return obj;
+}
+
+JnObject* jn_obj_instance(JnObject* obj, Jn_Hashmap* fields)
+{
+    JnObject* obj = jn_obj_new(INSTANCE_TYPE);
+    JnInstance* instance = JN_ALLOC(sizeof(JnInstance));
+    instance->obj = obj;
+    instance->fields = fields;
+    obj->instance = instance;
+    return obj;
+}
+
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env)
 {
     JnObject* obj = jn_obj_new(MODULE_TYPE);
