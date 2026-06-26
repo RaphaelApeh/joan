@@ -1,8 +1,3 @@
-/*
-
-Extra implementation of string functions
-*/
-
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>

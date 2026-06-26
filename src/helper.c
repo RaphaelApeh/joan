@@ -25,7 +25,7 @@ static int levenshtein(const char* str1, const char* str2)
     {
         for (int j = 1; j <= str2_len; ++j)
         {
-            int cost = CHAR_EQUAL(str1[i - 1], str2[j + 1]) ? 0 : 1;
+            int cost = CHAR_EQUAL(str1[i - 1], str2[j - 1]) ? 0 : 1;
             int del = matrix[i - 1][j] + 1;
             int ins = matrix[i][j - 1] + 1;
             int sub = matrix[i - 1][j - 1] + cost;
