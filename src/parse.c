@@ -33,6 +33,13 @@ static bool match(joan_parser_t* p, J_TokenType type)
     return true;
 }
 
+static char* get_lexeme(joan_parser_t* p)
+{
+    char* lex = GET_LEX(p);
+    advance_parser_c(p);
+    return lex;
+}
+
 static bool is_assign_token(J_TokenType type)
 {
     switch (type)
@@ -735,6 +742,35 @@ static AST* parse_c_define(joan_parser_t* p)
     return ast;
 }
 
+static AST* parse_struct(joan_parser_t* p)
+{
+    advance_parser_c(p); // struct
+    char** fields = arena_alloc(p->arena, sizeof(char *) * 10);
+    int len = 0, cap = 10;
+    SKIP(p, TOKEN_LBRACE, "To initalize a struct you need '{'.");
+    do {
+        if (check(p, TOKEN_RPARN))
+            break;
+        if (len == 0 && match(p, TOKEN_NONE))
+            break;
+        if (!check(p, TOKEN_IDENTIFIER))
+            return parse_error(p, "Expected an identifier but (got '%s').", GET_LEX(p));
+        if (len >= cap)
+        {
+            cap *= 2;
+            fields = realloc(fields, sizeof(AST *) * cap);
+        }
+        fields[len++] = get_lexeme(p);
+    } while (match(p, TOKEN_COMMA));
+    SKIP(p, TOKEN_RBRACE, "Expected an closing '}'");
+    fields[len] = NULL;
+    AST* ast = ast_create(p, AST_STRUCT);
+    ast->struct_node.fields = fields;
+    ast->struct_node.ident = NULL;
+    ast->struct_node.count = len;
+    return ast;
+}
+
 AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
@@ -847,6 +883,8 @@ AST* parse_value(joan_parser_t* p)
                 out = parse_expr(p);
             return ast_println(p, out);
         }
+        case TOKEN_STRUCT:
+            return parse_struct(p);
         case TOKEN_ERROR: {
             return parse_error(p, msg);
         }

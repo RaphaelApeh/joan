@@ -113,6 +113,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
+#define JN_HASHMAP_GET_FROM_STRING(map, str) Jn_hashmap_get_string((map), (str))
 #define JN_HASHMAP_INSERT(map, k, v, i) do {    \
     if ((map) == NULL) {                        \
         (map) = malloc(sizeof(Jn_Hashmap));      \
@@ -121,6 +122,16 @@ typedef struct Jn_environ Jn_environ;
         (map)->size = 0;                            \
     }                                                \
     Jn_hashmap_insert(map, key, value, i);            \
+}while(false)
+
+#define JN_HASHMAP_INSERT_STRING(map, str, v) do {    \
+    if ((map) == NULL) {                        \
+        (map) = malloc(sizeof(Jn_Hashmap));      \
+        (map)->capacity = 100;                     \
+        map->buckets = malloc(sizeof(Jn_HashEntry) * (map)->capacity);\
+        (map)->size = 0;                            \
+    }                                                \
+    Jn_hashmap_from_string(map, (str), (value));            \
 }while(false)
 
 #define JN_ALLOC(s) malloc(s)
@@ -261,7 +272,7 @@ typedef struct {
 
 typedef struct {
     char* name;
-    Jn_Hashmap* fields;
+    Jn_environ* fields;
 } JnStruct;
 
 typedef struct {
@@ -373,7 +384,7 @@ JnObject* jn_obj_type(char* type_name, JnTypeObject type);
 JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
-JnObject* jn_obj_struct(char* name, Jn_Hashmap* fields);
+JnObject* jn_obj_struct(char* name, Jn_environ* fields);
 JnObject* jn_obj_instance(JnObject* obj, Jn_Hashmap* fields);
 char* jn_obj_to_string(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
@@ -386,7 +397,8 @@ Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
 void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);
 void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value);
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index);
-void Jn_hashmap_from_string(Jn_Hashmap* map, const char* str, JnObject* value);
+void Jn_hashmap_from_string(Jn_Hashmap* map, char* str, JnObject* value);
+JnObject* Jn_hashmap_get_string(Jn_Hashmap* map, char* str);
 
 #ifdef __cplusplus
 }

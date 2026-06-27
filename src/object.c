@@ -303,7 +303,7 @@ JnObject* jn_obj_function(
     return obj;
 }
 
-JnObject* jn_obj_struct(char* name, Jn_Hashmap* fields)
+JnObject* jn_obj_struct(char* name, Jn_environ* fields)
 {
     JnObject* obj = jn_obj_new(STRUCT_TYPE);
     JnStruct* struct_obj = JN_ALLOC(sizeof(JnStruct));
@@ -457,6 +457,8 @@ void print_JnObject(JnObject* obj)
             break;
         case OBJECT_TYPE:
             fprintf(stderr, "<%s>", obj->type_obj.type_name); break;
+        case STRUCT_TYPE:
+            fprintf(stdout, "struct{%s}", obj->struct_obj->name ? obj->struct_obj->name : "<object>"); break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;

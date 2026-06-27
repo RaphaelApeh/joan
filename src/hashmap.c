@@ -38,7 +38,7 @@ static Jn_HashEntry* get_hash_entry(Jn_Hashmap* map, JnObject* key)
 
 static void insert_hash_entry(Jn_Hashmap* map, JnObject* key, JnObject* value)
 {
-    assert(map != NULL && key != NULL && value != NULL);
+    assert(map != NULL || key != NULL || value != NULL);
     
     if (map->size >= map->capacity)
     {
@@ -94,11 +94,23 @@ void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value)
 }
 
 
-void Jn_hashmap_from_string(Jn_Hashmap* map, const char* str, JnObject* value)
+void Jn_hashmap_from_string(Jn_Hashmap* map, char* str, JnObject* value)
 {
-    assert(str != NULL && value != NULL && map != NULL);
+    assert(str != NULL || map != NULL || value != NULL);
     JnObject* str_obj = JN_RETURN_STRING(str);
     Jn_hashmap_put(map, str_obj, value);
+}
+
+JnObject* Jn_hashmap_get_string(Jn_Hashmap* map, char* str)
+{
+    assert(map != NULL || str != NULL);
+    Jn_HashEntry* ent = get_hash_entry(map, JN_RETURN_STRING(str));
+    if (ent == NULL)
+        return JN_RAISE_EXCPETION(UNDEFINE_ERROR, "object does not have field '%s'.", str);
+    if (ent->value)
+        return JN_RAISE_EXCPETION(SYS_ERROR, "something went wrong in struct initialization.");
+    print_JnObject(ent->value); putchar('\n');
+    return ent->value;
 }
 
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)

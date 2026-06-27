@@ -1,18 +1,3 @@
-// TODO: add user-define value
-// for now auto value gen
-// ERROR = 0, WARNING = 1, SUCCESS = 2, ...
-
-enum Log => {
-    ERROR,
-    WARNING,
-    SUCCESS
-}
-
-let level = Log::ERROR // Error Log.ERROR
-
-match level {
-    Log::SUCCESS => then println "Success....."
-    Log::ERROR => println "Error ......"
-    Log::WARNING => then println "Warning ......"
-    else  then println "Invalid Log ........."
+struct {
+    x, y
 }

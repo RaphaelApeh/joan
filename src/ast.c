@@ -159,14 +159,6 @@ AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def)
     return ast;
 }
 
-AST* ast_struct(joan_parser_t* p,const char* ident, attr_t* attr)
-{
-    AST* ast = ast_create(p, AST_MATCH);
-    ast->struct_node.attrs = attr;
-    ast->struct_node.ident = ident;
-    return ast;
-}
-
 AST* ast_class(joan_parser_t* p, const char* ident, attr_t* attr, klass_t* base)
 {
     AST* ast = ast_create(p, AST_MATCH);

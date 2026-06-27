@@ -15,9 +15,9 @@
 #define WRITE_CHUCK(chuck, OP) write_chuck_loc(chuck, OP, line, column);
 
 #define PUSH(vm, obj)  do { \
-    assert(vm != NULL && obj != NULL);              \
-    if (JN_IS_ERROR(obj)) return vm_error(vm, obj); \
-    push(vm, obj);                                  \
+    assert((vm) != NULL || (obj) != NULL);              \
+    if (JN_IS_ERROR((obj))) return vm_error(vm, (obj)); \
+    push(vm, (obj));                                  \
 }while(false)
 
 static LoopContext loop_stack[256];
@@ -477,15 +477,20 @@ InterpretResult vm_run(JnVM* vm)
                 break;
             case OP_MEMBER:
                 char* field = READ_IDENT(); o = pop(vm);
+                Jn_environ_E* entt = NULL;
                 switch (o->type)
                 {
                 case MODULE_TYPE:
-                    Jn_environ_E* entt = environ_get(o->module->env, field);
+                    entt = environ_get(o->module->env, field);
                     if (entt == NULL)
                         return die(vm, "member does not have field '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
-                
+                case STRUCT_TYPE:
+                    entt = environ_get(o->struct_obj->fields, field);
+                    print_JnObject(obj);
+                    // PUSH(vm, obj);
+                    break;
                 default:
                     return die(vm, "Object does not support member attribute.");
                 }
@@ -1038,6 +1043,18 @@ void compile(AST* node, Chuck* chuck)
         for (int i = 0; i < end_count; ++i)
             patch_jump(chuck, end_jumps[i]);
 
+        break;
+    case AST_STRUCT:
+        Jn_environ* fields = Jn_environ_init(NULL);
+        for (int i = 0; i < node->struct_node.count; ++i)
+        {
+            environ_insert(fields, node->struct_node.fields[i], JN_RETURN_INT(i));
+        }
+        JnObject* struct_obj =  JN_RETURN_STRUCT(NULL, fields);
+
+        idx = add_constant(chuck, struct_obj);
+        WRITE_CHUCK(chuck, OP_CONSTANT);
+        WRITE_CHUCK(chuck, idx);
         break;
     case AST_LAMBDA:
         JnObject* lambda_obj = jn_obj_lambda(

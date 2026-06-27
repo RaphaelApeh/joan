@@ -263,8 +263,9 @@ typedef struct AST{
         } do_node;
 
         struct{
-            const char* ident;
-            attr_t* attrs;
+            char** fields;
+            char* ident;
+            int count;
         } struct_node;
         struct{
             const char* ident;
