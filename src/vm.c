@@ -488,8 +488,9 @@ InterpretResult vm_run(JnVM* vm)
                     break;
                 case STRUCT_TYPE:
                     entt = environ_get(o->struct_obj->fields, field);
-                    print_JnObject(obj);
-                    // PUSH(vm, obj);
+                    if (entt->value == NULL)
+                        return die(vm, "something went wrong in struct initialization.");
+                    PUSH(vm, entt->value);
                     break;
                 default:
                     return die(vm, "Object does not support member attribute.");
@@ -1048,7 +1049,7 @@ void compile(AST* node, Chuck* chuck)
         Jn_environ* fields = Jn_environ_init(NULL);
         for (int i = 0; i < node->struct_node.count; ++i)
         {
-            environ_insert(fields, node->struct_node.fields[i], JN_RETURN_INT(i));
+            environ_insert(fields, node->struct_node.fields[i], JN_RETURN_NONE);
         }
         JnObject* struct_obj =  JN_RETURN_STRUCT(NULL, fields);
 

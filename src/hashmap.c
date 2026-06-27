@@ -107,9 +107,6 @@ JnObject* Jn_hashmap_get_string(Jn_Hashmap* map, char* str)
     Jn_HashEntry* ent = get_hash_entry(map, JN_RETURN_STRING(str));
     if (ent == NULL)
         return JN_RAISE_EXCPETION(UNDEFINE_ERROR, "object does not have field '%s'.", str);
-    if (ent->value)
-        return JN_RAISE_EXCPETION(SYS_ERROR, "something went wrong in struct initialization.");
-    print_JnObject(ent->value); putchar('\n');
     return ent->value;
 }
 
