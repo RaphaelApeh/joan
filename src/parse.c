@@ -419,13 +419,22 @@ static AST* parse_for(joan_parser_t* p)
     for loop;
     for i := 0; i < 10; i += 1 {} or then
     */
-   advance_parser_c(p); // for
-    AST* init = parse_expr(p);
-    SKIP(p, TOKEN_SIMICOLON, "you forgot to add ';' in the forloop.");
-    AST* cond = parse_expr(p);
-    SKIP(p, TOKEN_SIMICOLON, "Yes, you need to add ';' after the loop condition.");
-    AST* incr = parse_expr(p);
+
+    advance_parser_c(p); // for
+    AST* init = NULL, *cond = NULL, *incr = NULL;
     AST* block = NULL;
+    if (check(p, TOKEN_LPARN))
+        return parse_error(p, "Sorry, does not support parentheses like C.");
+    
+    if (!check(p, TOKEN_SIMICOLON))
+        init = parse_expr(p);
+    SKIP(p, TOKEN_SIMICOLON, "you forgot to add ';' in the forloop.");
+    if (!check(p, TOKEN_SIMICOLON))
+        cond = parse_expr(p);
+    SKIP(p, TOKEN_SIMICOLON, "Yes, you need to add ';' after the loop condition.");
+    if (!check(p, TOKEN_LBRACE) && !check(p, TOKEN_THEN))
+        incr = parse_expr(p);
+
     if (match(p, TOKEN_THEN))
     {
         block = parse_expr(p);
@@ -434,7 +443,7 @@ static AST* parse_for(joan_parser_t* p)
         block = parse_block(p);
     } else 
         return parse_error(p, "fooloop has no block.");
-    
+
     AST* ast = ast_create(p, AST_FOR);
     ast->for_node.block = block;
     ast->for_node.cond = cond;
@@ -526,6 +535,9 @@ static AST* parse_index(joan_parser_t* p, AST* arr)
     }
     return ast;
 }
+
+static AST* parse_instance(joan_parser_t* p, AST* instance_obj);
+
 static AST* parse_postfix(joan_parser_t* p, AST* left)
 {
 
@@ -534,6 +546,12 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         if (match(p, TOKEN_LPARN))
         {
             left = parse_call(p, left);
+            continue;
+        }
+
+        if (left->type == AST_IDENTIFIER && check(p, TOKEN_LBRACE))
+        {
+            left = parse_instance(p, left);
             continue;
         }
 
@@ -768,6 +786,44 @@ static AST* parse_struct(joan_parser_t* p)
     ast->struct_node.fields = fields;
     ast->struct_node.ident = NULL;
     ast->struct_node.count = len;
+    return ast;
+}
+
+static AST* parse_instance(joan_parser_t* p, AST* instance_obj)
+{
+    SKIP(p, TOKEN_LBRACE, "To initalize a instance you need '{'.");
+    char** fields = arena_alloc(p->arena, sizeof(char *) * 10);
+    AST** values = arena_alloc(p->arena, sizeof(AST *) * 10);
+    int len = 0, cap = 10;
+
+    for (;;)
+    {
+        if (match(p, TOKEN_RBRACE)) break;
+        if (len >= cap)
+        {
+            cap *= 2;
+            fields = realloc(fields, sizeof(char *) * cap);
+            values = realloc(values, sizeof(AST *) * cap);
+        }
+        if (match(p, TOKEN_DOT)){
+            fields[len] = get_lexeme(p);
+            if (!match(p, TOKEN_EQUAL)) return parse_error(p, "expected '='");
+            values[len] = parse_expr(p);
+        } else {
+            fields[len] = NULL;
+            values[len] = parse_expr(p);
+        }
+        len++;
+        if (match(p, TOKEN_COMMA)) continue;
+        if (match(p, TOKEN_RBRACE)) break;
+        return parse_error(p, "Expected a closing '}'.");
+    }
+
+    AST* ast = ast_create(p, AST_INSTANCE);
+    ast->instance_node.fields = fields;
+    ast->instance_node.values = values;
+    ast->instance_node.count = len;
+    ast->instance_node.object = instance_obj;
     return ast;
 }
 

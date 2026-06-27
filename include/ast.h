@@ -267,6 +267,14 @@ typedef struct AST{
             char* ident;
             int count;
         } struct_node;
+
+        struct {
+            AST** values;
+            AST* object;
+            char** fields;
+            int count;
+        } instance_node;
+        
         struct{
             const char* ident;
             attr_t* attrs;

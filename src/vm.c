@@ -1057,6 +1057,13 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_CONSTANT);
         WRITE_CHUCK(chuck, idx);
         break;
+
+    case AST_INSTANCE:
+        compile(node->instance_node.object, chuck);
+
+        
+        printf("Hello World\n");
+        break;
     case AST_LAMBDA:
         JnObject* lambda_obj = jn_obj_lambda(
             node->lambda_node.expr,
@@ -1158,12 +1165,19 @@ void compile(AST* node, Chuck* chuck)
         
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
 
-        compile(node->for_node.init, chuck);
+        if (node->for_node.init != NULL)
+            compile(node->for_node.init, chuck);
 
         offset = current_offset(chuck);
         loop->loop_offset = offset;
 
-        compile(node->for_node.cond, chuck);
+        if (node->for_node.cond)
+            compile(node->for_node.cond, chuck);
+        else {
+            idx = add_constant(chuck, JN_RETURN_BOOL(true));
+            WRITE_CHUCK(chuck, OP_CONSTANT);
+            WRITE_CHUCK(chuck, idx);
+        }
         exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
         
         compile(node->for_node.block, chuck);
@@ -1174,7 +1188,9 @@ void compile(AST* node, Chuck* chuck)
         {
             patch_jump_to(chuck, loop->continues[i], continue_target);
         }
-        compile(node->for_node.incr, chuck);
+        
+        if (node->for_node.incr)
+            compile(node->for_node.incr, chuck);
 
         emit_loop(chuck, offset);
         patch_jump(chuck, exit_jump);
