@@ -66,6 +66,7 @@ typedef enum{
     OP_INDEX,
     OP_RANGE,
     OP_HM,
+    OP_INSTANCE,
 
     OP_REASSIGN,
     OP_FUNCTION,

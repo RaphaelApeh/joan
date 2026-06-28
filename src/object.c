@@ -313,12 +313,12 @@ JnObject* jn_obj_struct(char* name, Jn_environ* fields)
     return obj;
 }
 
-JnObject* jn_obj_instance(JnObject* from_obj, Jn_Hashmap* fields)
+JnObject* jn_obj_instance(JnObject* from_obj, Jn_environ* fields)
 {
     JnObject* obj = jn_obj_new(INSTANCE_TYPE);
     JnInstance* instance = JN_ALLOC(sizeof(JnInstance));
     instance->obj = from_obj;
-    instance->fields = fields;
+    instance->fields = Jn_environ_init(fields);
     obj->instance = instance;
     return obj;
 }
@@ -371,15 +371,15 @@ static void print_array(JnObject* obj)
 
 static void print_hashmap(JnObject* obj)
 {
-    fprintf(stderr, "#{");
+    fprintf(stdout, "#{");
     for (int i = 0; i < obj->hashmap->size; ++i)
     {
         Jn_HashEntry* hm = &obj->hashmap->buckets[i];
         print_JnObject(hm->key);
-        putchar(':');
+        printf(": ");
         print_JnObject(hm->value);
         if (i < obj->hashmap->size - 1)
-            fprintf(stderr, ", ");
+            fprintf(stdout, ", ");
     }
     putchar('}');
 }
@@ -459,6 +459,8 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "<%s>", obj->type_obj.type_name); break;
         case STRUCT_TYPE:
             fprintf(stdout, "struct{%s}", obj->struct_obj->name ? obj->struct_obj->name : "<object>"); break;
+        case INSTANCE_TYPE:
+            fprintf(stdout, "%s{}", obj->instance->obj->struct_obj->name); break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;

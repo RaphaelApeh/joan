@@ -110,6 +110,8 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_CHAR(obj) _JN_CHECK_TYPE(obj, CHAR_TYPE)
 #define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
 #define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
+#define JN_IS_STRUCT(obj) _JN_CHECK_TYPE(obj, STRUCT_TYPE)
+#define JN_IS_INSTANCE(obj) _JN_CHECK_TYPE(obj, INSTANCE_TYPE)
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
@@ -277,7 +279,7 @@ typedef struct {
 
 typedef struct {
     JnObject* obj;
-    Jn_Hashmap* fields;
+    Jn_environ* fields;
 } JnInstance;
 
 typedef struct {
@@ -385,7 +387,7 @@ JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity,
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(char* name, Jn_environ* fields);
-JnObject* jn_obj_instance(JnObject* obj, Jn_Hashmap* fields);
+JnObject* jn_obj_instance(JnObject* obj, Jn_environ* fields);
 char* jn_obj_to_string(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(int type, char* msg, ...);

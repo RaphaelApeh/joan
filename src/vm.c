@@ -316,6 +316,29 @@ InterpretResult vm_run(JnVM* vm)
                 if (o == NULL) return die(vm, "Import error.");
                 PUSH(vm, o);
                 break;
+
+            case OP_INSTANCE:
+                count = READ_BYTE();
+                char* fields[10]; // TODO
+                JnObject* values[10]; // TODO
+                for (int i = 0; i < count; ++i)
+                    fields[i] = READ_IDENT();
+
+                for (int i = count - 1; i >= 0; --i)
+                    values[i] = pop(vm);
+
+                JnObject* object_type = pop(vm);
+                if (!JN_IS_STRUCT(object_type)) // TODO: later add class
+                    return die(vm, "Expected a struct type but (got '%d').", object_type->type);
+                // TODO: add argument binding
+                for (int i = 0; i < count; ++i)
+                {
+                    Jn_environ_E* field_ent = environ_get(object_type->struct_obj->fields, fields[i]);
+                    if (!field_ent) return die(vm, "struct object does not have field %s", fields[i]);
+                    field_ent->value = values[i];
+                }
+                PUSH(vm, JN_RETURN_INSTANCE(object_type, object_type->struct_obj->fields));
+                break;
             case OP_ARRAY:
                 count = READ_BYTE();
                 JnArrayObject* arr = NULL;
@@ -483,13 +506,19 @@ InterpretResult vm_run(JnVM* vm)
                 case MODULE_TYPE:
                     entt = environ_get(o->module->env, field);
                     if (entt == NULL)
-                        return die(vm, "member does not have field '%s'.", field);
+                        return die(vm, "module does not have attribute '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
                 case STRUCT_TYPE:
                     entt = environ_get(o->struct_obj->fields, field);
-                    if (entt->value == NULL)
-                        return die(vm, "something went wrong in struct initialization.");
+                    if (entt == NULL && entt->value == NULL)
+                        return die(vm, "struct does not have field '%s'.", field);
+                    PUSH(vm, entt->value);
+                    break;
+                case INSTANCE_TYPE:
+                    entt = environ_get(o->instance->fields, field);
+                    if (entt == NULL)
+                        return die(vm, "struct object does not have field '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
                 default:
@@ -1061,8 +1090,18 @@ void compile(AST* node, Chuck* chuck)
     case AST_INSTANCE:
         compile(node->instance_node.object, chuck);
 
-        
-        printf("Hello World\n");
+        for (int i = 0; i < node->instance_node.count; ++i)
+        {
+            compile(node->instance_node.values[i], chuck);
+        }
+        WRITE_CHUCK(chuck, OP_INSTANCE);
+        WRITE_CHUCK(chuck, node->instance_node.count);
+
+        for (int i = 0; i < node->instance_node.count; ++i)
+        {
+            id = add_ident(chuck, node->instance_node.fields[i]);
+            WRITE_CHUCK(chuck, id);
+        }
         break;
     case AST_LAMBDA:
         JnObject* lambda_obj = jn_obj_lambda(
