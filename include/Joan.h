@@ -305,7 +305,8 @@ typedef struct {
 
 typedef struct {
     char* name;
-    Jn_environ* fields;
+    char** fields;
+    long field_count;
 } JnStruct;
 
 typedef struct {
@@ -423,7 +424,7 @@ JnObject* jn_obj_type(char* type_name, JnTypeObject type);
 JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
-JnObject* jn_obj_struct(char* name, Jn_environ* fields);
+JnObject* jn_obj_struct(char* name, char** fields);
 JnObject* jn_obj_method(JnObject* obj, JN_CMethod method);
 JnObject* jn_obj_instance(JnObject* obj, Jn_environ* fields);
 char* jn_obj_to_string(JnObject* obj);

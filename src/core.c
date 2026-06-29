@@ -123,6 +123,10 @@ JN_API void Jn_program_init(void)
     state->vm->chuck->env = state->globals;
     state->vm->global = state->globals;
     Jnvm_init(state->vm, state->vm->chuck);
+    state->vm->chuck->lines = malloc(sizeof(int) * 200);
+    state->vm->chuck->columns = malloc(sizeof(int) * 200);
+    assert(state->vm->chuck->lines);
+    assert(state->vm->chuck->lines);
     assert(state->vm->global != NULL);
     Jn_load_Cfunctions(state);
 }

@@ -4,6 +4,12 @@
 #include "vm.h"
 #include "opcode.h"
 
+
+#define CHUCK_REALLOC(chuck, cap, size) do {          \
+    (chuck)->code = realloc(chuck->code, sizeof(uint8_t) * (cap));    \
+    (chuck)->lines = realloc((chuck)->lines, (size) * (cap));  \
+    (chuck)->columns = realloc((chuck)->columns, (size) * (cap));  \
+} while(0)
 #define CHECK_CHUCK() assert(chuck != NULL)
 
 int add_ident(Chuck* chuck, char* ident)
@@ -20,9 +26,7 @@ int add_ident(Chuck* chuck, char* ident)
 static void chuck_grow(Chuck* chuck)
 {
     chuck->capacity *= 2;
-    chuck->code = realloc(
-            chuck->code, chuck->capacity
-    );
+    CHUCK_REALLOC(chuck, chuck->capacity, sizeof(int));
 }
 
 

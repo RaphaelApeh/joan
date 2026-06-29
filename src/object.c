@@ -301,7 +301,7 @@ JnObject* jn_obj_function(
     return obj;
 }
 
-JnObject* jn_obj_struct(char* name, Jn_environ* fields)
+JnObject* jn_obj_struct(char* name, char** fields)
 {
     JnObject* obj = jn_obj_new(STRUCT_TYPE);
     JnStruct* struct_obj = JN_ALLOC(sizeof(JnStruct));
@@ -309,6 +309,29 @@ JnObject* jn_obj_struct(char* name, Jn_environ* fields)
     struct_obj->name = name;
     obj->struct_obj = struct_obj;
     return obj;
+}
+
+JnObject* bind_argument(JnObject* obj, char** fields, JnObject** values, long count)
+{
+    Jn_environ* env = Jn_environ_init(NULL);
+    for (int i = 0; i < obj->struct_obj->field_count; ++i)
+    {
+        environ_insert(env, obj->struct_obj->fields[i], JN_RETURN_NONE);
+    }
+    
+    for (int i = 0; i < count; ++i)
+    {
+        if (fields[i] == NULL)
+        {
+            fields[i] = strdup(obj->struct_obj->fields[i]);
+        }
+        Jn_environ_E* entt = environ_get(env, fields[i]);
+        if (!entt || !entt->value)
+            return JN_RAISE_EXCPETION(UNDEFINE_ERROR, "Unkown field '%s'.", fields[i]);
+        
+        entt->value = values[i];
+    }
+    return jn_obj_instance(obj, env);
 }
 
 JnObject* jn_obj_instance(JnObject* from_obj, Jn_environ* fields)

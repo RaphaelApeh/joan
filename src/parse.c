@@ -432,7 +432,12 @@ static AST* parse_for(joan_parser_t* p)
         return parse_error(p, "Sorry, does not support parentheses like C.");
     
     if (!check(p, TOKEN_SIMICOLON))
-        init = parse_expr(p);
+    {
+        if (check(p, TOKEN_LET) || check(p, TOKEN_CONST))
+            init = parse_assign(p);
+        else
+            init = parse_expr(p);
+    }
     SKIP(p, TOKEN_SIMICOLON, "you forgot to add ';' in the forloop.");
     if (!check(p, TOKEN_SIMICOLON))
         cond = parse_expr(p);
@@ -559,7 +564,7 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
             return parse_inline_if(p, left);
         }
 
-        if (braces_count < 1 && check(p, TOKEN_LBRACE))
+        if (braces_count == 0 && check(p, TOKEN_LBRACE))
         {
             left = parse_instance(p, left);
             continue;
@@ -767,6 +772,16 @@ static AST* parse_c_define(joan_parser_t* p)
 
 static AST* parse_struct(joan_parser_t* p)
 {
+    /*
+    Example:
+        Point := struct {
+            x: int, y: float
+        }
+        Person := struct {
+            name, age
+        }
+    PS: both do the same thing. No types
+    */
     advance_parser_c(p); // struct
     char** fields = arena_alloc(p->arena, sizeof(char *) * 10);
     int len = 0, cap = 10;
@@ -784,6 +799,9 @@ static AST* parse_struct(joan_parser_t* p)
             fields = realloc(fields, sizeof(AST *) * cap);
         }
         fields[len++] = get_lexeme(p);
+        if (match(p, TOKEN_COLON))
+            parse_expr(p); // For readablity type does nothing.            
+
     } while (match(p, TOKEN_COMMA));
     SKIP(p, TOKEN_RBRACE, "Expected an closing '}'");
     fields[len] = NULL;
@@ -800,7 +818,7 @@ static AST* parse_instance(joan_parser_t* p, AST* instance_obj)
     char** fields = arena_alloc(p->arena, sizeof(char *) * 10);
     AST** values = arena_alloc(p->arena, sizeof(AST *) * 10);
     int len = 0, cap = 10;
-
+    bool contains_kwargs = false;
     for (;;)
     {
         if (match(p, TOKEN_RBRACE)) break;
@@ -811,10 +829,13 @@ static AST* parse_instance(joan_parser_t* p, AST* instance_obj)
             values = realloc(values, sizeof(AST *) * cap);
         }
         if (match(p, TOKEN_DOT)){
+            contains_kwargs = true;
             fields[len] = get_lexeme(p);
             if (!match(p, TOKEN_EQUAL)) return parse_error(p, "expected '='");
             values[len] = parse_expr(p);
         } else {
+            if (contains_kwargs)
+                return parse_error(p, "Found a positional argument after a keyword argument.");
             fields[len] = NULL;
             values[len] = parse_expr(p);
         }

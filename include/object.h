@@ -23,6 +23,7 @@ int64_t range_at(JnRange* r, int64_t idx);
 JnObject* jn_intern_obj(JnObject* obj);
 bool type_check(JnObject* obj, JnObject* type);
 void jn_obj_reassign(JnObject* obj1, JnObject* obj2);
+JnObject* bind_argument(JnObject* obj, char** fields, JnObject** values, long count);
 
 bool is_truthy(JnObject* obj);
 void print_JnObject(JnObject* obj);

@@ -4,10 +4,8 @@
 
 #include "lexer.h"
 
-typedef enum {
-    TOKEN_EOF,
-    TOKEN_NEWLINE,
-
+typedef enum {  TOKEN_EOF, TOKEN_NEWLINE, 
+    
     TOKEN_INT,
     TOKEN_FLOAT,
     TOKEN_STRING,

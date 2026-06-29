@@ -40,7 +40,7 @@ void chuck_init(Chuck* chuck)
     chuck->count = 0;
     chuck->ident_count = 0;
     chuck->ident_capacity = 100;
-    chuck->capacity = 100;
+    chuck->capacity = 200;
     chuck->constants_count = 0;
     chuck->constants_capacity = 100;
     chuck->code = malloc(sizeof(uint8_t) * chuck->capacity);
@@ -319,20 +319,30 @@ InterpretResult vm_run(JnVM* vm)
 
             case OP_INSTANCE:
                 count = READ_BYTE();
-                char* fields[10]; // TODO
-                JnObject* values[10]; // TODO
+                char** fields = JN_ALLOC(sizeof(char *) * 32);
+                long fields_count = 0;
+                JnObject** values = JN_ALLOC(sizeof(JnObject *) * 32);
+                long values_count = 0;
                 for (int i = 0; i < count; ++i)
+                {
                     fields[i] = READ_IDENT();
-
+                    fields_count++;
+                }
                 for (int i = count - 1; i >= 0; --i)
+                {
                     values[i] = pop(vm);
-
+                    values_count++;
+                }
+                if (fields_count > values_count)
+                    return die(vm, "For some reason you have more fields name than values.");
                 JnObject* object_type = pop(vm);
-                if (!JN_IS_STRUCT(object_type)) // TODO: later add class
+                if (!JN_IS_STRUCT(object_type))
                     return die(vm, "Expected a struct type but (got '%d').", object_type->type);
-                // TODO: add argument binding
+                
+                JnObject* instance_obj = bind_argument(object_type, fields, values, count);
 
-                PUSH(vm, JN_RETURN_INSTANCE(object_type, object_type->struct_obj->fields));
+                PUSH(vm, instance_obj);
+                // PUSH(vm, JN_RETURN_NONE);
                 break;
             case OP_ARRAY:
                 count = READ_BYTE();
@@ -502,12 +512,6 @@ InterpretResult vm_run(JnVM* vm)
                     entt = environ_get(o->module->env, field);
                     if (entt == NULL)
                         return die(vm, "module does not have attribute '%s'.", field);
-                    PUSH(vm, entt->value);
-                    break;
-                case STRUCT_TYPE:
-                    entt = environ_get(o->struct_obj->fields, field);
-                    if (entt == NULL && entt->value == NULL)
-                        return die(vm, "struct does not have field '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
                 case INSTANCE_TYPE:
@@ -857,7 +861,7 @@ void compile(AST* node, Chuck* chuck)
         id = add_ident(chuck, (char *)node->member.field->identifier);
         WRITE_CHUCK(chuck, OP_MEMBER);
         WRITE_CHUCK(chuck, id);
-        // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
+         // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
         break;
     case AST_CALL:
         compile(node->call.callee, chuck);        
@@ -1054,13 +1058,8 @@ void compile(AST* node, Chuck* chuck)
 
         break;
     case AST_STRUCT:
-        Jn_environ* fields = Jn_environ_init(NULL);
-        for (int i = 0; i < node->struct_node.count; ++i)
-        {
-            environ_insert(fields, node->struct_node.fields[i], JN_RETURN_NONE);
-        }
-        JnObject* struct_obj =  JN_RETURN_STRUCT(NULL, fields);
-
+        JnObject* struct_obj =  JN_RETURN_STRUCT(NULL, node->struct_node.fields);
+        struct_obj->struct_obj->field_count = node->struct_node.count;
         idx = add_constant(chuck, struct_obj);
         WRITE_CHUCK(chuck, OP_CONSTANT);
         WRITE_CHUCK(chuck, idx);
