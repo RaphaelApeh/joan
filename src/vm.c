@@ -331,12 +331,7 @@ InterpretResult vm_run(JnVM* vm)
                 if (!JN_IS_STRUCT(object_type)) // TODO: later add class
                     return die(vm, "Expected a struct type but (got '%d').", object_type->type);
                 // TODO: add argument binding
-                for (int i = 0; i < count; ++i)
-                {
-                    Jn_environ_E* field_ent = environ_get(object_type->struct_obj->fields, fields[i]);
-                    if (!field_ent) return die(vm, "struct object does not have field %s", fields[i]);
-                    field_ent->value = values[i];
-                }
+
                 PUSH(vm, JN_RETURN_INSTANCE(object_type, object_type->struct_obj->fields));
                 break;
             case OP_ARRAY:
@@ -520,6 +515,12 @@ InterpretResult vm_run(JnVM* vm)
                     if (entt == NULL)
                         return die(vm, "struct object does not have field '%s'.", field);
                     PUSH(vm, entt->value);
+                    break;
+                case STR_TYPE:
+                    JN_CMethod method = call_method(o, field);
+                    if (method == NULL)
+                        return die(vm, "object does not have field '%s'", field);
+                    PUSH(vm, jn_obj_method(o, method));
                     break;
                 default:
                     return die(vm, "Object does not support member attribute.");
@@ -761,19 +762,23 @@ InterpretResult vm_run(JnVM* vm)
 
                 if (NULL == o)
                     return die(vm, "undefine function.");
-                if (o->type != FUNCTION_TYPE && o->type != NATIVE_TYPE)
-                    return die(vm, "object is not a callable.");
-
+                JN_Args arg = {0};
                 switch (o->type)
                 {
                     case NATIVE_TYPE: {
-                        JN_Args arg = Jn_make_arg(args, len);
+                        arg = Jn_make_arg(args, len);
                         a = o->native_fn->fn(arg);
                         if (a == NULL)
                             return die(vm, "SystemError: got NULL");
                         PUSH(vm, a);
                         break;
                     }
+                    case METHOD_TYPE:
+                        arg = Jn_make_arg(args, len);
+                        a = o->method.fn(o->method.obj, arg);
+                        if (NULL == a) return die(vm, "Invalid method call.");
+                        PUSH(vm, a);
+                        break;
                     case FUNCTION_TYPE: {
                         JnFunctionObject* fn = o->fn;
                         if (count != fn->arity)

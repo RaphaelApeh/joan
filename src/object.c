@@ -141,14 +141,12 @@ JnObject* jn_obj_type(char* type_name, JnTypeObject type)
     return obj;
 }
 
-bool type_check(JnObject* obj, JnObject* type)
+JnObject* jn_obj_method(JnObject* obj, JN_CMethod method)
 {
-    if (!obj || !type) return false;
-    // TODO: add union support
-    if (type->type == NONE_TYPE && JN_IS_NONE(obj)) return true;
-    if (obj->type == type->type_obj.type)
-        return true;
-    return false;
+    JnObject* new_obj = jn_obj_new(METHOD_TYPE);
+    new_obj->method.fn = method;
+    new_obj->method.obj = obj;
+    return new_obj;
 }
 
 char* jn_obj_to_string(JnObject* obj)

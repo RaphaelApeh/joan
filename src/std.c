@@ -11,8 +11,29 @@
 #include <unistd.h>
 #endif
 
+
+#ifndef C_STRING_H
+#include "optionals/c_string.h"
+#endif
+
+
 #define MAX_OBJECT_ARGS 50
 
+
+struct JnObjectMethod {
+    char* fn_name;
+    JN_CMethod method;
+};
+
+
+static JnObject* string_ends(JnObject* self, JN_Args arg);
+static JnObject* string_starts(JnObject* self, JN_Args arg);
+
+static struct JnObjectMethod STRING_METHODS[] = {
+    {"ends", string_ends},
+    {"starts", string_starts},
+    {NULL, NULL}
+};
 
 JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count)
 {
@@ -21,6 +42,68 @@ JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count)
     arg.args = objects;
     arg.count = count;
     return arg;
+}
+
+JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
+{
+    assert(obj != NULL);
+    struct JnObjectMethod* METHODS = NULL;
+    switch (JN_OBJ_TYPE(obj))
+    {
+        case STR_TYPE:
+            METHODS = STRING_METHODS;
+            break;
+        default:
+            return NULL;
+    }
+    assert(METHODS != NULL);
+
+    for (int i = 0;; ++i)
+    {
+        if (
+            METHODS[i].fn_name == NULL ||
+            METHODS[i].method == NULL
+        ) break;
+        if (memcmp(method_name, (&METHODS[i])->fn_name, strlen(method_name)) == 0)
+            return METHODS[i].method;
+    }
+    return NULL;
+}
+
+
+// String Methods
+
+static JnObject* string_ends(JnObject* self, JN_Args arg)
+{
+    int count = JN_ARGS_COUNT(&arg);
+    if (!JN_IS_STRING(self))
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "object is not of type 'string'.");
+    if (count != 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "string.ends() expected 1 argument (got %d).", count);
+    JnObject* suf_object = JN_GET_ARG(&arg);
+
+    bool ends = strends(
+        JN_AS_CSTRING(self),
+        JN_AS_CSTRING(suf_object)
+    );
+    return JN_RETURN_BOOL(ends);
+}
+
+
+static JnObject* string_starts(JnObject* self, JN_Args arg)
+{
+    int count = JN_ARGS_COUNT(&arg);
+    if (!JN_IS_STRING(self))
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "object is not of type 'string'.");
+    if (count != 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "string.starts() expected 1 argument (got %d).", count);
+    JnObject* suf_object = JN_GET_ARG(&arg);
+
+    bool ends = strstarts(
+        JN_AS_CSTRING(self),
+        JN_AS_CSTRING(suf_object)
+    );
+    return JN_RETURN_BOOL(ends);
 }
 
 static JnObject* native_len(JN_Args args)

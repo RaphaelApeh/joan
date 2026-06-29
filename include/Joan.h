@@ -2,6 +2,28 @@
  Joan.h
  Full Public C API for Joan Programming Language.
 ==========================================================
+
+MIT License
+
+Copyright (c) 2026 Raphael Apeh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 */
 
 #ifndef JOAN_H
@@ -43,6 +65,7 @@ typedef enum{
     HASHMAP_TYPE,
     FUNCTION_TYPE,
     NATIVE_TYPE,
+    METHOD_TYPE,
     ITER_TYPE,
     INSTANCE_TYPE,
     MODULE_TYPE,
@@ -63,6 +86,7 @@ typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
 typedef JnObject* (*Jn_CFunction)(JN_Args args);
+typedef JnObject* (*JN_CMethod) (JnObject* self, JN_Args args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_E Jn_environ_E;
@@ -75,12 +99,17 @@ typedef struct Jn_environ Jn_environ;
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
+#define JN_ARGS_COUNT(arg) ((arg)->count)
+#define JN_GET_ARG(arg) ((arg)->args[0])
+#define JN_GET_ARG_IDX(arg, idx) ((arg)->args[idx])
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
 #define JN_RAISE_EXCPETION(t, msg, ...) jn_obj_error(t, msg, ##__VA_ARGS__)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_INT(i) jn_obj_int((i))
 #define JN_RETURN_BOOL(b) jn_obj_bool((b))
+#define JN_RETURN_TRUE() JN_RETURN_BOOL(1)
+#define JN_RETURN_FALSE() JN_RETURN_BOOL(0)
 #define JN_RETURN_STRING(s) jn_obj_string((s))
 #define JN_RETURN_CHAR(c) jn_obj_char((c))
 #define JN_RETURN_FLOAT(d) jn_obj_float(d)
@@ -92,11 +121,13 @@ typedef struct Jn_environ Jn_environ;
 #define JN_OBJECT_VALUE(obj) // TODO 
 #define JN_AS_CHAR(obj) (obj)->j_char
 #define JN_AS_STRING(obj) (obj)->str
+#define JN_AS_CSTRING(obj) (JN_AS_STRING(obj)->chars)
 #define JN_AS_INT(obj) (obj)->int32
 #define JN_AS_FLOAT(obj) (obj)->float32
 #define JN_AS_ARRAY(obj) (obj)->arr
 #define JN_AS_ITER(obj) (obj)->iter
 #define JN_AS_BOOL(obj) (obj)->bool8
+#define JN_OBJ_TYPE(obj) (obj)->type
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
 #define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, NONE_TYPE)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
@@ -315,6 +346,10 @@ typedef struct JnObject{
         JnModule* module;
         JnStruct* struct_obj;
         JnInstance* instance;
+        struct {
+            JN_CMethod fn;
+            JnObject* obj;
+        } method;
         JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
@@ -372,6 +407,8 @@ JN_API int Jn_exec_from_file(FILE* fptr);
 
 JN_API void Jn_program_close(void);
 
+JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
+
 // Object functions
 JnObject* jn_obj_new(JnTypeObject type);
 JnObject* jn_obj_int(long o_int);
@@ -387,6 +424,7 @@ JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity,
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(char* name, Jn_environ* fields);
+JnObject* jn_obj_method(JnObject* obj, JN_CMethod method);
 JnObject* jn_obj_instance(JnObject* obj, Jn_environ* fields);
 char* jn_obj_to_string(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
