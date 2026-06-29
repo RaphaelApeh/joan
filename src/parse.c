@@ -21,6 +21,9 @@
     match(p, t);                    \
 } while(false)
 
+
+static long braces_count = 0;
+
 int check(joan_parser_t* p, J_TokenType type)
 {
     return _check(p, type, false);
@@ -139,11 +142,13 @@ precedence get_prec(J_TokenType type)
 AST* parse_block(joan_parser_t* p)
 {
     advance_parser_c(p);
+    ++braces_count;
     AST* block = new_block(p);
     while (!check(p, TOKEN_RBRACE) && !check(p, TOKEN_EOF))
     {
         add_block(block, parse_stmt(p));
     }
+    --braces_count;
     match(p, TOKEN_RBRACE);
     return block;
 }
@@ -549,15 +554,15 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
             continue;
         }
 
-        if (left->type == AST_IDENTIFIER && check(p, TOKEN_LBRACE))
-        {
-            left = parse_instance(p, left);
-            continue;
-        }
-
         if (match(p, TOKEN_AT) && check(p, TOKEN_IF))
         {
             return parse_inline_if(p, left);
+        }
+
+        if (braces_count < 1 && check(p, TOKEN_LBRACE))
+        {
+            left = parse_instance(p, left);
+            continue;
         }
 
         if (check(p, TOKEN_RANGE))

@@ -212,6 +212,14 @@ static JnObject* native_tochar(JN_Args arg)
     return NULL;
 }
 
+static JnObject* native_isinstance(JN_Args arg)
+{
+    // Example:
+    // isinstance("Hello", string) // true
+    // isinstance("World", bool) // false
+    
+}
+
 static JnObject* native_sleep(JN_Args args)
 {
     if (args.count > 1 || args.count < 1)
@@ -219,7 +227,11 @@ static JnObject* native_sleep(JN_Args args)
     if (!JN_AS_INT(args.args[0]))
         return JN_RAISE_EXCPETION(TYPE_ERROR, "sleep() takes an int type but got TODO.");
     
-    sleep(JN_AS_INT(args.args[0]));
+    #ifdef _WIN32
+        sleep(JN_AS_INT(args.args[0]) * 1000);
+    #else
+        sleep(JN_AS_INT(args.args[0]));
+    #endif
     return JN_RETURN_NONE;
 }
 
