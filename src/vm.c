@@ -810,9 +810,34 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_MEMBER:
         compile(node->member.callie, chuck);
-        id = add_ident(chuck, (char *)node->member.field->identifier);
-        WRITE_CHUCK(chuck, OP_MEMBER);
-        WRITE_CHUCK(chuck, id);
+        if (node->member.field->type == AST_IDENTIFIER)
+        {
+            id = add_ident(chuck, (char *)node->member.field->identifier);
+            WRITE_CHUCK(chuck, OP_MEMBER);
+            WRITE_CHUCK(chuck, id);
+            // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
+            break;
+        } else if (node->member.field->type == AST_CALL){
+            AST* call = node->member.field;
+            if (call->call.callee->type != AST_IDENTIFIER)
+            {
+                id = add_ident(chuck, "Invalid member attribute.");
+                write_chuck_loc(chuck, OP_ERROR_MSG, line, column);
+                write_chuck_loc(chuck, id, line, column);
+                break;
+            }
+            id = add_ident(chuck, (char *) call->call.callee->identifier);
+            WRITE_CHUCK(chuck, OP_MEMBER);
+            WRITE_CHUCK(chuck, id);
+            for (int i = 0; i < call->call.pos_count; ++i)
+                compile(call->call.pos_args[i], chuck);
+            WRITE_CHUCK(chuck, OP_CALL);
+            WRITE_CHUCK(chuck, call->call.pos_count);
+            break;
+        }
+        // id = add_ident(chuck, (char *)node->member.field->identifier);
+        // WRITE_CHUCK(chuck, OP_MEMBER);
+        // WRITE_CHUCK(chuck, id);
          // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
         break;
     case AST_CALL:
