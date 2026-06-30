@@ -1,8 +1,7 @@
 arr := 0..30:2
-l := len(arr)
 
 // NEW: let and const support
-for let i = 0; i < l; i += 1 {
+for let i = 0; i < len(arr); i += 1 {
     println arr[i]
 }
 

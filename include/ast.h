@@ -196,7 +196,7 @@ typedef struct AST{
         } assign;
 
         struct {
-            char* ident;
+            AST* expr;
             AST* value;
             J_TokenType op; // +=, -=, ...
         } reassign;

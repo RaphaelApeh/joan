@@ -142,13 +142,13 @@ precedence get_prec(J_TokenType type)
 AST* parse_block(joan_parser_t* p)
 {
     advance_parser_c(p);
-    ++braces_count;
+    braces_count++;
     AST* block = new_block(p);
     while (!check(p, TOKEN_RBRACE) && !check(p, TOKEN_EOF))
     {
         add_block(block, parse_stmt(p));
     }
-    --braces_count;
+    braces_count--;
     match(p, TOKEN_RBRACE);
     return block;
 }
@@ -372,14 +372,11 @@ static AST* parse_assign(joan_parser_t* p)
 
 static AST* parse_reassign(joan_parser_t* p, AST* node)
 {
-    if (node->type != AST_IDENTIFIER)
-        return parse_error(p, "Expected an reassign operator.");
-    const char* ident = node->identifier;
     J_TokenType op = p->curr.type;
     AST* ast = ast_create(p, AST_REASSIGN);
     advance_parser_c(p); // += reassign operator
     //x += 4;
-    ast->reassign.ident = (char *)ident;
+    ast->reassign.expr = node;
     ast->reassign.op = op;
     ast->reassign.value = parse_expr(p);
     return ast;
@@ -564,7 +561,7 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
             return parse_inline_if(p, left);
         }
 
-        if (braces_count == 0 && check(p, TOKEN_LBRACE))
+        if (braces_count == 0 && check(p, TOKEN_LBRACE)) // TODO
         {
             left = parse_instance(p, left);
             continue;

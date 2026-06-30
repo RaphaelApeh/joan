@@ -93,19 +93,29 @@ void Jn_freeObject(JnObject* obj)
             free(obj->module->env);
             free(obj->module);
             break;
-    }
+        case INSTANCE_TYPE:
+            free(obj->instance->fields->buckets);
+            free(obj->instance->fields);
+            // free(obj->instance->obj);
+            free(obj->instance);
+            break;
+        }
     free(obj);
+    obj = NULL;
 }
 
 void sweep(J_State* state){
     JnObject** obj = &state->gc->objects;
-
+    long count = 0;
     while (*obj)
     {
         if (!(*obj)->marked)
         {
             JnObject* unreached = *obj;
             *obj = unreached->next;
+            #ifdef JOAN_DEBUG
+                printf("Freeing object count (%d)....\n", count++);
+            #endif
             Jn_freeObject(unreached);
         } else {
             (*obj)->marked = false;

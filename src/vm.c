@@ -57,6 +57,8 @@ void chuck_free(Chuck* chuck)
     free(chuck->code);
     free(chuck->constants);
     free(chuck->idents);
+    free(chuck->lines);
+    free(chuck->columns);
 }
 
 static inline int vm_line(JnVM* vm)
@@ -186,127 +188,84 @@ InterpretResult vm_run(JnVM* vm)
                 PUSH(vm, jn_intern_obj(o));
                 break;
             case OP_ADD:
-                a = pop(vm);
-                b = pop(vm);
-                a = jn_intern_obj(eval_binary(b, a, EVAL_ADD));
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = jn_intern_obj(eval_binary(b, a, EVAL_ADD));
+                PUSH(vm, o);
                 break;
             case OP_SUB:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_SUB);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_SUB);
+                PUSH(vm, o);
                 break;
             case OP_MUL:
-                a = pop(vm);
-                b = pop(vm);
-                a->int32 = a->int32 * b->int32;
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_MUL);
+                PUSH(vm, o);
                 break;
             case OP_BITAND:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_BAND);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_BAND);
+                PUSH(vm, o);
                 break;
             case OP_BITOR:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_BOR);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_BOR);
+                PUSH(vm, o);
                 break;
             case OP_PERC:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_PERC);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_PERC);
+                PUSH(vm, o);
                 break;
             case OP_DIV:
                 a = pop(vm); b = pop(vm);
-                a = eval_binary(b, a, EVAL_DIV);
-                PUSH(vm, a);
+                o = eval_binary(b, a, EVAL_DIV);
+                PUSH(vm, o);
                 break;
             case OP_BITAC:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_BAC);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_BAC);
+                PUSH(vm, o);
                 break;
             case OP_EQUAL:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_EQUAL);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_EQUAL);
+                PUSH(vm, o);
                 break;
             case OP_LSHIFT:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_LSHIFT);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_LSHIFT);
+                PUSH(vm, o);
                 break;
             case OP_RSHIFT:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_RSHIFT);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_RSHIFT);
+                PUSH(vm, o);
                 break;
             case OP_NEQ:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_NOTEQUAL);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_NOTEQUAL);
+                PUSH(vm, o);
                 break;
             case OP_GT:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_GT);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_GT);
+                PUSH(vm, o);
                 break;
             case OP_GTE:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_GTE);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_GTE);
+                PUSH(vm, o);
                 break;
             case OP_LT:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_LT);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_LT);
+                PUSH(vm, o);
                 break;
             case OP_LTE:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(b, a, EVAL_LTE);
-                if (NULL == a)
-                    return die(vm, "Invalid binary");
-                PUSH(vm, a);
+                a = pop(vm); b = pop(vm);
+                o = eval_binary(b, a, EVAL_LTE);
+                PUSH(vm, o);
                 break;
             case OP_IMPORT: 
                 char* lib = READ_IDENT();
@@ -370,15 +329,8 @@ InterpretResult vm_run(JnVM* vm)
                 PUSH(vm, obj);
                 break;
             case OP_REASSIGN:
-                ident = READ_IDENT();
                 int t_op = READ_BYTE();
-                a = pop(vm);
-                Jn_environ_E* entry = environ_get(vm->env, ident);
-                if (NULL == a || NULL == entry)
-                    return die(vm, "undefine variable '%s', \tI think you meant ':=' but forgot.", ident);
-                if (entry->value->constant)
-                    return die(vm, "Cannot reassign a variable of const.");
-                o = entry->value;
+                o = pop(vm); a = pop(vm);
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
@@ -1267,16 +1219,27 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_REASSIGN:
         compile(node->reassign.value, chuck);
-        id = add_ident(chuck, node->reassign.ident);
+
         if (node->reassign.op == TOKEN_WALRUS)
         {
+            if (node->reassign.expr->type != AST_IDENTIFIER)
+            {
+                id = add_ident(chuck, "What a weird way to initialize a variable.");
+                write_chuck_loc(chuck, OP_ERROR_MSG, line, node->reassign.expr->col);
+                write_chuck_loc(chuck, id, line, node->reassign.expr->col);
+                break;
+            }
+            id = add_ident(chuck, (char *)node->reassign.expr->identifier);
+
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
             WRITE_CHUCK(chuck, 0);
             break;
         }
+
+        compile(node->reassign.expr, chuck);
+
         WRITE_CHUCK(chuck, OP_REASSIGN);
-        WRITE_CHUCK(chuck, id);
         WRITE_CHUCK(chuck, node->reassign.op);
         break;
     case AST_ASSIGN:

@@ -478,15 +478,18 @@ void print_JnObject(JnObject* obj)
             break;
         case OBJECT_TYPE:
             fprintf(stderr, "<%s>", obj->type_obj.type_name); break;
+        case METHOD_TYPE:
+            fprintf(stdout, "<method function for '"); print_JnObject(obj->method.obj); fprintf(stdout, "' at %p>", obj->method.fn);
+            break;
         case STRUCT_TYPE:
-            fprintf(stdout, "struct{%s}", obj->struct_obj->name ? obj->struct_obj->name : "<object>"); break;
+            fprintf(stdout, "struct{%s}", obj->struct_obj->name ? obj->struct_obj->name : "<unsigned>"); break;
         case INSTANCE_TYPE:
-            fprintf(stdout, "%s{}", obj->instance->obj->struct_obj->name); break;
+            fprintf(stdout, "<struct{%s} at '%p'>", obj->instance->obj->struct_obj->name, obj->instance->obj); break;
         case NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;
         default:
-            fprintf(stderr, "undefine");
+            fprintf(stderr, "<unsigned>");
             break;
     }
 }
