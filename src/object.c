@@ -224,6 +224,10 @@ static uint64_t hash_object(JnObject* obj)
             return hash_object(obj->iter->obj) * obj->iter->index;
         case MODULE_TYPE:
             return (uint64_t) djb2_hash(obj->module->name);
+        case STRUCT_TYPE:
+            return (uintptr_t) obj->struct_obj;
+        case INSTANCE_TYPE:
+            return (uintptr_t) obj->instance->obj;
         case OBJECT_TYPE:
             return djb2_hash(obj->type_obj.type_name); // TODO
         default:
@@ -262,17 +266,18 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
     chuck_init(chuck);
     chuck->env = env;
     compile(expr, chuck);
-    write_chuck_loc(chuck, OP_RETURN, 0, 0);
-    write_chuck_loc(chuck, OP_END, 0, 0);
+    write_chuck_loc(chuck, OP_RETURN, expr->line, expr->col);
+    write_chuck_loc(chuck, OP_END, expr->line, expr->col);
     JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
     fn->chuck = chuck;
     fn->env = Jn_environ_init(env);
     fn->params = params;
     fn->arity = arity;
-    fn->name = "<lambda>";
+    fn->name = strdup("<lambda>");
     fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(FUNCTION_TYPE);
     obj->fn = fn;
+    printf("WORKING HERE ......\n");
     return obj;
 }
 

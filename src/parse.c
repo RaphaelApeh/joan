@@ -464,8 +464,11 @@ static AST* parse_member(joan_parser_t* p, AST* obj)
     // obj.field or obj.field()
     J_TokenType tok = p->curr.type;
     advance_parser_c(p);
-    AST* field = parse_expr(p);
-
+    if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected identifier but got (%s).", GET_LEX(p));
+    
+    AST* field = ast_identifier(p, GET_LEX(p)); //parse_expr(p);
+    advance_parser_c(p);
     AST* ast = ast_create(p, AST_MEMBER);
     ast->member.callie = obj;
     ast->member.field = field;
@@ -543,6 +546,19 @@ static AST* parse_index(joan_parser_t* p, AST* arr)
     return ast;
 }
 
+
+static bool allow_instance(AST* node)
+{
+    switch (node->type)
+    {
+        case AST_IDENTIFIER:
+        case AST_MEMBER:
+        case AST_CALL:
+            return true;
+        default:
+            return false;
+    }
+}
 static AST* parse_instance(joan_parser_t* p, AST* instance_obj);
 
 static AST* parse_postfix(joan_parser_t* p, AST* left)
@@ -561,22 +577,23 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
             return parse_inline_if(p, left);
         }
 
-        if (braces_count == 0 && check(p, TOKEN_LBRACE)) // TODO
+        if (allow_instance(left) && check(p, TOKEN_LBRACE))
         {
             left = parse_instance(p, left);
             continue;
         }
 
         if (check(p, TOKEN_RANGE))
-            return parse_range(p, left);
+        {
+            left = parse_range(p, left);
+            continue;
+        }
 
         if (check(p, TOKEN_DOT))
         {
             left =  parse_member(p, left);
             continue;
         }
-        if (is_assign_token(GET_TOK(p).type))
-            return parse_reassign(p, left);
     
         if (check(p, TOKEN_LBRACKET))
         {
@@ -587,6 +604,8 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         }
         break;
     }
+    if (is_assign_token(GET_TOK(p).type))
+        return parse_reassign(p, left);
     return left;
 }
 
@@ -784,7 +803,7 @@ static AST* parse_struct(joan_parser_t* p)
     int len = 0, cap = 10;
     SKIP(p, TOKEN_LBRACE, "To initalize a struct you need '{'.");
     do {
-        if (check(p, TOKEN_RPARN))
+        if (check(p, TOKEN_RBRACE))
             break;
         if (len == 0 && match(p, TOKEN_NONE))
             break;
@@ -839,7 +858,7 @@ static AST* parse_instance(joan_parser_t* p, AST* instance_obj)
         len++;
         if (match(p, TOKEN_COMMA)) continue;
         if (match(p, TOKEN_RBRACE)) break;
-        return parse_error(p, "Expected a closing '}'.");
+        return parse_error(p, "Expected a closing '}' or ','.");
     }
 
     AST* ast = ast_create(p, AST_INSTANCE);

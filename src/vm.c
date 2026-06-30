@@ -44,6 +44,10 @@ void chuck_init(Chuck* chuck)
     chuck->constants_count = 0;
     chuck->constants_capacity = 100;
     chuck->code = malloc(sizeof(uint8_t) * chuck->capacity);
+    chuck->lines = malloc(sizeof(int) * 200);
+    chuck->columns = malloc(sizeof(int) * 200);
+    assert(chuck->lines != NULL);
+    assert(chuck->columns != NULL);
     assert(chuck->code != NULL);
     chuck->constants = malloc(sizeof(JnObject *) * chuck->constants_capacity);
     assert(chuck->constants != NULL);

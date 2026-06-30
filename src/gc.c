@@ -79,6 +79,10 @@ void Jn_freeObject(JnObject* obj)
             free(obj->hashmap);
             break;
         case FUNCTION_TYPE:
+            chuck_free(obj->fn->chuck);
+            free(obj->fn->chuck);
+            free(obj->fn->env->buckets);
+            free(obj->fn->env);
             free(obj->fn);
             break;
         case NATIVE_TYPE:

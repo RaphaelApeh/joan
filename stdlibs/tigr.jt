@@ -1,10 +1,22 @@
 /*
- TODO
+    tigr.jt
 */
-assert false, "Currently in developemnt"
 
 TPixel := struct {
     r: int, g: int, b: int, a: int
+}
+
+
+fn tigrRGB(r, g, b)
+{
+    p := TPixel{r, g, b, 0xff}
+    return p
+}
+
+fn tigrRGBA(r, g, b, a)
+{
+    p := TPixel{r, g, b, a}
+    return p
 }
 
 // tigrWindow(int w, int h, const char *title, int flags)
