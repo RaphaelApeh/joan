@@ -1,6 +1,25 @@
-hm := #{'a': 1, 1: 12, 23.2: false}
-hm[`a`] = 3
-println  "a" in hm // true
-println "invalid" in hm // false
-println "invalid" not in hm // true
-// Example
+hm := #{"default": 23} // #{}
+
+const __IS_MAIN__ : bool = false
+
+fn append_value(name, value)
+{
+    if (name is None) then 
+        hm["None"] = value
+    else
+        hm[name] = value
+    return 0
+}
+fn main()
+{
+    append_value("name", "John")
+    append_value("age", 32)
+    append_value(None, "name is None")
+    println hm
+    return None
+}
+
+if __IS_MAIN__ then
+    main()
+else
+    println "unable to run main"

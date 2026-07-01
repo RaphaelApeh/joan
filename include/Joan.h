@@ -86,8 +86,8 @@ typedef struct JnVM JnVM;
 typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
-typedef JnObject* (*Jn_CFunction)(JN_Args args);
-typedef JnObject* (*JN_CMethod) (JnObject* self, JN_Args args);
+typedef JnObject* (*Jn_CFunction)(JnObject* args);
+typedef JnObject* (*JN_CMethod) (JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_E Jn_environ_E;
@@ -100,8 +100,9 @@ typedef struct Jn_environ Jn_environ;
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
 
-#define JN_ARGS_COUNT(arg) ((arg)->count)
-#define JN_GET_ARG(arg) ((arg)->args[0])
+#define JN_ARGS_COUNT(obj) ((obj)->arg.count)
+#define JN_GET_ARG(obj) ((obj)->arg.args[0])
+#define JN_OBJECT_ARG(objects, params, count) jn_obj_arg((objects), (params), (count))
 #define JN_GET_ARG_IDX(arg, idx) ((arg)->args[idx])
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
@@ -128,6 +129,8 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_ARRAY(obj) (obj)->arr
 #define JN_AS_ITER(obj) (obj)->iter
 #define JN_AS_BOOL(obj) (obj)->bool8
+#define JN_AS_RANGE(obj) (&((obj)->range))
+#define JN_AS_HASHMAP(obj) (obj)->hashmap
 #define JN_OBJ_TYPE(obj) (obj)->type
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
 #define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, NONE_TYPE)
@@ -352,7 +355,7 @@ typedef struct JnObject{
             JN_CMethod fn;
             JnObject* obj;
         } method;
-        JN_Args args;
+        JN_Args arg;
         JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
@@ -427,6 +430,7 @@ JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity,
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(char* name, char** fields);
+JnObject* jn_obj_arg(JnObject** args, char** arg_names, size_t count);
 JnObject* jn_obj_method(JnObject* obj, JN_CMethod method);
 JnObject* jn_obj_instance(JnObject* obj, Jn_environ* fields);
 char* jn_obj_to_string(JnObject* obj);

@@ -113,6 +113,14 @@ JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step)
     return obj;
 }
 
+JnObject* jn_obj_arg(JnObject** args, char** arg_names, size_t count)
+{
+    JnObject* obj = jn_obj_new(ARG_TYPE);
+    obj->arg.args = args;
+    obj->arg.count = count;
+    obj->arg.arg_names = arg_names;
+    return obj;
+}
 
 JnObject* jn_obj_error(int type, char* msg, ...)
 {

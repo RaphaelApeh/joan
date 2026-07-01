@@ -48,6 +48,7 @@ typedef struct Arena
 
 void arena_init(Arena* arena);
 void* arena_alloc(Arena* arena, size_t size);
+// TODO
 void* arena_realloc(Arena* arena, void* ptr, size_t old_size, size_t new_size);
 void arena_free(Arena* arena);
 

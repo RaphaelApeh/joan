@@ -722,11 +722,11 @@ InterpretResult vm_run(JnVM* vm)
 
                 if (NULL == o)
                     return die(vm, "undefine function.");
-                JN_Args arg = {0};
+                JnObject* arg = NULL;
                 switch (o->type)
                 {
                     case NATIVE_TYPE: {
-                        arg = Jn_make_arg(args, len);
+                        arg = JN_OBJECT_ARG(args, NULL, len);
                         a = o->native_fn->fn(arg);
                         if (a == NULL)
                             return die(vm, "SystemError: got NULL");
@@ -734,7 +734,7 @@ InterpretResult vm_run(JnVM* vm)
                         break;
                     }
                     case METHOD_TYPE:
-                        arg = Jn_make_arg(args, len);
+                        arg = JN_OBJECT_ARG(args, NULL, len);
                         a = o->method.fn(o->method.obj, arg);
                         if (NULL == a) return die(vm, "Invalid method call.");
                         PUSH(vm, a);
