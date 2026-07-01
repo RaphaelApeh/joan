@@ -146,10 +146,10 @@ static JnObject* native_gets(JnObject* args)
     if (!JN_IS_STRING(obj))
         return JN_RAISE_EXCPETION(TYPE_ERROR, "gets() expects a string but got TODO");
     fprintf(stderr, "%s", JN_AS_CSTRING(obj));
-    char c = getc(stdin);
+    char c;
     char* buff = malloc(sizeof(char) * 100);
     int len = 0, cap = 100;
-    while (c != '\n')
+    while ((c = getc(stdin)) != '\n')
     {   
         if (len > cap)
         {
