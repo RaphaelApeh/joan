@@ -58,6 +58,7 @@ static bool is_assign_token(J_TokenType type)
         case TOKEN_ABITAC:
         case TOKEN_ABITAND:
         case TOKEN_ABITOR:
+        case TOKEN_SETTER:
         case TOKEN_WALRUS:
             return true;
         default:

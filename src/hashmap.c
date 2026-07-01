@@ -116,6 +116,8 @@ JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)
     size_t size = map->size;
     if (index < 0)
         index += size;
+    if (index > size)
+        return NULL; 
     return map->buckets[index].value;
 }
 

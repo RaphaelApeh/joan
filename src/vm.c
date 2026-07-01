@@ -339,6 +339,8 @@ InterpretResult vm_run(JnVM* vm)
             case OP_REASSIGN:
                 int t_op = READ_BYTE();
                 o = pop(vm); a = pop(vm);
+                if (o->constant)
+                    return die(vm, "Seem like you are trying to reassign a variable of type const, \t did you mean ':=' but used '::'.");
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
@@ -480,6 +482,8 @@ InterpretResult vm_run(JnVM* vm)
                         return die(vm, "struct object does not have field '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
+                case HASHMAP_TYPE:
+                case ARRAY_TYPE:
                 case STR_TYPE:
                     JN_CMethod method = call_method(o, field);
                     if (method == NULL)
@@ -1253,7 +1257,7 @@ void compile(AST* node, Chuck* chuck)
     case AST_REASSIGN:
         compile(node->reassign.value, chuck);
 
-        if (node->reassign.op == TOKEN_WALRUS)
+        if (node->reassign.op == TOKEN_WALRUS || node->reassign.op == TOKEN_SETTER)
         {
             if (node->reassign.expr->type != AST_IDENTIFIER)
             {
@@ -1266,7 +1270,7 @@ void compile(AST* node, Chuck* chuck)
 
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, 0);
+            WRITE_CHUCK(chuck, node->reassign.op == TOKEN_SETTER);
             break;
         }
 

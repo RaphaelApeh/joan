@@ -158,7 +158,7 @@ typedef struct Jn_environ Jn_environ;
         map->buckets = malloc(sizeof(Jn_HashEntry) * (map)->capacity);\
         (map)->size = 0;                            \
     }                                                \
-    Jn_hashmap_insert(map, key, value, i);            \
+    Jn_hashmap_insert((map), (k), (v), (i));          \
 }while(false)
 
 #define JN_HASHMAP_INSERT_STRING(map, str, v) do {    \

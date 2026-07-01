@@ -2,7 +2,7 @@
     tigr.jt
 */
 
-TPixel := struct {
+TPixel :: struct {
     r: int, g: int, b: int, a: int
 }
 

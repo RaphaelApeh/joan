@@ -25,7 +25,12 @@ struct JnObjectMethod {
     JN_CMethod method;
 };
 
+static JnObject* push_method(JnObject* self, JnObject* args);
 
+// Hashmap methods
+static JnObject* hashmap_from_idx(JnObject* self, JnObject* args);
+
+// String methods
 static JnObject* string_ends(JnObject* self, JnObject* arg);
 static JnObject* string_starts(JnObject* self, JnObject* arg);
 
@@ -35,18 +40,18 @@ static struct JnObjectMethod STRING_METHODS[] = {
     {NULL, NULL}
 };
 
-/*
 
-TODO
-static struct JnObjectMethod HASHMAP_METHODS[] {
+static struct JnObjectMethod HASHMAP_METHODS[] = {
+    {"push", push_method},
+    {"from_index", hashmap_from_idx},
     {NULL, NULL}
-}
+};
 
-static struct JnObjectMethod ARRAY_METHODS[] {
+static struct JnObjectMethod ARRAY_METHODS[] = {
+    {"push", push_method},
     {NULL, NULL}
-}
+};
 
-*/
 
 JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
 {
@@ -56,6 +61,12 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
     {
         case STR_TYPE:
             METHODS = STRING_METHODS;
+            break;
+        case ARRAY_TYPE:
+            METHODS = ARRAY_METHODS;
+            break;
+        case HASHMAP_TYPE:
+            METHODS = HASHMAP_METHODS;
             break;
         default:
             return NULL;
@@ -74,6 +85,65 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
     return NULL;
 }
 
+
+static JnObject* push_method(JnObject* self, JnObject* args)
+{
+    if (!JN_IS_ITERABLE(self))
+        return JN_RAISE_EXCPETION(
+            UNDEFINE_ERROR, 
+            "push() method does not support '%s'.", 
+            JN_OBJ_TO_STRING(self)
+        );
+    if (JN_ARGS_COUNT(args) != 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "obj.push() accept only one argumemt but got (%s).", JN_ARGS_COUNT(args));
+    
+    JnObject* obj = JN_GET_ARG(args);
+    switch (JN_OBJ_TYPE(self))
+    {
+        case ARRAY_TYPE:
+            JN_SET_ARRAY(JN_AS_ARRAY(self), obj, JN_AS_ARRAY(self)->size);
+            break;
+        case STR_TYPE:
+            assert(false && "Not Implemented.");
+            // char* str = strstr(JN_AS_CSTRING(self), JN_AS_CSTRING(obj));
+            break;
+        case HASHMAP_TYPE:
+            if (JN_OBJ_TYPE(obj) != HASHMAP_TYPE)
+                return JN_RAISE_EXCPETION(TYPE_ERROR, "<Hashmap>.push() expected a hashmap object.");
+            Jn_Hashmap* map =  JN_AS_HASHMAP(obj);
+            // TODO: think of a better way to implement it.
+            for (int i = 0; i < map->size; ++i)
+            {
+                JN_HASHMAP_INSERT(
+                    JN_AS_HASHMAP(self), 
+                    map->buckets[i].key, 
+                    map->buckets[i].value,
+                    JN_AS_HASHMAP(self)->size + i
+                );
+            }
+            break;
+        default:
+            return JN_RAISE_EXCPETION(TYPE_ERROR, "Invalid stuff.");
+    }
+    return JN_RETURN_NONE;
+}
+
+
+// Hashmap Methods
+
+static JnObject* hashmap_from_idx(JnObject* self, JnObject* args)
+{
+    int count = JN_ARGS_COUNT(args);
+    if (count != 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "from_index() expected one argument but (got %d).", count);
+    if (JN_OBJ_TYPE(JN_GET_ARG(args)) != INT_TYPE)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "from_index() expect an integer.");
+    int index = JN_AS_INT(JN_GET_ARG(args));
+    JnObject* obj = Jnhashmap_get_from_index(JN_AS_HASHMAP(self), index);
+    if (NULL == obj)
+        return JN_RAISE_EXCPETION(SYS_ERROR, "from_index(): internal error.");
+    return obj;
+}
 
 // String Methods
 
