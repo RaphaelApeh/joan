@@ -314,6 +314,10 @@ InterpretResult vm_run(JnVM* vm)
                 {
                     JN_SET_ARRAY(arr, pop(vm), i);
                 }
+                if (arr == NULL)
+                {
+                    JN_ARRAY_DEFAULT(arr);
+                }
                 assert(arr != NULL);
                 o = JN_OBJECT(ARRAY_TYPE);
                 o->arr = arr;

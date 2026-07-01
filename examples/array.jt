@@ -1,6 +1,4 @@
 arr := [21, "Hello World", 32.32]
 copy := []
 
-for i := 0; i < len(arr); i += 1{
-    copy.push(arr[i])
-}
+println copy 

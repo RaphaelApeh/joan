@@ -38,10 +38,10 @@ extern "C" {
 #include <stdbool.h>
 
 #define JOAN_VERSION_MAJOR 0
-#define JOAN_VERSION_MINOR 6
+#define JOAN_VERSION_MINOR 7
 #define JOAN_VERSION_PATCH 2
 
-#define JOAN_VERSION "0.6.2"
+#define JOAN_VERSION "0.7.2"
 
 #ifdef _WIN32
     #ifdef JN_BUILD_DLL
@@ -179,6 +179,14 @@ typedef struct Jn_environ Jn_environ;
     (obj)->size = 0;                            \
     (obj)->buckets = malloc(sizeof(Jn_HashEntry) * (obj)->capacity);  \
 }while(false)
+
+
+#define JN_ARRAY_DEFAULT(arr) do {\
+        (arr) = malloc(sizeof(JnArrayObject));          \
+        (arr)->capacity = 100;                          \
+        (arr)->size = 0;                                \
+        (arr)->items = malloc(sizeof(JnObject *) * (arr)->capacity);    \
+} while(false)
 
 #define JN_SET_ARRAY(arr, obj, i) do{                  \
     if ((arr) == NULL){                                 \

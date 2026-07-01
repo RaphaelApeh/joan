@@ -180,6 +180,15 @@ static JnObject* string_starts(JnObject* self, JnObject* arg)
     return JN_RETURN_BOOL(ends);
 }
 
+
+static JnObject* native_getattr(JnObject* args)
+{
+    int count = JN_ARGS_COUNT(args);
+    if (count != 2)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "getattr() expected an 2 argument but got %d.", count);
+    // TODO
+}
+
 static JnObject* native_len(JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
