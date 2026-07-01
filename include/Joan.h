@@ -72,6 +72,7 @@ typedef enum{
     OBJECT_TYPE,
     ENUM_TYPE,
     STRUCT_TYPE,
+    ARG_TYPE,
     ERROR_TYPE,
 } JnTypeObject;
 
@@ -351,6 +352,7 @@ typedef struct JnObject{
             JN_CMethod fn;
             JnObject* obj;
         } method;
+        JN_Args args;
         JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
