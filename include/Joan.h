@@ -173,6 +173,13 @@ typedef struct Jn_environ Jn_environ;
 
 #define JN_ALLOC(s) malloc(s)
 
+#define JN_DEFAULT_HM(obj) do{\
+    (obj) = malloc(sizeof(JnArrayObject));   \
+    (obj)->capacity = 100;                    \
+    (obj)->size = 0;                            \
+    (obj)->buckets = malloc(sizeof(Jn_HashEntry) * (obj)->capacity);  \
+}while(false)
+
 #define JN_SET_ARRAY(arr, obj, i) do{                  \
     if ((arr) == NULL){                                 \
         (arr) = malloc(sizeof(JnArrayObject));          \

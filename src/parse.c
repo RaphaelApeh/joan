@@ -623,6 +623,8 @@ static AST* parse_hashmap(joan_parser_t* p)
     {
         if (match(p, TOKEN_RBRACE))
             break;
+        if (len == 0 && match(p, TOKEN_NONE) && match(p, TOKEN_RBRACE))
+            break;
         if (len > cap)
         {
             cap *= 2;
@@ -818,7 +820,7 @@ static AST* parse_struct(joan_parser_t* p)
         if (match(p, TOKEN_COLON))
             parse_expr(p); // For readablity type does nothing.            
 
-    } while (match(p, TOKEN_COMMA));
+    } while (match(p, TOKEN_COMMA) || match(p, TOKEN_SIMICOLON));
     SKIP(p, TOKEN_RBRACE, "Expected an closing '}'");
     fields[len] = NULL;
     AST* ast = ast_create(p, AST_STRUCT);

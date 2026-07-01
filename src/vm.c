@@ -327,6 +327,10 @@ InterpretResult vm_run(JnVM* vm)
                     value = pop(vm); key = pop(vm);
                     JN_HASHMAP_INSERT(map, key, value, i);
                 }
+                if (map == NULL)
+                {
+                    JN_DEFAULT_HM(map);
+                }
                 assert(map != NULL);
                 JnObject* obj = JN_OBJECT(HASHMAP_TYPE);
                 obj->hashmap = map;

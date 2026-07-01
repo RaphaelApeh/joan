@@ -1,6 +1,6 @@
-hm := #{"default": 23} // #{}
+hm := #{None}
 
-const __IS_MAIN__ : bool = false
+const __IS_MAIN__ : bool = true
 
 fn append_value(name, value)
 {
