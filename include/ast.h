@@ -48,6 +48,7 @@ typedef enum{
     AST_ENUM,
     AST_IF,
     AST_INLINE_IF,
+    AST_MULTI_VAR,
     AST_BLOCK,
     AST_FOR,
     AST_LAMBDA,
@@ -194,6 +195,13 @@ typedef struct AST{
             char* name;
             bool is_const;
         } assign;
+
+        struct {
+            char** idents;
+            AST* value;
+            int count;
+            int op;
+        } assign_multiple;
 
         struct {
             AST* expr;

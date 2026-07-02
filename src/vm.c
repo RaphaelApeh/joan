@@ -812,6 +812,16 @@ void compile(AST* node, Chuck* chuck)
         write_chuck_loc(chuck, OP_GET_GLOBAL, line, column);
         write_chuck_loc(chuck, id, line, column);
         break;
+    case AST_MULTI_VAR:
+        for (int i = 0; i < node->assign_multiple.count; ++i)
+        {
+            compile(node->assign_multiple.value, chuck);
+            id = add_ident(chuck, node->assign_multiple.idents[i]);
+            WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+            WRITE_CHUCK(chuck, id);
+            WRITE_CHUCK(chuck, node->assign_multiple.op == TOKEN_SETTER);
+        }
+        break;
     case AST_ARRAY:
         for (size_t i = 0; i < node->array.count; i++)
             compile(node->array.elements[i], chuck);

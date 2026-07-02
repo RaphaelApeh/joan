@@ -872,6 +872,57 @@ static AST* parse_instance(joan_parser_t* p, AST* instance_obj)
     return ast;
 }
 
+
+static AST* parse_multi_var(joan_parser_t* p, AST* first)
+{
+
+    /*
+     Example:
+    a, b, c := 3
+    OR (later)
+    a, b := [1, 2]
+    a // 1
+    b // 2
+    */
+    advance_parser_c(p);
+
+    char** idents = arena_alloc(p->arena, sizeof(char *) * 100);
+    int len = 0, cap = 100;
+    idents[len++] = (char *)first->identifier;
+    while (true)
+    {
+        if (check(p, TOKEN_WALRUS) || check(p, TOKEN_SETTER))
+        break;
+        if (!check(p, TOKEN_IDENTIFIER))
+            return parse_error(p, "Expected an identifier.");
+        if (len > cap)
+        {
+            cap *= 2;
+            // TODO
+            idents = arena_realloc(p->arena, idents, sizeof(idents), sizeof(AST *) * cap);
+        }
+        idents[len++] =  GET_LEX(p);
+        advance_parser_c(p);
+        
+        if (match(p, TOKEN_COMMA))
+            continue;
+        
+        if (check(p, TOKEN_WALRUS) || check(p, TOKEN_SETTER))
+            break;
+        return parse_error(p, "Got an invalid token.");
+    }
+    int op = GET_TOK(p).type;
+    advance_parser_c(p);
+    AST* expr = parse_expr(p);
+    // TODO: a, b := [1, 2]
+    AST* ast = ast_create(p, AST_MULTI_VAR);
+    ast->assign_multiple.count = len;
+    ast->assign_multiple.idents = idents;
+    ast->assign_multiple.value = expr;
+    ast->assign_multiple.op = op;
+    return ast;
+}
+
 AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
@@ -935,6 +986,7 @@ AST* parse_value(joan_parser_t* p)
         case TOKEN_IDENTIFIER:
             ast = ast_identifier(p, t.lexeme);
             advance_parser_c(p);
+            if (check(p, TOKEN_COMMA)) return parse_multi_var(p, ast);
             return ast;
         case TOKEN_ASSERT:
             return parse_assert(p);
