@@ -13,10 +13,29 @@
 #include "vm.h"
 #include "gc.h"
 
+
+#define LONG_HEX_NUM 0xbf58476d1ce4e5b9ULL
+#define LONG_HEX_NUM2 0x94d049bb133111ebULL
+#define LONG_HEX_NUM3 0x9e37779b97f4e7c15ULL
 JnObject NoneObj = {0};
 
 static InternEntry* intern_pool[JN_INTER_SIZE];
 
+static inline uint64_t hash_mix(uint64_t x)
+{
+    x ^=  x >> 30;
+    x *= LONG_HEX_NUM;
+    x ^= x >> 27;
+    x *= LONG_HEX_NUM2;
+    x ^= x >> 31;
+    return x;
+}
+
+static inline uint64_t hash_combine(uint64_t a, uint64_t b)
+{
+    return hash_mix(a ^ (b + LONG_HEX_NUM3 + 
+            (a << 6) + (a >> 2)));
+}
 
 JnObject* jn_obj_new(JnTypeObject type)
 {
@@ -216,31 +235,75 @@ void jn_obj_reassign(JnObject* obj1, JnObject* obj2)
 
 static uint64_t hash_object(JnObject* obj)
 {
+    if (!obj) return 0;
+    uint64_t h;
     switch (obj->type)
     {
+        case NONE_TYPE:
+            return LONG_HEX_NUM3;
         case INT_TYPE:
-            return (uint64_t)obj->int32;
+            return hash_mix((uint64_t)obj->int32);
         case BOOL_TYPE:
-            return obj->bool8;
+            return hash_mix(JN_AS_BOOL(obj));
         case FLOAT_TYPE:
-            return obj->float32;
+            union {
+                double d;
+                uint64_t u;
+            } bits;
+            bits.d = JN_AS_FLOAT(obj);
+            return hash_mix(bits.u);
         case STR_TYPE:
-            return obj->str->hash;
+            return hash_mix(JN_AS_STRING(obj)->hash);
         case CHAR_TYPE:
-            return ( int )obj->j_char;
+            return hash_mix((unsigned char) JN_AS_CHAR(obj));
+        case RANGE_TYPE:
+        {
+            h = hash_mix(JN_AS_RANGE(obj)->start);
+            h = hash_combine(h, hash_mix(JN_AS_RANGE(obj)->stop));
+            h = hash_combine(h, hash_mix(JN_AS_RANGE(obj)->step));
+            return h;          
+        }
         case ITER_TYPE:
-            return hash_object(obj->iter->obj) * obj->iter->index;
+        {
+            h = hash_object(JN_AS_ITER(obj)->obj);
+            return hash_combine(h, hash_mix(JN_AS_ITER(obj)->index));
+        }
         case MODULE_TYPE:
-            return (uint64_t) djb2_hash(obj->module->name);
+        {
+            h = hash_mix(djb2_hash(obj->module->name));
+            return hash_combine(h, hash_mix(djb2_hash(obj->module->path)));
+        }
         case STRUCT_TYPE:
-            return (uintptr_t) obj->struct_obj;
+        {
+            h = hash_mix(djb2_hash(obj->struct_obj->name));
+            for (int i = 0; i < obj->struct_obj->field_count; ++i)
+            {
+                h = hash_combine(h, hash_mix(djb2_hash(obj->struct_obj->fields[i])));
+            }
+            return h;
+        }
+        case METHOD_TYPE:
+        {
+            h = hash_object(obj->method.obj);
+            return hash_combine(h, hash_mix((uintptr_t)obj->method.fn));
+        }
         case INSTANCE_TYPE:
-            return (uintptr_t) obj->instance->obj;
+        {
+            h = hash_object(obj->instance->obj);
+            return h;
+        }
+        case FUNCTION_TYPE:
+        {
+            return hash_mix(djb2_hash(obj->fn->name));
+        }
+        case NATIVE_TYPE:
+        {
+            return hash_mix(djb2_hash(obj->native_fn->fnName));
+        }
         case OBJECT_TYPE:
-            return djb2_hash(obj->type_obj.type_name); // TODO
-        default:
-            return 0;
+            return hash_mix(djb2_hash(obj->type_obj.type_name));
     }
+    return LONG_HEX_NUM;
 }
 
 JnObject* jn_intern_obj(JnObject* obj)
