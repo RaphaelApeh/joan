@@ -203,34 +203,62 @@ char* jn_obj_to_string(JnObject* obj)
     }
     return strdup(type);
 }
-void jn_obj_reassign(JnObject* obj1, JnObject* obj2)
+
+
+void jn_obj_reassign(JnObject* dest, JnObject* src)
 {
-    assert(obj1 != NULL && obj2 != NULL);
-    obj1->type = obj2->type;
-    switch (obj2->type)
+    #define _SET_TYPE(t) dest->type = t
+    assert(dest && src);
+    switch (src->type)
     {
         case INT_TYPE:
-            obj1->int32 = obj2->int32;
+            _SET_TYPE(INT_TYPE);
+            dest->int32 = src->int32;
             break;
         case STR_TYPE:
-            obj1->str = malloc(sizeof(JnStringObject));
-            memcpy(obj1->str, obj2->str, sizeof(*obj2->str));
+            _SET_TYPE(STR_TYPE);
+            dest->str = src->str;
             break;
         case BOOL_TYPE:
-            obj1->bool8 = obj2->bool8;
+            _SET_TYPE(BOOL_TYPE);
+            dest->bool8 = src->bool8;
             break;
         case FLOAT_TYPE:
-            obj1->float32 = obj2->float32;
+            _SET_TYPE(FLOAT_TYPE);
+            dest->float32 = src->float32;
             break;
         case CHAR_TYPE:
-            obj1->j_char = obj2->j_char;
+            _SET_TYPE(CHAR_TYPE);
+            dest->j_char = src->j_char;
             break;
         case RANGE_TYPE:
-            obj1->range = obj2->range;
+            _SET_TYPE(RANGE_TYPE);
+            dest->range = src->range;
+            break;
+        case ARRAY_TYPE:
+            _SET_TYPE(ARRAY_TYPE);
+            dest->arr = src->arr;
+            break;
+        case HASHMAP_TYPE:
+            _SET_TYPE(HASHMAP_TYPE);
+            dest->hashmap = src->hashmap;
+            break;
+        case FUNCTION_TYPE:
+            _SET_TYPE(FUNCTION_TYPE);
+            dest->fn = src->fn;
+            break;
+        case STRUCT_TYPE:
+            _SET_TYPE(STRUCT_TYPE);
+            dest->struct_obj = src->struct_obj;
+            break;
+        case INSTANCE_TYPE:
+            _SET_TYPE(INSTANCE_TYPE);
+            dest->instance = src->instance;
             break;
         default:
             assert(false && "Not yet impl reassign for this type TODO.");
     }
+    #undef _SET_TYPE
 }
 
 static uint64_t hash_object(JnObject* obj)
@@ -294,6 +322,7 @@ static uint64_t hash_object(JnObject* obj)
         }
         case FUNCTION_TYPE:
         {
+            printf("Worked...\n");
             return hash_mix(djb2_hash(obj->fn->name));
         }
         case NATIVE_TYPE:
@@ -345,7 +374,7 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
     fn->env = Jn_environ_init(env);
     fn->params = params;
     fn->arity = arity;
-    fn->name = NULL;
+    fn->name = DEFAULT_LAMBDA_NAME;
     fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(FUNCTION_TYPE);
     obj->fn = fn;
@@ -546,7 +575,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "<Enum>");
             break;
         case FUNCTION_TYPE:
-            fprintf(stdout, "<function '%s' args=%d>",obj->fn->name == NULL ? "<lambda>" : obj->fn->name, obj->fn->arity);
+            fprintf(stdout, "<function '%s' args=%d>",obj->fn->name, obj->fn->arity);
             break;
         case ITER_TYPE:
             fprintf(stderr, "<iter '");
@@ -559,7 +588,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stdout, "<method function for '"); print_JnObject(obj->method.obj); fprintf(stdout, "' at %p>", obj->method.fn);
             break;
         case STRUCT_TYPE:
-            fprintf(stdout, "struct{%s}", obj->struct_obj->name ? obj->struct_obj->name : "<unsigned>"); break;
+            fprintf(stdout, "struct{%s}", (obj->struct_obj->name) ? obj->struct_obj->name : "<unsigned>"); break;
         case INSTANCE_TYPE:
             fprintf(stdout, "<struct{%s} at '%p'>", obj->instance->obj->struct_obj->name, obj->instance->obj); break;
         case NATIVE_TYPE:

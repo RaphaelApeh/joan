@@ -71,6 +71,10 @@ void environ_insert(Jn_environ* env, char* key, JnObject* obj)
     if (obj->type == STRUCT_TYPE)
     {
         obj->struct_obj->name = key;
+    }else if (JN_IS_FUNCTION(obj))
+    {
+        if (strcmp(obj->fn->name, DEFAULT_LAMBDA_NAME) == 0)
+            obj->fn->name = strdup(key);
     }
     env->buckets[env->size].used = true;
     env->buckets[env->size].key = strdup(key);

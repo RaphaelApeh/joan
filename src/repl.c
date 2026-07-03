@@ -111,31 +111,49 @@ static int parse_buffer(char* str)
     return OK;
 }
 
+static void print_help(void)
+{
+    // TODO: add a better help msg
+    fprintf(stdout, 
+    "!enter  Exit shell.\n"
+    ".help Show this help message.\n"
+    );
+}
+
 JN_API void Jn_repl(void)
 {
     char line[256];
+    int line_no = 0;
     if  (_JN_INIT_PROGRAM)
     {
         fprintf(stderr, 
-            "Joan  " JOAN_VERSION "\n"
-            "!exit to exit for shell.\n"
-            "!help for help info.\n"
+            "Welcome to Joan v" JOAN_VERSION "\n"
+            "\"!enter\" to exit shell.\n"
+            "\"!help\" for help info.\n"
         );
-        fprintf(stderr, "Entering ....\n");
         Jn_program_init();
     } else {
         fprintf(stderr, 
-        "!exit to exit shell.\n"
+        "\"!enter\" to exit shell.\n"
         );
     }
     for (;;)
     {
-        fprintf(stderr, buffer_count == 0 ? ">>> " : "... ");
+        line_no++;
+        fprintf(stderr, buffer_count == 0 ? "repl:%d> " : "... ", line_no);
         if (!fgets(line, sizeof(line), stdin))
             break;
         strcat(buffer, line);
         buffer_count += strlen(line);
-        if (strncmp(line, "!exit", 5) == 0) break;
+        if (strncmp(line, "!enter", 6) == 0) break;
+        if (strncmp(line, "!help", 5) == 0) 
+        {
+            print_help();
+            // clean buffer
+            buffer[0] = 0;
+            buffer_count = 0;
+            continue;
+        }
         int type =  parse_buffer(buffer);
         if (type == INCOMPLETE)
             continue;
@@ -150,5 +168,4 @@ JN_API void Jn_repl(void)
     }
     if (_JN_INIT_PROGRAM)
         Jn_program_close();
-    fprintf(stderr, "Exit ....\n");
 }

@@ -9,6 +9,7 @@
 #include "env.h"
 
 
+#define DEFAULT_LAMBDA_NAME "<lambda>"
 typedef struct JnObject JnObject;
 
 #define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
@@ -21,8 +22,7 @@ typedef struct InternEntry {
 int64_t range_len(JnRange* r);
 int64_t range_at(JnRange* r, int64_t idx);
 JnObject* jn_intern_obj(JnObject* obj);
-bool type_check(JnObject* obj, JnObject* type);
-void jn_obj_reassign(JnObject* obj1, JnObject* obj2);
+void jn_obj_reassign(JnObject* dest, JnObject* src);
 JnObject* bind_argument(JnObject* obj, char** fields, JnObject** values, long count);
 
 bool is_truthy(JnObject* obj);
