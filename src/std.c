@@ -37,6 +37,7 @@ static JnObject* string_starts(JnObject* self, JnObject* arg);
 static struct JnObjectMethod STRING_METHODS[] = {
     {"ends", string_ends},
     {"starts", string_starts},
+    {"push", push_method},
     {NULL, NULL}
 };
 
@@ -104,8 +105,10 @@ static JnObject* push_method(JnObject* self, JnObject* args)
             JN_SET_ARRAY(JN_AS_ARRAY(self), obj, JN_AS_ARRAY(self)->size);
             break;
         case STR_TYPE:
-            assert(false && "Not Implemented.");
-            // char* str = strstr(JN_AS_CSTRING(self), JN_AS_CSTRING(obj));
+            if (!JN_IS_STRING(obj))
+                return JN_RAISE_EXCPETION(TYPE_ERROR, "string:push() expected a string.");
+            char* buff = strcat(JN_AS_CSTRING(self), JN_AS_CSTRING(obj));
+            *(self->str) = JNSTR_OBJ(buff); // But it works in my machine.
             break;
         case HASHMAP_TYPE:
             if (JN_OBJ_TYPE(obj) != HASHMAP_TYPE)
@@ -180,13 +183,47 @@ static JnObject* string_starts(JnObject* self, JnObject* arg)
     return JN_RETURN_BOOL(ends);
 }
 
-
 static JnObject* native_getattr(JnObject* args)
+{
+    assert(false);
+}
+
+static JnObject* native_hasattr(JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count != 2)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "getattr() expected an 2 argument but got %d.", count);
-    // TODO
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "hasattr() expected an 2 argument but got %d.", count);
+    JnObject* obj = JN_GET_ARG(args), *str_obj = JN_GET_ARGS(args, 1);
+    bool return_bool = false;
+    if (!JN_IS_STRING(str_obj))
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "hasattr() expected a string object.");
+    switch (JN_OBJ_TYPE(obj))
+    {
+        case INT_TYPE:
+        case FLOAT_TYPE:
+        case STR_TYPE:
+        case CHAR_TYPE:
+        case ARRAY_TYPE:
+        case HASHMAP_TYPE:
+        {
+            return_bool = call_method(obj, JN_AS_CSTRING(str_obj)) != NULL;
+            return JN_RETURN_BOOL(return_bool);
+        }
+        case INSTANCE_TYPE:
+        {
+            JnInstance* instance = JN_GET_INSTANCE(obj);
+            return_bool = environ_get(instance->fields, JN_AS_CSTRING(str_obj)) != NULL;
+            return JN_RETURN_BOOL(return_bool);
+        }
+        case STRUCT_TYPE:
+        {
+            return_bool = strstrcmp(JN_AS_STRUCT(obj)->fields, JN_AS_CSTRING(str_obj));
+            return JN_RETURN_BOOL(return_bool);
+        }
+        default:
+            return JN_RETURN_FALSE();
+    }
+    return JN_RAISE_EXCPETION(SYS_ERROR, "hasattr() something went wrong.");
 }
 
 static JnObject* native_len(JnObject* args)
@@ -398,6 +435,7 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "toint", "Convert an object to int.", native_toint);
     Jn_register_fn(state, "tofloat", "Convert an object to float.", native_tofloat);
     Jn_register_fn(state, "tochar", "Convert an object to char.", native_tochar);
+    Jn_register_fn(state, "hasattr", "Return true if the object has the attribute.", native_hasattr);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     // add other built-in functions
 }

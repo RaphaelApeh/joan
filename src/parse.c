@@ -1015,7 +1015,7 @@ AST* parse_value(joan_parser_t* p)
         case TOKEN_IDENTIFIER:
             ast = ast_identifier(p, t.lexeme);
             advance_parser_c(p);
-            if (check(p, TOKEN_COMMA)) return parse_multi_var(p, ast);
+            // if (check(p, TOKEN_COMMA)) return parse_multi_var(p, ast);
             return ast;
         case TOKEN_ASSERT:
             return parse_assert(p);

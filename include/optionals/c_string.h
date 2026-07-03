@@ -35,6 +35,8 @@ bool strstarts(const char* str, const char* pre);
 char* strrpl(const char* str, const char* old, const char* new);
 char** strsplt(const char* str, char c, int* size);
 char* strstrp(const char* str);
+// TODO
+bool strstrcmp(char** src, char* src2);
 
 #ifdef __cplusplus
 }

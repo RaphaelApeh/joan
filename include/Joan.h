@@ -103,7 +103,8 @@ typedef struct Jn_environ Jn_environ;
 #define JN_ARGS_COUNT(obj) ((obj)->arg.count)
 #define JN_GET_ARG(obj) ((obj)->arg.args[0])
 #define JN_OBJECT_ARG(objects, params, count) jn_obj_arg((objects), (params), (count))
-#define JN_GET_ARG_IDX(arg, idx) ((arg)->args[idx])
+#define JN_GET_ARGS(obj, idx) ((obj)->arg.args[idx])
+#define JN_GET_INSTANCE(obj) obj->instance
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
 #define JN_RAISE_EXCPETION(t, msg, ...) jn_obj_error(t, msg, ##__VA_ARGS__)
@@ -131,6 +132,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_BOOL(obj) (obj)->bool8
 #define JN_AS_RANGE(obj) (&((obj)->range))
 #define JN_AS_HASHMAP(obj) (obj)->hashmap
+#define JN_AS_STRUCT(obj) (obj)->struct_obj
 #define JN_OBJ_TYPE(obj) (obj)->type
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
 #define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, NONE_TYPE)

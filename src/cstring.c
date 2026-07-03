@@ -97,7 +97,7 @@ char* strstrp(const char* str)
 
     if (*s == '\0')
     {
-        buff = malloc(sizeof(char)); // 1
+        buff = malloc(sizeof(char)); // or 1
         if (NULL == buff) buff[0] = '\0';
         return buff;
     }
@@ -110,4 +110,13 @@ char* strstrp(const char* str)
     memcpy(buff, s, new_len);
     buff[new_len] = 0;
     return buff;
+}
+
+bool strstrcmp(char** src, char* src2)
+{
+    // TODO: find a better way
+    for (int i = 0; src[i] != NULL; ++i)
+        if (strcmp(src[i], src2) == 0)
+            return true;
+    return false;
 }
