@@ -738,32 +738,43 @@ static AST* parse_import(joan_parser_t* p)
 {
     /*
     Example:
-        import "./task" as task // local
-        import math // std lib
+        import "conf" // import everything
+        OR
+        import "conf"{version} // import only version
     */
     advance_parser_c(p);
-    bool is_std = false;
-    char* lib = NULL;
-    char* alias = NULL;
-    if (check(p, TOKEN_STRING)) 
-        lib = GET_LEX(p);
-    else if (check(p, TOKEN_IDENTIFIER))
-    {
-        is_std = true;
-        lib = GET_LEX(p);
-    }
-    else 
+    char* import_path;
+    char** fields = arena_alloc(p->arena, sizeof(char *) * 100);
+    int len = 0, cap = 100;
+    if (!check(p, TOKEN_STRING))
         return parse_error(p, "Expected an import path.");
-    advance_parser_c(p);
-    if (!is_std && match(p, TOKEN_AS))
+    import_path = get_lexeme(p);
+    if (match(p, TOKEN_LBRACE))
     {
-        alias = GET_LEX(p);
-        advance_parser_c(p);
+        while (true)
+        {
+            if (!check(p, TOKEN_IDENTIFIER)) return parse_error(p, "Expected an identifier.");
+            if (len > cap)
+            {
+                cap *= 2;
+                fields = arena_realloc(
+                    p->arena, 
+                    fields, 
+                    sizeof(char *) * len, 
+                    sizeof(char *) * cap
+                );
+            }
+            fields[len++] = get_lexeme(p);
+            if (match(p, TOKEN_COMMA)) continue;
+            if (match(p, TOKEN_RBRACE)) break;
+            return parse_error(p, "Expected ',' or '}' from expression.");
+        }
     }
+    fields[len] = NULL;
     AST* ast = ast_create(p, AST_IMPORT);
-    ast->import_node.lib = lib;
-    ast->import_node.is_std = is_std;
-    ast->import_node.alias = alias;
+    ast->import_node.lib = import_path;
+    ast->import_node.fields = fields;
+    ast->import_node.count = len;
     return ast;
 }
 
@@ -961,8 +972,26 @@ AST* parse_value(joan_parser_t* p)
                 return parse_c_define(p);
             return parse_error(p, "Error invalid expression");
         case TOKEN_STRING:
-            ast = ast_literal(p,  jn_obj_string(t.lexeme));
+            size_t len = strlen(t.lexeme), cap = len + 1;
+            char* buff = malloc(sizeof(char) * cap);
+            memcpy(buff, t.lexeme, cap);
             advance_parser_c(p);
+
+            while (check(p, TOKEN_STRING))
+            {
+                char* next = GET_LEX(p);
+                size_t next_len = strlen(next);
+                if (len + next_len + 1 > cap)
+                {
+                    cap = (len + next_len + 1) * 2;
+                    buff = realloc(buff, cap);
+                }
+                memcpy(buff + len, next, next_len + 1);
+                len += next_len;
+                advance_parser_c(p);
+            }
+            ast = ast_literal(p,  jn_obj_string(buff));
+            free(buff);
             return ast;
         case TOKEN_CHAR:
             char c = t.c;

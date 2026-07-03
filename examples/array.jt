@@ -1,4 +1,6 @@
 arr := [21, "Hello World", 32.32]
 copy := []
-
+count :: len(arr)
+for i := 0; i < count ; i += 1 then
+    println i
 println copy 

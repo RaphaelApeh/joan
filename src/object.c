@@ -255,8 +255,6 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
             _SET_TYPE(INSTANCE_TYPE);
             dest->instance = src->instance;
             break;
-        default:
-            assert(false && "Not yet impl reassign for this type TODO.");
     }
     #undef _SET_TYPE
 }
@@ -338,7 +336,7 @@ static uint64_t hash_object(JnObject* obj)
 
 JnObject* jn_intern_obj(JnObject* obj)
 {
-    if (JN_IS_ARRAY(obj) || JN_IS_HASHMAP(obj))
+    if (JN_IS_ARRAY(obj) || JN_IS_HASHMAP(obj) || JN_IS_STRUCT(obj))
         return obj;
     uint64_t hash = hash_object(obj);
     size_t idx = hash % JN_INTER_SIZE;

@@ -260,9 +260,9 @@ typedef struct AST{
         } lambda_node;
 
         struct {
+            char** fields;
             char* lib;
-            char* alias; // TODO: user-define alias
-            int is_std;
+            int count;
         } import_node;
 
         struct {

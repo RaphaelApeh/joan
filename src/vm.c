@@ -917,21 +917,9 @@ void compile(AST* node, Chuck* chuck)
         printf("Hello World\n");
         break;
     case AST_IMPORT:
-        idx = add_ident(chuck, node->import_node.lib);
-        WRITE_CHUCK(chuck, OP_IMPORT);
-        WRITE_CHUCK(chuck, idx);
-        WRITE_CHUCK(chuck, node->import_node.is_std);
-        if (node->import_node.alias != NULL)
-        {
-            id = add_ident(chuck, node->import_node.alias);
-            WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-            WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, 0);
-            break;
-        }
-        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        WRITE_CHUCK(chuck, idx);
-        WRITE_CHUCK(chuck, 0);
+        printf("%s\n", node->import_node.lib);
+        for (int i = 0; i < node->import_node.count; ++i)
+            printf("Field: %s\n", node->import_node.fields[i]);
         break;
     case AST_BINARY:
         compile(node->binary.left, chuck);
