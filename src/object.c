@@ -302,13 +302,14 @@ static uint64_t hash_object(JnObject* obj)
         }
         case OBJECT_TYPE:
             return hash_mix(djb2_hash(obj->type_obj.type_name));
+        default:
+            return hash_mix((uintptr_t)obj);
     }
-    return LONG_HEX_NUM;
 }
 
 JnObject* jn_intern_obj(JnObject* obj)
 {
-    if (obj->type == ENUM_TYPE || obj->type == FUNCTION_TYPE || obj->type == HASHMAP_TYPE || obj->type == NATIVE_TYPE || obj->type == NONE_TYPE)
+    if (JN_IS_ARRAY(obj) || JN_IS_HASHMAP(obj))
         return obj;
     uint64_t hash = hash_object(obj);
     size_t idx = hash % JN_INTER_SIZE;
@@ -344,7 +345,7 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
     fn->env = Jn_environ_init(env);
     fn->params = params;
     fn->arity = arity;
-    fn->name = strdup("<lambda>");
+    fn->name = NULL;
     fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(FUNCTION_TYPE);
     obj->fn = fn;
@@ -513,19 +514,19 @@ void print_JnObject(JnObject* obj)
 {
     if (NULL == obj) return;
     
-    switch (obj->type)
+    switch (JN_OBJ_TYPE(obj))
     {
         case INT_TYPE:
-            fprintf(stderr, "%lld", obj->int32); break;
+            fprintf(stderr, "%lld", JN_AS_INT(obj)); break;
         case CHAR_TYPE:
-            fprintf(stderr, "%c", obj->j_char); break;
+            fprintf(stderr, "%c", JN_AS_CHAR(obj)); break;
         case STR_TYPE:
-            fprintf(stderr, "%s", (obj->str->len != 0) ? obj->str->chars : "None");
+            fprintf(stderr, "\"%s\"", (JN_AS_STRING(obj)->len != 0) ? JN_AS_CSTRING(obj) : "None");
             break;
         case BOOL_TYPE:
-            fprintf(stderr, (obj->bool8) ? "true": "false"); break;
+            fprintf(stderr, (JN_AS_BOOL(obj)) ? "true": "false"); break;
         case FLOAT_TYPE:
-            fprintf(stderr, "%.15g", obj->float32); break;
+            fprintf(stderr, "%.15g", JN_AS_FLOAT(obj)); break;
         case ARRAY_TYPE:
             print_array(obj);
             break;
@@ -545,7 +546,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "<Enum>");
             break;
         case FUNCTION_TYPE:
-            fprintf(stdout, "<function '%s' args=%d>",obj->fn->name, obj->fn->arity);
+            fprintf(stdout, "<function '%s' args=%d>",obj->fn->name == NULL ? "<lambda>" : obj->fn->name, obj->fn->arity);
             break;
         case ITER_TYPE:
             fprintf(stderr, "<iter '");
