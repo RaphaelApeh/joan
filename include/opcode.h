@@ -62,6 +62,7 @@ typedef enum{
     OP_SCOPE_EXIT,
 
     OP_ITER,
+    OP_TUPLE,
     OP_ARRAY,
     OP_INDEX,
     OP_RANGE,

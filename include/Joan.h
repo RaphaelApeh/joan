@@ -61,6 +61,7 @@ typedef enum{
     BOOL_TYPE,
     FLOAT_TYPE,
     ARRAY_TYPE,
+    TUPLE_TYPE,
     RANGE_TYPE,
     HASHMAP_TYPE,
     FUNCTION_TYPE,
@@ -148,6 +149,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
 #define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
 #define JN_IS_STRUCT(obj) _JN_CHECK_TYPE(obj, STRUCT_TYPE)
+#define JN_IS_TUPLE(obj) _JN_CHECK_TYPE(obj, TUPLE_TYPE)
 #define JN_IS_INSTANCE(obj) _JN_CHECK_TYPE(obj, INSTANCE_TYPE)
 #define JN_IS_FUNCTION(obj) _JN_CHECK_TYPE(obj, FUNCTION_TYPE)
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
@@ -361,6 +363,7 @@ typedef struct JnObject{
     {
         JnStringObject* str;
         JnArrayObject* arr;
+        JnArrayObject* tuple;
         JnFunctionObject* fn;
         JnIterObject* iter;
         Jn_Hashmap* hashmap;

@@ -126,7 +126,6 @@ typedef struct AST{
         struct {
             AST** elements;
             size_t count;
-            size_t capacity;
         } tuple;
 
         struct {

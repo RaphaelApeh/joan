@@ -491,6 +491,18 @@ static void print_array(JnObject* obj)
     fprintf(stderr, "]");
 }
 
+static void print_tuple(JnObject* obj)
+{
+    if (!obj) return;
+    fprintf(stdout, "(");
+    for (size_t i = 0; i < obj->tuple->size; ++i)
+    {
+        if (i > 0) printf(", ");
+        print_JnObject(obj->tuple->items[i]);
+    }
+    fprintf(stdout, ")");
+}
+
 static void print_hashmap(JnObject* obj)
 {
     fprintf(stdout, "#{");
@@ -553,6 +565,9 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "%.15g", JN_AS_FLOAT(obj)); break;
         case ARRAY_TYPE:
             print_array(obj);
+            break;
+        case TUPLE_TYPE:
+            print_tuple(obj);
             break;
         case HASHMAP_TYPE:
             print_hashmap(obj);

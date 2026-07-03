@@ -934,6 +934,42 @@ static AST* parse_multi_var(joan_parser_t* p, AST* first)
     return ast;
 }
 
+static AST* parse_tuple(joan_parser_t* p)
+{
+    advance_parser_c(p);
+    AST* node = ast_create(p, AST_TUPLE);
+    size_t len = 0, cap = 100;
+    if (match(p, TOKEN_RPARN))
+    {
+        node->tuple.count = 0;
+        node->tuple.elements = NULL;
+        return node;
+    }
+    AST* first = parse_expr(p);
+    if (!match(p, TOKEN_COMMA))
+    {
+        SKIP(p, TOKEN_RPARN, "Expected ')'.");
+        return first;
+    }
+    AST** items = arena_alloc(p->arena, sizeof(AST *) * cap);
+    items[len++] = first;
+    do {
+        if (check(p, TOKEN_RPARN)) break;
+        if (len > cap)
+        {
+            cap *= 2;
+            items = arena_realloc(p->arena, items, sizeof(AST *) * len, sizeof(AST *) * cap);
+        }
+        items[len++] = parse_expr(p);
+    } while (match(p, TOKEN_COMMA));
+    
+    SKIP(p, TOKEN_RPARN, "Expected ')'.");
+    items[len] = NULL;
+    node->tuple.elements = items;
+    node->tuple.count = len;
+    return node;
+}
+
 AST* parse_value(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
@@ -947,14 +983,7 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast_literal(p, v);
         case TOKEN_LPARN:
-            advance_parser_c(p);
-            ast = parse_expr(p);
-            if (check(p, TOKEN_RPARN))
-                advance_parser_c(p);
-            else {
-                return parse_error(p, "Expected ')'.");
-            }
-            return ast;
+            return parse_tuple(p);
         case TOKEN_COMMENT:
             advance_parser_c(p);
             ast = ast_create(p, AST_COMMENT);

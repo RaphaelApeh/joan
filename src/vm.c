@@ -307,9 +307,25 @@ InterpretResult vm_run(JnVM* vm)
                 PUSH(vm, instance_obj);
                 // PUSH(vm, JN_RETURN_NONE);
                 break;
-            case OP_ARRAY:
+            case OP_TUPLE:
                 count = READ_BYTE();
                 JnArrayObject* arr = NULL;
+                for (int i = count - 1; i >= 0; --i)
+                {
+                    JN_SET_ARRAY(arr, pop(vm), i);
+                }
+                if (arr == NULL)
+                {
+                    JN_ARRAY_DEFAULT(arr);
+                }
+                assert(arr != NULL);
+                o = JN_OBJECT(TUPLE_TYPE);
+                o->tuple = arr;
+                PUSH(vm, o);
+                break;
+            case OP_ARRAY:
+                count = READ_BYTE();
+                arr = NULL;
                 for (int i = count - 1; i >= 0; --i)
                 {
                     JN_SET_ARRAY(arr, pop(vm), i);
@@ -824,17 +840,18 @@ void compile(AST* node, Chuck* chuck)
             WRITE_CHUCK(chuck, node->assign_multiple.op == TOKEN_SETTER);
         }
         break;
+    case AST_TUPLE:
+        printf("Elements count %d\n", node->tuple.count);
+        for (size_t i = 0; i < node->tuple.count; ++i)
+            compile(node->tuple.elements[i], chuck);
+        WRITE_CHUCK(chuck, OP_TUPLE);
+        WRITE_CHUCK(chuck, node->tuple.count);
+        break;
     case AST_ARRAY:
         for (size_t i = 0; i < node->array.count; i++)
             compile(node->array.elements[i], chuck);
         WRITE_CHUCK(chuck, OP_ARRAY);
         write_chuck_loc(chuck, node->array.count, line, column);
-        break;
-    case AST_TUPLE:
-        for (size_t i = 0; i < node->tuple.count; ++i)
-            compile(node->tuple.elements[i], chuck);
-        write_chuck_loc(chuck, OP_ITER, line, column);
-        write_chuck_loc(chuck, node->tuple.count, line, column);
         break;
     case AST_MEMBER:
         compile(node->member.callie, chuck);
