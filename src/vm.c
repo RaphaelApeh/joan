@@ -774,10 +774,12 @@ InterpretResult vm_run(JnVM* vm)
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
-                o = pop(vm);
-                vm->sp = vm->stack;
+                if (vm->sp == 0)
+                    o = JN_RETURN_NONE;
+                else
+                    o = pop(vm);
                 PUSH(vm, o);
-                break;
+                return INTERPRET_OK;
             case OP_ERROR:
                 return INTERPRET_RUNTIME_ERROR;
             default:

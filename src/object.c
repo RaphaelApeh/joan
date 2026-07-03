@@ -320,7 +320,6 @@ static uint64_t hash_object(JnObject* obj)
         }
         case FUNCTION_TYPE:
         {
-            printf("Worked...\n");
             return hash_mix(djb2_hash(obj->fn->name));
         }
         case NATIVE_TYPE:
@@ -366,7 +365,6 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
     chuck->env = env;
     compile(expr, chuck);
     write_chuck_loc(chuck, OP_RETURN, expr->line, expr->col);
-    write_chuck_loc(chuck, OP_END, expr->line, expr->col);
     JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
     fn->chuck = chuck;
     fn->env = Jn_environ_init(env);
@@ -376,7 +374,6 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
     fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(FUNCTION_TYPE);
     obj->fn = fn;
-    printf("WORKING HERE ......\n");
     return obj;
 }
 
@@ -392,7 +389,7 @@ JnObject* jn_obj_function(
     chuck_init(chuck);
     chuck->env = env;
     compile(block, chuck);
-    write_chuck_loc(chuck, OP_END, 0, 0);
+    write_chuck_loc(chuck, OP_RETURN, block->line, block->col);
     JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
     fn->chuck = chuck;
     fn->env = Jn_environ_init(env);
