@@ -500,6 +500,8 @@ static void print_tuple(JnObject* obj)
         if (i > 0) printf(", ");
         print_JnObject(obj->tuple->items[i]);
     }
+    if (obj->tuple->size == 1)
+        putchar(',');
     fprintf(stdout, ")");
 }
 
