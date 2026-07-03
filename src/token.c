@@ -19,6 +19,21 @@ static bool peek_advance(joan_lexer_t* l, char c)
     return true;
 }
 
+static char* rm_num_sep(const char* s)
+{
+    size_t len = strlen(s);
+    char* out = malloc(sizeof(char) * (len + 1));
+    char* d = out;
+    while (*s)
+    {
+        if (*s != '_')
+            *d++ = *s;
+        s++;
+    }
+    *d = '\0';
+    return out;
+}
+
 static bool equal(char* src, char* src2)
 {
     return strcmp(src, src2) == 0;
@@ -33,33 +48,78 @@ joan_token_t clean_token(joan_lexer_t* l)
     return t;
 }
 
-joan_token_t number(joan_lexer_t* l)
+joan_token_t number_token(joan_lexer_t* l)
 {
+    char* buff;
+    bool prev_us = false;
     if (l->start[0] == '0' && (peek(l) == 'x' || peek(l) == 'X'))
     {
         advance(l);
         if (!isxdigit(peek(l)))
             return make_error(l, "token is not an hex.");
         
-        while(isxdigit(peek(l)))
+        while(isxdigit(peek(l)) || peek(l) == '_')
+        {
+            if (peek(l) == '_')
+            {
+                if (prev_us)
+                    return make_error(l, "consecutive '_' in int.");
+                prev_us = true;
+            } else 
+                prev_us = false;
             advance(l);
+        }
+        if (l->curr[-1] == '_')
+            return make_error(l, "int cannot end with '_'.");
         joan_token_t _t = make_token(l, TOKEN_INT);
-        _t.i = strtol(_t.lexeme, NULL, 0);
+        buff = rm_num_sep(_t.lexeme);
+        _t.i = strtol(buff, NULL, 0);
+        free(buff);
         return _t;
     }
-    while(isdigit(peek(l))) advance(l);
+    prev_us = false; // restore default
+    while(isdigit(peek(l)) || peek(l) == '_') 
+    {
+        if (peek(l) == '_')
+        {
+            if (prev_us)
+                return make_error(l, "consecutive '_' in int.");
+            prev_us = true;
+        } else
+            prev_us = false;
+        advance(l);
+    }
+    if (l->curr[-1] == '_')
+        return make_error(l, "int cannot end with '_'.");
     if (peek(l) == '.' && isdigit(peek_next(l)))
     {
         advance(l);
-        while (isdigit(peek(l)) || peek(l) == 'f') advance(l);
+        prev_us = false;
+        while (isdigit(peek(l)) || peek(l) == '_' || peek(l) == 'f')
+        {
+            if (peek(l) == '_')
+            {
+                if (prev_us)
+                    return make_error(l, "consecutive '_' in int.");
+                prev_us = true;
+            } else 
+                prev_us = false;
+            advance(l);
+        }
+        if (l->curr[-1] == '_')
+            return make_error(l, "float cannot end with '_'.");
         joan_token_t t = make_token(l, TOKEN_FLOAT);
         // *d = atof(t.lexeme);
-        t.d = strtod(t.lexeme, NULL);
+        buff = rm_num_sep(t.lexeme);
+        t.d = strtod(buff, NULL);
+        free(buff);
         return t;
     }
     joan_token_t t = make_token(l, TOKEN_INT);
     // *i = atoi(t.lexeme);
-    t.i = strtol(t.lexeme, NULL, 10);
+    buff = rm_num_sep(t.lexeme);
+    t.i = strtol(buff, NULL, 10);
+    free(buff);
     return t;
 }
 
@@ -291,7 +351,7 @@ joan_token_t next_token(joan_lexer_t* l)
         isdigit(c) || 
         ( c == '.' && isdigit(peek(l)) )
     )
-    return number(l);
+    return number_token(l);
     if (isalnum(c) || c == '_') return identifier(l);
     switch (c)
     {
