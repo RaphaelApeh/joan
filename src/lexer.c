@@ -6,8 +6,16 @@ void strip_ws(joan_lexer_t* l)
     while(!at_end(l))
     {
         char c = peek(l);
-        if (c == ' ' || c == '\t' || c == '\r' || c == '\n') advance(l);
-        else break;
+        switch (c)
+        {
+            case ' ':
+            case '\t':
+            case '\r':
+                advance(l);
+                break;
+            default:
+                return;
+        }
     }
 }
 

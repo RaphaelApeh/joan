@@ -123,7 +123,6 @@ static void print_help(void)
 JN_API void Jn_repl(void)
 {
     char line[256];
-    int line_no = 0;
     if  (_JN_INIT_PROGRAM)
     {
         fprintf(stderr, 
@@ -139,8 +138,7 @@ JN_API void Jn_repl(void)
     }
     for (;;)
     {
-        line_no++;
-        fprintf(stderr, buffer_count == 0 ? "repl:%d> " : "... ", line_no);
+        fprintf(stderr, buffer_count == 0 ? ">>> " : "... ");
         if (!fgets(line, sizeof(line), stdin))
             break;
         strcat(buffer, line);
