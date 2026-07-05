@@ -495,6 +495,30 @@ src/repl.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.s
 .PHONY : src/repl.c.s
 
+src/semantic.obj: src/semantic.c.obj
+.PHONY : src/semantic.obj
+
+# target to build an object file
+src/semantic.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/semantic.c.obj
+.PHONY : src/semantic.c.obj
+
+src/semantic.i: src/semantic.c.i
+.PHONY : src/semantic.i
+
+# target to preprocess a source file
+src/semantic.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/semantic.c.i
+.PHONY : src/semantic.c.i
+
+src/semantic.s: src/semantic.c.s
+.PHONY : src/semantic.s
+
+# target to generate assembly for a file
+src/semantic.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/semantic.c.s
+.PHONY : src/semantic.c.s
+
 src/std.obj: src/std.c.obj
 .PHONY : src/std.obj
 
@@ -639,6 +663,30 @@ src/vendor/tigr.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vendor/tigr.c.s
 .PHONY : src/vendor/tigr.c.s
 
+src/visits.obj: src/visits.c.obj
+.PHONY : src/visits.obj
+
+# target to build an object file
+src/visits.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/visits.c.obj
+.PHONY : src/visits.c.obj
+
+src/visits.i: src/visits.c.i
+.PHONY : src/visits.i
+
+# target to preprocess a source file
+src/visits.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/visits.c.i
+.PHONY : src/visits.c.i
+
+src/visits.s: src/visits.c.s
+.PHONY : src/visits.s
+
+# target to generate assembly for a file
+src/visits.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/visits.c.s
+.PHONY : src/visits.c.s
+
 src/vm.obj: src/vm.c.obj
 .PHONY : src/vm.obj
 
@@ -718,6 +766,9 @@ help:
 	@echo ... src/repl.obj
 	@echo ... src/repl.i
 	@echo ... src/repl.s
+	@echo ... src/semantic.obj
+	@echo ... src/semantic.i
+	@echo ... src/semantic.s
 	@echo ... src/std.obj
 	@echo ... src/std.i
 	@echo ... src/std.s
@@ -736,6 +787,9 @@ help:
 	@echo ... src/vendor/tigr.obj
 	@echo ... src/vendor/tigr.i
 	@echo ... src/vendor/tigr.s
+	@echo ... src/visits.obj
+	@echo ... src/visits.i
+	@echo ... src/visits.s
 	@echo ... src/vm.obj
 	@echo ... src/vm.i
 	@echo ... src/vm.s

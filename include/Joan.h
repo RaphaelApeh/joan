@@ -236,12 +236,25 @@ typedef struct J_Context {
     int cur_line, column;
 } J_Context;
 
+typedef enum {
+    RUNTIME_ERROR, ASSERT_ERROR, SYS_ERROR, IMPORT_ERROR, SYNTAX_ERROR,
+    TYPE_ERROR, NOT_IMPLEMENT_ERROR, UNDEFINE_ERROR
+} JN_CERROR_TYPE;
+
+
+typedef struct {
+    char* filename, *error_msg, *var_name; // TODO: remove var_name
+    int line, col, code;
+    JN_CERROR_TYPE type;
+} Jn_Error;
+
 typedef struct J_State
 {
     JnVM* vm;
     GC* gc;
     Arena* arena;
     joan_parser_t* parser;
+    Jn_Error error;
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     Jn_environ* globals;
@@ -360,11 +373,6 @@ typedef struct {
     char* alias;
 } JnModule;
 
-typedef enum {
-    RUNTIME_ERROR, ASSERT_ERROR, SYS_ERROR, IMPORT_ERROR, SYNTAX_ERROR,
-    TYPE_ERROR, NOT_IMPLEMENT_ERROR, UNDEFINE_ERROR
-} JN_CERROR_TYPE;
-
 typedef long long JnIntObject;
 typedef double JnFloatObject;
 typedef bool JnBoolObject;
@@ -394,6 +402,7 @@ typedef struct JnObject{
         } method;
         JnType type_val;
         JN_Args arg;
+        Jn_Error expection;
         JnRange range;
         JnIntObject int32;
         JnFloatObject float32;
@@ -401,11 +410,6 @@ typedef struct JnObject{
         JnCharObject j_char;
     };
     JnObject* next;
-    struct {
-        char *filename, *error_msg, *var_name;
-        int line, col;
-        JN_CERROR_TYPE type;
-    } expection;
     const char* doc;
     JnTypeObject type;
     int marked;
@@ -429,6 +433,10 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
 JN_API void Jn_define_fn(const char*, Jn_CFunction);
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
+
+// Compile & Run
+JN_API int Jn_compile(J_State*);
+JN_API int Jn_exec(J_State*);
 
 // Load builtin function
 JN_API void Jn_load_Cfunctions(J_State* state);

@@ -126,9 +126,10 @@ JN_API void Jn_repl(void)
     if  (_JN_INIT_PROGRAM)
     {
         fprintf(stderr, 
-            "Welcome to Joan v" JOAN_VERSION "\n"
+            "Welcome to Joan v" JOAN_VERSION " at %s\n"
             "\"!enter\" to exit shell.\n"
-            "\"!help\" for help info.\n"
+            "\"!help\" for help info.\n",
+            __TIMESTAMP__
         );
         Jn_program_init();
     } else {
