@@ -103,6 +103,10 @@ typedef struct Jn_environ Jn_environ;
 
 #define JN_ARGS_COUNT(obj) ((obj)->arg.count)
 #define JN_GET_ARG(obj) ((obj)->arg.args[0])
+#define JN_ARG_EXPECT_TYPE(obj, t) do { \
+    if (!_JN_CHECK_TYPE(obj, t))        \
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "Got a type mismatch.");\
+} while (0)
 #define JN_OBJECT_ARG(objects, params, count) jn_obj_arg((objects), (params), (count))
 #define JN_GET_ARGS(obj, idx) ((obj)->arg.args[idx])
 #define JN_MAKE_ARGS(cap) Jn_make_args(cap)
