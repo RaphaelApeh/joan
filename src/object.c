@@ -158,13 +158,47 @@ JnObject* jn_obj_error(int type, char* msg, ...)
     return obj;
 }
 
-JnObject* jn_obj_type(char* type_name, JnTypeObject type)
+
+static void strip(const char* str)
+{
+    while (*str)
+    {
+        if (*str == '\\' && *str)
+            str += 2;
+        str++;
+    }
+}
+
+
+char* jn_obj_cstring(JnObject* obj)
+{
+    if (!obj) return NULL;
+    static char buffer[256];
+    switch (JN_OBJ_TYPE(obj))
+    {
+    case INT_TYPE:
+        snprintf(buffer, 256, "%ld", JN_AS_INT(obj));
+        break;
+    case FLOAT_TYPE:
+        snprintf(buffer, 256, "%15g", JN_AS_FLOAT(obj));
+        break;
+    case BOOL_TYPE:
+        snprintf(buffer, 256, "%s", JN_AS_BOOL(obj) ? "true" : "false");
+        break;
+    default:
+        assert(false && "Not yet Implemented.");
+        break;
+    }
+    strip(buffer);
+    return buffer;
+}
+
+JnObject* jn_obj_type(char* type_name, JnTypeObject type, Jn_CFunction fn)
 {
     JnObject* obj = jn_obj_new(OBJECT_TYPE);
-    obj->type_obj.type_name = type_name;
-    obj->type_obj.type = type;
-    obj->type_obj.is_union = false; // DEFAULT
-    obj->type_obj.union_types = NULL; // DEFAULT NULL
+    obj->type_val.typename = type_name;
+    obj->type_val.type = type;
+    obj->type_val.ctor = fn;
     return obj;
 }
 
@@ -197,7 +231,7 @@ char* jn_obj_to_string(JnObject* obj)
         case MODULE_TYPE:
             type = "module"; break;
         case OBJECT_TYPE:
-            type = obj->type_obj.type_name; break;
+            type = obj->type_val.typename; break;
         default:
             type = "<object>"; break;
     }
@@ -327,7 +361,7 @@ static uint64_t hash_object(JnObject* obj)
             return hash_mix(djb2_hash(obj->native_fn->fnName));
         }
         case OBJECT_TYPE:
-            return hash_mix(djb2_hash(obj->type_obj.type_name));
+            return hash_mix(djb2_hash(obj->type_val.typename));
         default:
             return hash_mix((uintptr_t)obj);
     }
@@ -595,7 +629,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stderr, "' >");
             break;
         case OBJECT_TYPE:
-            fprintf(stderr, "<%s>", obj->type_obj.type_name); break;
+            fprintf(stderr, "<%s>", obj->type_val.typename); break;
         case METHOD_TYPE:
             fprintf(stdout, "<method function for '"); print_JnObject(obj->method.obj); fprintf(stdout, "' at %p>", obj->method.fn);
             break;

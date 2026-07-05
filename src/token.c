@@ -486,7 +486,7 @@ joan_token_t next_token(joan_lexer_t* l)
         case '@':
             return make_token(l, TOKEN_AT);
         case ';':
-            return make_token(l, TOKEN_SIMICOLON);
+            return make_token(l, TOKEN_SEMICOLON);
         case '&':
             if (peek(l) == '&')
             {

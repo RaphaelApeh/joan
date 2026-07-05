@@ -65,6 +65,14 @@ void chuck_free(Chuck* chuck)
     free(chuck->columns);
 }
 
+void reset_vm(JnVM* vm)
+{
+    // RESET
+    vm->chuck->count = 0;
+    vm->ip = vm->chuck->code;
+    Jnvm_init(vm, vm->chuck);
+}
+
 static inline int vm_line(JnVM* vm)
 {
     size_t ip = (size_t)(vm->ip - vm->chuck->code);
@@ -169,7 +177,7 @@ static JnObject* call_function(JnVM* vm, JnObject* obj, JnObject** args)
 
 static JnObject *a, *b, *key, *value, *array, *pos;
 
-InterpretResult vm_run(JnVM* vm)
+int vm_run(JnVM* vm)
 {
     #define READ_BYTE() (*vm->ip++)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
@@ -299,6 +307,12 @@ InterpretResult vm_run(JnVM* vm)
                 if (fields_count > values_count)
                     return die(vm, "For some reason you have more fields name than values.");
                 JnObject* object_type = pop(vm);
+                if (object_type->type == OBJECT_TYPE)
+                {
+                    o = JN_OBJECT_ARG(values, NULL, values_count);
+                    PUSH(vm, (object_type->type_val.ctor(o)));
+                    break;
+                }
                 if (!JN_IS_STRUCT(object_type))
                     return die(vm, "Expected a struct type but (got '%d').", object_type->type);
                 
@@ -755,7 +769,7 @@ InterpretResult vm_run(JnVM* vm)
                 {
                     case NATIVE_TYPE: {
                         arg = JN_OBJECT_ARG(args, NULL, len);
-                        a = o->native_fn->fn(arg);
+                        a = JN_CALL_NATIVE(o, arg);
                         if (a == NULL)
                             return die(vm, "SystemError: got NULL");
                         PUSH(vm, a);

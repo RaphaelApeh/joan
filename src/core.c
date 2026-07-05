@@ -147,6 +147,8 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     {
         AST* stmt = parse_stmt(state->parser);
         compile(stmt, state->vm->chuck);
+        if (state->parser->curr.type == TOKEN_EOF)
+            break;
     }
     write_chuck(state->vm->chuck, OP_END);
     InterpretResult i = vm_run(state->vm);
@@ -154,10 +156,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     gc_collect(state);
     if (i != INTERPRET_OK)
     {
-        // RESET
-        state->vm->chuck->count = 0;
-        state->vm->ip = state->vm->chuck->code;
-        Jnvm_init(state->vm, state->vm->chuck);
+        reset_vm(state->vm);
         return -1;
     }
     // state->globals = state->vm->env;
@@ -178,6 +177,34 @@ JN_API int Jn_execute_main(char* filepath)
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filepath));
     int exit_code = Jn_exec_program(state, src.source);
     return exit_code;
+}
+
+JN_API int Jn_from_string(const char* string)
+{
+    J_State* state = Jn_get_state();
+    joan_lexer_t l = {0};
+    JnVM vm = {0};
+    Chuck chuck = {0};
+    joan_parser_t p = {0};
+    chuck_init(&chuck);
+    Jnvm_init(&vm, &chuck);
+    vm.chuck = &chuck;
+    p.arena = state->arena;
+    J_init_lexer(&l, string);
+    jn_init_parser(state->parser, &l);
+    vm.global = state->globals;
+    vm.env = state->globals;
+    vm.chuck->env = vm.env;
+    while(p.curr.type != TOKEN_EOF)
+    {
+        AST* stmt = parse_stmt(&p);
+        compile(stmt, vm.chuck);
+        if (state->parser->curr.type == TOKEN_EOF)
+            break;
+    }
+    write_chuck(vm.chuck, OP_END);
+    int i = vm_run(&vm);
+    return i;   
 }
 
 JN_API int Jn_exec_REPL(char* source)

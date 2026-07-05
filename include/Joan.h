@@ -105,9 +105,12 @@ typedef struct Jn_environ Jn_environ;
 #define JN_GET_ARG(obj) ((obj)->arg.args[0])
 #define JN_OBJECT_ARG(objects, params, count) jn_obj_arg((objects), (params), (count))
 #define JN_GET_ARGS(obj, idx) ((obj)->arg.args[idx])
+#define JN_MAKE_ARGS(cap) Jn_make_args(cap)
+#define JN_ADD_ARG(args, obj) Jn_add_arg(args, obj)
 #define JN_GET_INSTANCE(obj) obj->instance
 #define JN_OBJECT(type) jn_obj_new(type)
 #define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
+#define JN_CALL_NATIVE(fn_obj, args) fn_obj->native_fn->fn(args)
 #define JN_RAISE_EXCPETION(t, msg, ...) jn_obj_error(t, msg, ##__VA_ARGS__)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_INT(i) jn_obj_int((i))
@@ -117,7 +120,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_RETURN_STRING(s) jn_obj_string((s))
 #define JN_RETURN_CHAR(c) jn_obj_char((c))
 #define JN_RETURN_FLOAT(d) jn_obj_float(d)
-#define JN_RETURN_TYPE_OBJECT(t_n, t) jn_obj_type(t_n, t)
+#define JN_RETURN_TYPE_OBJECT(t_n, t, fn) jn_obj_type(t_n, t, fn)
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
 #define JN_RETURN_STRUCT(name, fields) jn_obj_struct((name), fields)
 #define JN_RETURN_INSTANCE(obj, fields) jn_obj_instance((obj), (fields))
@@ -143,8 +146,10 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_STRING(obj) _JN_CHECK_TYPE(obj, STR_TYPE)
 #define JN_IS_FLOAT(obj) _JN_CHECK_TYPE(obj, FLOAT_TYPE)
 #define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, ARRAY_TYPE)
+#define JN_IS_ARGS(args) _JN_CHECK_TYPE(args, ARG_TYPE)
 #define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
 #define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
+#define JN_IS_NATIVE(obj) _JN_CHECK_TYPE(obj, NATIVE_TYPE)
 #define JN_IS_CHAR(obj) _JN_CHECK_TYPE(obj, CHAR_TYPE)
 #define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
 #define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
@@ -263,6 +268,11 @@ struct Jn_CModule {
 };
 
 typedef struct {
+    const char* fnName;
+    Jn_CFunction fn;
+} JnStaticMethod;
+
+typedef struct {
     Jn_CModule* modules;
     char* mod_name;
 } Jn_CRegistry;
@@ -286,6 +296,12 @@ typedef struct {
     char* fnName;
 } JnNativeObject;
 
+typedef struct {
+    const char* typename;
+    JnTypeObject type;
+    Jn_CFunction ctor;
+    JnStaticMethod* methods;
+} JnType;
 
 typedef struct {
     Chuck* chuck;
@@ -376,6 +392,7 @@ typedef struct JnObject{
             JN_CMethod fn;
             JnObject* obj;
         } method;
+        JnType type_val;
         JN_Args arg;
         JnRange range;
         JnIntObject int32;
@@ -389,12 +406,6 @@ typedef struct JnObject{
         int line, col;
         JN_CERROR_TYPE type;
     } expection;
-    struct {
-        char* type_name;
-        JnTypeObject type;
-        bool is_union;
-        JnTypeObject** union_types;
-    } type_obj;
     const char* doc;
     JnTypeObject type;
     int marked;
@@ -408,18 +419,21 @@ void* Jn_alloc(size_t size);
 // Helpers
 unsigned long djb2_hash(unsigned char* str);
 
-JN_API JN_Args Jn_make_arg(JnObject** objects, size_t count);
+JN_API JnObject* Jn_make_args(size_t capacity);
+JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
+
 
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
 
 // Register native function
+JN_API void Jn_define_fn(const char*, Jn_CFunction);
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
 
 // Load builtin function
 JN_API void Jn_load_Cfunctions(J_State* state);
 // Call user-define functions
-JN_API JnObject* Jn_call_fn(char* fn_name, JN_Args* args);
+JN_API JnObject* Jn_call_fn(char* fn_name, JnObject* args);
 JN_API J_State* Jn_get_state(void);
 JN_API J_Context* Jn_get_context(void);
 // Jn_exec_from_file(FILE* fptr);
@@ -446,7 +460,7 @@ JnObject* jn_obj_bool(bool o_bool);
 JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(double o_float);
 JnObject* jn_obj_iter(JnObject* iter);
-JnObject* jn_obj_type(char* type_name, JnTypeObject type);
+JnObject* jn_obj_type(char* type_name, JnTypeObject type, Jn_CFunction fn);
 JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
 JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
@@ -455,6 +469,7 @@ JnObject* jn_obj_arg(JnObject** args, char** arg_names, size_t count);
 JnObject* jn_obj_method(JnObject* obj, JN_CMethod method);
 JnObject* jn_obj_instance(JnObject* obj, Jn_environ* fields);
 char* jn_obj_to_string(JnObject* obj);
+char* jn_obj_cstring(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);

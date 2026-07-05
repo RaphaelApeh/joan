@@ -79,8 +79,9 @@ void Jnvm_init(JnVM* vm, Chuck* chuck);
 void chuck_init(Chuck* chuck);
 void compile(AST* node, Chuck* chuck);
 void vm_free(JnVM* vm);
+void reset_vm(JnVM* vm);
 void chuck_free(Chuck* chuck);
 
-InterpretResult vm_run(JnVM* vm);
+int vm_run(JnVM* vm);
 
 #endif

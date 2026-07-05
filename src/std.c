@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <Joan.h>
+#include "vm.h"
 #include "object.h"
 
 #ifdef _WIN32
@@ -19,6 +20,30 @@
 
 #define MAX_OBJECT_ARGS 50
 
+
+JN_API JnObject* Jn_make_args(size_t capacity)
+{
+    if (capacity <= 0)
+        return NULL;
+    if (capacity > MAX_OBJECT_ARGS)
+        return JN_RAISE_EXCPETION(SYS_ERROR, "max object reached.");
+    JnObject** objs = malloc(sizeof(JnObject *) * capacity);
+    assert(objs);
+    JnObject* obj = jn_obj_new(ARG_TYPE);
+    obj->arg.args = objs;
+    obj->arg.count = 0;
+    obj->arg.arg_names = NULL;
+    return obj;
+}
+
+JN_API void Jn_add_arg(JnObject* args, JnObject* obj)
+{
+    assert(args && obj);
+    assert(JN_IS_ARGS(args));
+    int count = JN_ARGS_COUNT(args);
+    JN_GET_ARGS(args, count) = obj;
+    JN_ARGS_COUNT(args)++;
+}
 
 struct JnObjectMethod {
     char* fn_name;
@@ -378,6 +403,36 @@ static JnObject* native_sleep(JnObject* args)
 }
 
 
+// Constructor
+static JnObject* bool_ctor(JnObject* args)
+{
+    if (JN_ARGS_COUNT(args) != 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "string{} expect one arguement.");
+    
+    JnObject* obj = JN_GET_ARG(args);
+    if (JN_TO_BOOL(obj))
+        return JN_RETURN_TRUE();
+    return JN_RETURN_FALSE();
+}
+static JnObject* string_ctor(JnObject* args)
+{
+    if (JN_ARGS_COUNT(args) != 1)
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "string{} expect one arguement.");
+    
+    JnObject* obj = JN_GET_ARG(args);
+    switch (JN_OBJ_TYPE(obj))
+    {
+    case INT_TYPE:
+    case FLOAT_TYPE:
+    case BOOL_TYPE:
+        return JN_RETURN_STRING(jn_obj_cstring(obj));
+    case STR_TYPE:
+        return obj;
+    default:
+        assert(false); // TODO
+    }
+}
+
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn)
 {
     assert(state != NULL && name != NULL);
@@ -396,14 +451,48 @@ JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObj
      environ_insert(state->globals, (char* )name, obj);
 }
 
+
+JN_API void Jn_define_fn(const char* name, Jn_CFunction fn)
+{
+    J_State* state = Jn_get_state();
+    JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
+    n_fn->fn = fn;
+    n_fn->fnName = strdup(name);
+    JnObject* obj = JN_OBJECT(NATIVE_TYPE);
+    obj->native_fn = n_fn;
+    Jn_register(state, name, NULL, obj);
+}
+
+
 JN_API void Jn_register_module(char* name, Jn_CModule* module)
 {
     // TODO
 }
 
-JN_API JnObject* Jn_call_fn(char* fn_name, JN_Args* args)
+JN_API JnObject* Jn_call_fn(char* fn_name, JnObject* args)
 {
-
+    J_State* state = Jn_get_state();
+    Jn_environ_E* entt = environ_get(state->globals, fn_name);
+    if (!entt || !entt->value)
+        return NULL;
+    JnObject* fn_obj = entt->value;
+    assert(JN_IS_NATIVE(fn_obj) || JN_IS_FUNCTION(fn_obj));
+    if (JN_IS_NATIVE(fn_obj))
+        return JN_CALL_NATIVE(fn_obj, args);
+    JnFunctionObject* fn = fn_obj->fn;
+    JnVM child;
+    Jnvm_init(&child, fn->chuck);
+    child.env = fn->env;
+    child.chuck = fn->chuck;
+    assert(fn->arity > JN_ARGS_COUNT(args));
+    for (int i = 0; i < fn->arity; ++i)
+    {
+        environ_insert(child.env, fn->params[i], JN_GET_ARGS(args, i));
+    }
+    int r = vm_run(&child);
+    // if (r == 0)
+    //     return pop(&child);
+    return JN_RETURN_NONE;
 }
 
 JN_API void Jn_load_Cfunctions(J_State* state)
@@ -418,17 +507,19 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     #endif
     char* filename = state->cxt.source.filename ? (char *)state->cxt.source.filename : "main";
 
-    // type
-    Jn_register(state, "int", NULL, JN_RETURN_TYPE_OBJECT("int", INT_TYPE));
-    Jn_register(state, "string", NULL, JN_RETURN_TYPE_OBJECT("string", STR_TYPE));
-    Jn_register(state, "float", NULL, JN_RETURN_TYPE_OBJECT("float", FLOAT_TYPE));
-    Jn_register(state, "bool", NULL, JN_RETURN_TYPE_OBJECT("bool", BOOL_TYPE));
-    Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT("char", CHAR_TYPE));
+    // types
+    Jn_register(state, "int", NULL, JN_RETURN_TYPE_OBJECT("int", INT_TYPE, native_toint));
+    Jn_register(state, "string", NULL, JN_RETURN_TYPE_OBJECT("string", STR_TYPE, string_ctor));
+    Jn_register(state, "float", NULL, JN_RETURN_TYPE_OBJECT("float", FLOAT_TYPE, native_tofloat));
+    Jn_register(state, "bool", NULL, JN_RETURN_TYPE_OBJECT("bool", BOOL_TYPE, bool_ctor));
+    Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT("char", CHAR_TYPE, native_tochar));
 
+    // DEFAULT
     Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_BOOL(win));
     Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_BOOL(apple));
     Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_BOOL(linux));
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filename));
+    // Functions
     Jn_register_fn(state, "len", "Returns the length of an iterable", native_len);
     Jn_register_fn(state, "gets", "Get user input.", native_gets);
     Jn_register_fn(state, "put", "print object without a new-line.", native_put);
