@@ -400,7 +400,8 @@ joan_token_t next_token(joan_lexer_t* l)
             {
                 advance(l);
                 return make_token(l, TOKEN_APLUS);
-            }
+            } else if (peek_advance(l, '+'))
+                return make_token(l, TOKEN_PLUS_PLUS);
             return make_token(l, TOKEN_PLUS);
         case '-':
             if (peek(l) == '=')

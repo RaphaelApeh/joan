@@ -3,6 +3,7 @@
 #include "Joan.h"
 #include "opcode.h"
 #include "object.h"
+#include "semantic.h"
 #include "vm.h"
 #include "gc.h"
 #include "emit.h"
@@ -81,6 +82,12 @@ JN_API Jn_Error* Jn_get_error(J_State* state)
     return &state->error;
 }
 
+JN_API Jn_Warning* Jn_get_warning(J_State* state)
+{
+    assert(state != NULL);
+    return &state->warning;
+}
+
 void set_sumbols(J_State* state, char* str)
 {
     if (state == NULL)
@@ -136,11 +143,56 @@ JN_API void Jn_program_init(void)
     Jn_load_Cfunctions(state);
 }
 
+
+JN_API int Jn_compile(J_State* state)
+{
+    JnSemantic sem;
+    Jn_semantic_init(state, &sem);
+    while(state->parser->curr.type != TOKEN_EOF)
+    {
+        AST* stmt = parse_stmt(state->parser);
+        compile(stmt, state->vm->chuck);
+        Jn_semantic_check(&sem, stmt);
+        if (sem.errors)
+            return -1;
+        if (sem.warnings)
+        {
+            Jn_Warning* warning = Jn_get_warning(state);
+            fprintf(
+                stderr, 
+                "%s:%d:%d Warning: %s\n", 
+                warning->filename, 
+                warning->line, 
+                warning->col, 
+                warning->error_msg
+            );
+        }
+    }
+    write_chuck(state->vm->chuck, OP_END);
+    scope_free(sem.scope);
+    return 0;
+}
+
+JN_API int Jn_exec(J_State* state)
+{
+    int i = vm_run(state->vm);
+    gc_collect(state);
+    if (i != 0)
+    {
+        reset_vm(state->vm);
+        return -1;
+    }
+    return 0;   
+}
+
+
 JN_API int Jn_exec_program(J_State* state, char* source)
 {
     if (source == NULL) return -1;
     assert(state->running && "program is not initialize.");
     joan_lexer_t l;
+    if (!l.filename)
+        l.filename = strdup("main"); // repl
     state->parser->arena = state->arena;
     J_init_lexer(&l, source);
     jn_init_parser(state->parser, &l);
@@ -150,24 +202,23 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     assert(state->parser->arena && "Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");
-    while(state->parser->curr.type != TOKEN_EOF)
+    int exit_code = Jn_compile(state);
+    if (exit_code < 0)
     {
-        AST* stmt = parse_stmt(state->parser);
-        compile(stmt, state->vm->chuck);
-        if (state->parser->curr.type == TOKEN_EOF)
-            break;
-    }
-    write_chuck(state->vm->chuck, OP_END);
-    InterpretResult i = vm_run(state->vm);
-    // Clean-Up
-    gc_collect(state);
-    if (i != INTERPRET_OK)
-    {
-        reset_vm(state->vm);
+        Jn_Error* err = Jn_get_error(state);
+        fprintf(
+            stderr, 
+            "%s:%d:%d Error [%s] %s\n",
+            err->filename,
+            err->line,
+            err->col,
+            JN_ERROR_PRINT(err->type),
+            err->error_msg
+        );
         return -1;
     }
-    // state->globals = state->vm->env;
-    return 0;
+    exit_code = Jn_exec(state);
+    return exit_code;
 }
 
 JN_API int Jn_execute_main(char* filepath)

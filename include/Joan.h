@@ -247,10 +247,16 @@ typedef enum {
 
 
 typedef struct {
-    char* filename, *error_msg, *var_name; // TODO: remove var_name
+    const char* filename, *error_msg, *var_name; // TODO: remove var_name
     int line, col, code;
     JN_CERROR_TYPE type;
 } Jn_Error;
+
+
+typedef struct {
+    const char* filename, *error_msg;
+    int line, col, code;
+} Jn_Warning;
 
 typedef struct J_State
 {
@@ -259,6 +265,7 @@ typedef struct J_State
     Arena* arena;
     joan_parser_t* parser;
     Jn_Error error;
+    Jn_Warning warning;
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     Jn_environ* globals;

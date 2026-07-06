@@ -33,21 +33,20 @@ void error(JnSemantic* sem, AST* node, const char* msg, ...)
     sem->state->error.error_msg = msg;
     sem->state->error.line = node->line;
     sem->state->error.col = node->col;
-    sem->state->error.type = SYNTAX_ERROR; // TODO
+    sem->state->error.type = SYNTAX_ERROR;
     sem->state->error.code = -1;
     sem->state->error.filename = node->filename;
 }
 void warning(JnSemantic* sem, AST* node, const char* msg, ...)
 {
     sem->warnings++;
-    sem->state->error.error_msg = msg;
-    sem->state->error.line = node->line;
-    sem->state->error.col = node->col;
-    sem->state->error.type = SYNTAX_ERROR; // TODO
-    sem->state->error.code = -1;
-    sem->state->error.filename = node->filename;
+    sem->state->warning.error_msg = msg;
+    sem->state->warning.line = node->line;
+    sem->state->warning.col = node->col;
+    // sem->state->warning.type = SYNTAX_ERROR; // TODO
+    sem->state->warning.code = -1;
+    sem->state->warning.filename = node->filename;
 }
-
 
 // Scope
 
@@ -102,7 +101,9 @@ JnSymbol* scope_lookup(JnScope* scope, const char* name)
 JnSymbol* scope_lookup_current(JnScope* scope, const char* name)
 {
     for (JnSymbol* s = scope->symbols; s != NULL; s = s->next)
-        if (!strcmp(s->name, name))
+    {
+        if (strcmp(s->name, name) == 0)
             return s;
+    }
     return NULL;
 }
