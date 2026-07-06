@@ -423,6 +423,7 @@ JnObject* jn_obj_function(
     chuck_init(chuck);
     chuck->env = env;
     compile(block, chuck);
+    write_chuck_loc(chuck, OP_NONE, block->line, block->col);    
     write_chuck_loc(chuck, OP_RETURN, block->line, block->col);
     JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
     fn->chuck = chuck;

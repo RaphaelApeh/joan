@@ -798,16 +798,15 @@ int vm_run(JnVM* vm)
                 }
                 break;
             }
+            case OP_NONE:
+                PUSH(vm, JN_RETURN_NONE); break;
             case OP_ERROR_MSG:
                 ident = READ_IDENT();
                 return vm_error(vm, JN_RAISE_EXCPETION(SYNTAX_ERROR, ident));
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
-                if (vm->sp == 0)
-                    o = JN_RETURN_NONE;
-                else
-                    o = pop(vm);
+                o = pop(vm);
                 PUSH(vm, o);
                 return INTERPRET_OK;
             case OP_ERROR:
@@ -1178,11 +1177,9 @@ void compile(AST* node, Chuck* chuck)
     case AST_RETURN:
         if (node->return_stmt.value != NULL)
             compile(node->return_stmt.value, chuck);
-        else {
-            idx = add_constant(chuck, JN_RETURN_NONE);
-            WRITE_CHUCK(chuck, OP_CONSTANT);
-            WRITE_CHUCK(chuck, idx);
-        }
+        else
+            WRITE_CHUCK(chuck, OP_NONE);
+        
         WRITE_CHUCK(chuck, OP_RETURN);
         break;
     case AST_CONTINUE:

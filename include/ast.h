@@ -296,6 +296,7 @@ typedef struct AST{
         char* comment;
         const char* error_msg;
     };
+    char* filename;
     int line, col;
 } AST;
 

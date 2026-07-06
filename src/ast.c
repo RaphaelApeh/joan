@@ -18,6 +18,7 @@ AST* ast_create(joan_parser_t* p, AST_TYPE type)
     ast->type = type;
     ast->line = p->curr.line;
     ast->col = p->curr.column;
+    ast->filename = p->l->filename;
     return ast;
 }
 

@@ -26,15 +26,19 @@ struct JnScope {
 };
 
 struct JnSemantic {
+    J_State* state;
     JnScope* scope;
     int loop_depth, fnc_depth, errors, warnings;
 };
 
+// Visits
+void Jn_visit(JnSemantic*, AST*);
+
 // Semantic
 void error(JnSemantic* sem, AST* node, const char* msg, ...);
 void warning(JnSemantic* sem, AST* node, const char* msg, ...);
-void semantic_init(JnSemantic* sem);
-void semantic_check(JnSemantic* sem, AST* node);
+void Jn_semantic_init(J_State*, JnSemantic*);
+void Jn_semantic_check(JnSemantic* sem, AST* node);
 
 // Scope
 JnScope* scope_new(JnScope* parent);

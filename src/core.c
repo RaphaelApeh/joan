@@ -75,6 +75,12 @@ JN_API J_Context* Jn_get_context(void)
     return &state->cxt;
 }
 
+JN_API Jn_Error* Jn_get_error(J_State* state)
+{
+    assert(state != NULL);
+    return &state->error;
+}
+
 void set_sumbols(J_State* state, char* str)
 {
     if (state == NULL)
@@ -99,6 +105,7 @@ JN_API void Jn_program_init(void)
     __set = true;
     state->vm = malloc(sizeof(JnVM));
     state->gc = malloc(sizeof(GC));
+    memset(&state->error, 0, sizeof(Jn_Error));
     state->symbols_count = 0;
     state->symbols_capacity = 56;
     state->symbols = malloc(sizeof(char *) * 56);

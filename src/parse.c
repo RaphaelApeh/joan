@@ -1053,8 +1053,8 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast;
         case TOKEN_RETURN:
-            advance_parser_c(p);
             ast = ast_create(p, AST_RETURN);
+            advance_parser_c(p);
             if (check(p, TOKEN_SEMICOLON))
             {
                 advance_parser_c(p);
