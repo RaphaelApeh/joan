@@ -147,8 +147,8 @@ void Jn_visit(JnSemantic* sem, AST* node)
 	visit_continue(sem, node); break;
     case AST_BREAK:
 	visit_break(sem, node); break;
-    case AST_FOR:
-        visit_for(sem, node); break;
+    // case AST_FOR:
+    //     visit_for(sem, node); break;
     case AST_BLOCK:
         visit_block(sem, node); break;
     // case AST_FUNCTION:

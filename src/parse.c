@@ -586,7 +586,15 @@ static AST* parse_instance(joan_parser_t* p, AST* instance_obj);
 
 static AST* parse_postfix(joan_parser_t* p, AST* left)
 {
-
+    if (check(p, TOKEN_PLUS_PLUS))
+    {
+        AST* ast;
+        advance_parser_c(p);
+        ast = ast_create(p, AST_UNARY);
+        ast->unary.op = TOKEN_PLUS_PLUS;
+        ast->unary.right = left;
+        return ast;
+    }
     while (true)
     {
         if (match(p, TOKEN_LPARN))
@@ -1034,6 +1042,12 @@ AST* parse_value(joan_parser_t* p)
                 JN_RETURN_CHAR(c) 
             );
             advance_parser_c(p);
+            return ast;
+        case TOKEN_PLUS_PLUS:
+            advance_parser_c(p);
+            ast = ast_create(p, AST_UNARY);
+            ast->unary.op = TOKEN_PLUS_PLUS;
+            ast->unary.right = parse_value(p);
             return ast;
         case TOKEN_RETURN:
             ast = ast_create(p, AST_RETURN);

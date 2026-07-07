@@ -34,7 +34,8 @@ typedef enum{
     OP_TRUE,
     OP_FALSE,
     OP_NONE,
-
+    OP_PLUS_PLUS,
+    
     OP_NEGATE,
 
     OP_POP,

@@ -555,6 +555,13 @@ int vm_run(JnVM* vm)
                 print_JnObject(out);
                 putchar('\n');
                 break;
+            case OP_PLUS_PLUS:
+                o = pop(vm);
+                if (!JN_IS_INT(o))
+                    return die(vm, "++ expected an int.");
+                ++JN_AS_INT(o);
+                PUSH(vm, o);
+                break;
             case OP_NEGATE:
                 o = pop(vm);
                 if (NULL == o) break;
@@ -918,9 +925,9 @@ void compile(AST* node, Chuck* chuck)
             case TOKEN_MINUS:
                 write_chuck_loc(chuck, OP_NEGATE, line, column);
                 break;
-            // case TOKEN_STAR:
-            //     write_chuck_loc(chuck, OP_MUL);
-            //     break;
+            case TOKEN_PLUS_PLUS:
+                WRITE_CHUCK(chuck, OP_PLUS_PLUS);
+                break;
             case TOKEN_NOT:
                 write_chuck_loc(chuck, OP_NOT, line, column);
                 break;
