@@ -285,6 +285,28 @@ static JnObject* native_printf(JnObject* args)
     putc('\n', stdout);
     return JN_RETURN_NONE;
 }
+
+static JnObject* native_assert(JnObject* args)
+{
+    int count = JN_ARGS_COUNT(args);
+    if (count < 1 || count > 2)
+    {
+        return JN_RAISE_EXCPETION(TYPE_ERROR, "assert() expected one/two argument(s) but got (%d).", count);
+    }
+    char* err_msg;
+    if (count == 2)
+    {
+        err_msg = JN_AS_CSTRING(JN_GET_ARGS(args, 1));
+    } else {
+        err_msg = "Assertion failed.";
+    }
+    if (!JN_TO_BOOL(JN_GET_ARG(args)))
+    {
+        return JN_RAISE_EXCPETION(ASSERT_ERROR, err_msg);
+    }
+    return JN_RETURN_NONE;
+}
+
 static JnObject* native_hasattr(JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
@@ -600,6 +622,7 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "tochar", "Convert an object to char.", native_tochar);
     Jn_register_fn(state, "hasattr", "Return true if the object has the attribute.", native_hasattr);
     Jn_register_fn(state, "printf", "C type of printf.", native_printf);
+    Jn_register_fn(state, "assert", "Assert expression.", native_assert);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     // add other built-in functions
 }

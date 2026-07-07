@@ -493,12 +493,6 @@ int vm_run(JnVM* vm)
                 o = pop(vm);
                 PUSH(vm, jn_obj_bool(!is_truthy(o)));
                 break;
-            case OP_ASSERT:
-                o = pop(vm);
-                char * msg = READ_IDENT();
-                if (!is_truthy(o))
-                    return vm_error(vm, JN_RAISE_EXCPETION(ASSERT_ERROR, msg));
-                break;
             case OP_MEMBER:
                 char* field = READ_IDENT(); o = pop(vm);
                 Jn_environ_E* entt = NULL;
@@ -916,16 +910,6 @@ void compile(AST* node, Chuck* chuck)
     case AST_PRINTLN:
         compile(node->println.out, chuck);
         write_chuck_loc(chuck, OP_PRINTLN, line, column);
-        break;
-    case AST_ASSERT:
-        compile(node->assert_stmt.cond, chuck);
-        if (node->assert_stmt.msg != NULL)
-            id = add_ident(chuck, node->assert_stmt.msg);
-        else
-            id  = add_ident(chuck, "Assertion failed.");
-
-        write_chuck_loc(chuck, OP_ASSERT, line, column);
-        write_chuck_loc(chuck, id, line, column);
         break;
     case AST_UNARY:
         compile(node->unary.right, chuck);

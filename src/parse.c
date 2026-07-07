@@ -697,23 +697,6 @@ AST* parse_array(joan_parser_t* p)
     return arr;
 }
 
-static AST* parse_assert(joan_parser_t* p)
-{
-    advance_parser_c(p); // assert
-    AST* cond = parse_expr(p);
-    char* msg = NULL;
-    if (match(p, TOKEN_COMMA))
-    {
-        if (!check(p, TOKEN_STRING)) return parse_error(p, "Expected 'string' but got %s.", GET_LEX(p));
-        msg = GET_LEX(p);
-        advance_parser_c(p);
-    }
-    AST* ast = ast_create(p, AST_ASSERT);
-    ast->assert_stmt.cond = cond;
-    ast->assert_stmt.msg = msg;
-    return ast;
-}
-
 static AST* parse_lambda(joan_parser_t* p)
 {
     /*
@@ -1068,8 +1051,6 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             // if (check(p, TOKEN_COMMA)) return parse_multi_var(p, ast);
             return ast;
-        case TOKEN_ASSERT:
-            return parse_assert(p);
         case TOKEN_CONTINUE:
             advance_parser_c(p);
             return ast_continue(p);

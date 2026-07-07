@@ -253,8 +253,6 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_AS;
     else if (strcmp(t.lexeme, "fn") == 0)
         t.type = TOKEN_FN;
-    else if (strcmp(t.lexeme, "assert") == 0)
-        t.type = TOKEN_ASSERT;
     else if (equal(t.lexeme, "c_define"))
         t.type = TOKEN_DEFINE;
     else if (strcmp(t.lexeme, "in") == 0)
