@@ -40,6 +40,12 @@ void warning(JnSemantic* sem, AST* node, const char* msg, ...);
 void Jn_semantic_init(J_State*, JnSemantic*);
 void Jn_semantic_check(JnSemantic* sem, AST* node);
 
+
+// TODO
+bool symbol_lookup(JnSemantic* sem, JnScope* scope, const char* name);
+bool symbol_insert(JnSemantic* sem, JnScope* scope, const char* name, int kind, bool is_const);
+
+
 // Scope
 JnScope* scope_new(JnScope* parent);
 void scope_free(JnScope* scope);

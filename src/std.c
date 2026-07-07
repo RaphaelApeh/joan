@@ -270,6 +270,8 @@ static JnObject* native_printf(JnObject* args)
             case 'v':
                 print_JnObject(obj);
                 break;
+            case 'p':
+                printf("%p", obj); break;
             case '%':
                 putc('%', stdout);
                 break;
@@ -530,6 +532,7 @@ static JnObject* string_ctor(JnObject* args)
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn)
 {
     assert(state != NULL && name != NULL);
+    set_symbols(NULL, name);
     JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);

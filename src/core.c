@@ -82,13 +82,7 @@ JN_API Jn_Error* Jn_get_error(J_State* state)
     return &state->error;
 }
 
-JN_API Jn_Warning* Jn_get_warning(J_State* state)
-{
-    assert(state != NULL);
-    return &state->warning;
-}
-
-void set_sumbols(J_State* state, char* str)
+void set_symbols(J_State* state, char* str)
 {
     if (state == NULL)
     {
@@ -155,18 +149,6 @@ JN_API int Jn_compile(J_State* state)
         Jn_semantic_check(&sem, stmt);
         if (sem.errors)
             return -1;
-        if (sem.warnings)
-        {
-            Jn_Warning* warning = Jn_get_warning(state);
-            fprintf(
-                stderr, 
-                "%s:%d:%d Warning: %s\n", 
-                warning->filename, 
-                warning->line, 
-                warning->col, 
-                warning->error_msg
-            );
-        }
     }
     write_chuck(state->vm->chuck, OP_END);
     scope_free(sem.scope);

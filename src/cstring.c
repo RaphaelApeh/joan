@@ -112,9 +112,8 @@ char* strstrp(const char* str)
     return buff;
 }
 
-bool strstrcmp(char** src, char* src2)
+bool strstrcmp(const char** src, const char* src2)
 {
-    // TODO: find a better way
     for (int i = 0; src[i] != NULL; ++i)
         if (strcmp(src[i], src2) == 0)
             return true;

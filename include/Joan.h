@@ -252,12 +252,6 @@ typedef struct {
     JN_CERROR_TYPE type;
 } Jn_Error;
 
-
-typedef struct {
-    const char* filename, *error_msg;
-    int line, col, code;
-} Jn_Warning;
-
 typedef struct J_State
 {
     JnVM* vm;
@@ -265,7 +259,6 @@ typedef struct J_State
     Arena* arena;
     joan_parser_t* parser;
     Jn_Error error;
-    Jn_Warning warning;
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     Jn_environ* globals;
@@ -276,7 +269,7 @@ typedef struct J_State
 } J_State;
 
 
-void set_sumbols(J_State* state, char* str);
+void set_symbols(J_State* state, char* str);
 /*
 
 Jn_CModule math_mod[] = {
@@ -432,7 +425,7 @@ JN_API void Jn_repl(void);
 
 void* Jn_alloc(size_t size);
 // Helpers
-unsigned long djb2_hash(unsigned char* str);
+unsigned long djb2_hash(unsigned const char* str);
 
 JN_API JnObject* Jn_make_args(size_t capacity);
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj);

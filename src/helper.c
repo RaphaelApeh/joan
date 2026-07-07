@@ -93,7 +93,7 @@ static int cmp_match(const void* a, const void* b)
     return 0;
 }
 
-unsigned long djb2_hash(unsigned char* str)
+unsigned long djb2_hash(unsigned const char* str)
 {
     int c;
     unsigned long hash = 5281;

@@ -14,7 +14,7 @@ static void visit_return(JnSemantic* sem, AST* node)
 
 static void visit_ident(JnSemantic* sem, AST* node)
 {
-    if (scope_lookup(sem->scope, node->identifier) == NULL)
+    if (!symbol_lookup(sem, sem->scope, node->identifier))
     {
         error(sem, node, "undefine variable.");
     }
@@ -27,19 +27,19 @@ static void visit_reassign(JnSemantic* sem, AST* node)
         error(sem, node, "WTF. reasigning a call expression.");
         return;
     }
-    if (node->reassign.expr != AST_IDENTIFIER) return;
+    if (node->reassign.expr->type != AST_IDENTIFIER) return;
 
-    JnSymbol* sym = scope_lookup(sem->scope, node->reassign.expr->identifier);
-    if (NULL == sem)
+    bool sym = symbol_lookup(sem, sem->scope, node->reassign.expr->identifier);
+    if (!sym)
     {
         error(sem, node, "undefined variable.");
         return;
     }
-    if (sym->is_const)
-    {
-        error(sem, node, "cannot modify const.");
-        return;
-    }
+    // if (sym->is_const)
+    // {
+    //     error(sem, node, "cannot modify const.");
+    //     return;
+    // }
     Jn_visit(sem, node->reassign.value);
 }
 
@@ -61,7 +61,7 @@ static void visit_var(JnSemantic* sem, AST* node)
 {
 	Jn_visit(sem, node->assign.value);
 
-    bool ret = scope_insert(sem->scope, node->assign.name, SYMBOL_VAR, node->assign.is_const);        
+    bool ret = symbol_insert(sem, sem->scope, node->assign.name, SYMBOL_VAR, node->assign.is_const);        
     if (ret) error(sem, node, "variable already declared.");
 }
 

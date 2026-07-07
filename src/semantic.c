@@ -2,6 +2,11 @@
 #include <Joan.h>
 #include "semantic.h"
 
+#ifndef C_STRING_H
+#include "optionals/c_string.h"
+#endif
+
+
 void Jn_semantic_init(J_State* state, JnSemantic* sem)
 {
     assert(sem);
@@ -40,12 +45,14 @@ void error(JnSemantic* sem, AST* node, const char* msg, ...)
 void warning(JnSemantic* sem, AST* node, const char* msg, ...)
 {
     sem->warnings++;
-    sem->state->warning.error_msg = msg;
-    sem->state->warning.line = node->line;
-    sem->state->warning.col = node->col;
-    // sem->state->warning.type = SYNTAX_ERROR; // TODO
-    sem->state->warning.code = -1;
-    sem->state->warning.filename = node->filename;
+    fprintf(
+        stderr, 
+        "%s:%d:%d Warning: %s\n", 
+        node->filename, 
+        node->line, 
+        node->col, 
+        msg
+    );
 }
 
 // Scope
@@ -96,6 +103,49 @@ JnSymbol* scope_lookup(JnScope* scope, const char* name)
         scope = scope->parent;
     }
     return NULL;
+}
+
+bool symbol_lookup(JnSemantic* sem, JnScope* scope, const char* name)
+{
+    for (int i = 0; i < sem->state->symbols_count; ++i)
+        if (strcmp(sem->state->symbols[i], name) == 0)
+            return true;
+
+    
+    struct FuzzMatch matches[300];    
+    int n = fuzzy_match(
+        name,
+        sem->state->symbols,
+        sem->state->symbols_count,
+        matches
+    );
+    if (n > 0)
+    {
+        printf("Did you mean: ");
+        for (int i = 0; i < n; ++i)
+        {
+            if (i > 0)
+                putchar(',');
+            printf(" %s", matches[i].word);
+        }
+        printf("\n");
+    }
+    return false;
+}
+
+bool symbol_insert(JnSemantic* sem, JnScope* scope, const char* name, int kind, bool is_const)
+{
+    if (symbol_lookup(sem, scope, name)) return true;
+
+    set_symbols(sem->state, name);
+    JnSymbol* sym = Jn_alloc(sizeof(JnSymbol));
+    sym->name = (char *)name;
+    sym->kind = kind;
+    sym->is_const = is_const;
+    sym->type = NULL;
+    sym->next = scope->symbols;
+    scope->symbols = sym;
+    return false;
 }
 
 JnSymbol* scope_lookup_current(JnScope* scope, const char* name)
