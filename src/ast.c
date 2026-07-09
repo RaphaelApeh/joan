@@ -16,6 +16,7 @@ AST* ast_create(joan_parser_t* p, AST_TYPE type)
     AST* ast = arena_alloc(p->arena, sizeof(AST));
     assert(ast != NULL);
     ast->type = type;
+    ast->state = p->state;
     ast->line = p->curr.line;
     ast->col = p->curr.column;
     ast->filename = p->l->filename;

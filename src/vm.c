@@ -16,7 +16,7 @@
 
 #define PUSH(vm, obj)  do { \
     assert((vm) != NULL || (obj) != NULL);              \
-    if (JN_IS_ERROR((obj))) return vm_error(vm, (obj)); \
+    if (JN_IS_ERROR((obj))) return vm_error(state, vm, (obj)); \
     push(vm, (obj));                                  \
 }while(false)
 
@@ -86,11 +86,10 @@ static inline int vm_column(JnVM* vm)
     return vm->chuck->columns[ip - 1];
 }
 
-static int vm_error(JnVM* vm, JnObject* obj)
+static int vm_error(J_State* state, JnVM* vm, JnObject* obj)
 {
     assert(obj != NULL && JN_IS_ERROR(obj));
-    J_Context* ctx = Jn_get_context();
-    J_State* state = Jn_get_state();
+    J_Context* ctx = Jn_get_context(state);
     ctx->cur_line = vm_line(vm);
     ctx->column = vm_column(vm);
     obj->expection.filename = (char *)ctx->source.filename;
@@ -129,9 +128,9 @@ static int vm_error(JnVM* vm, JnObject* obj)
     return INTERPRET_ERROR;
 }
 
-static InterpretResult die(JnVM* vm, const char* msg, ...)
+static int die(J_State* state, JnVM* vm, const char* msg, ...)
 {
-    J_Context* ctx = Jn_get_context();
+    J_Context* ctx = Jn_get_context(state);
     ctx->cur_line = vm_line(vm);
     ctx->column = vm_column(vm);
     va_list arg; va_start(arg, msg);
@@ -158,7 +157,7 @@ static JnObject* vm_peek(JnVM* vm, int d) {return vm->sp[-1 - d];}
 static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
 
-static JnObject* call_function(JnVM* vm, JnObject* obj, JnObject** args)
+static JnObject* call_function(J_State* state, JnVM* vm, JnObject* obj, JnObject** args)
 {
     JnFunctionObject* fn = obj->fn;
     JnVM child;
@@ -169,7 +168,7 @@ static JnObject* call_function(JnVM* vm, JnObject* obj, JnObject** args)
     {
         environ_insert(child.env, fn->params[i], args[i]);
     }
-    InterpretResult r = vm_run(&child);
+    InterpretResult r = vm_run(state, &child);
     if (r == INTERPRET_OK)
         return pop(&child);
     return JN_RAISE_EXCPETION(SYS_ERROR, "Extra error to annoy you. Good luck debugging :).");
@@ -177,7 +176,7 @@ static JnObject* call_function(JnVM* vm, JnObject* obj, JnObject** args)
 
 static JnObject *a, *b, *key, *value, *array, *pos;
 
-int vm_run(JnVM* vm)
+int vm_run(J_State* state, JnVM* vm)
 {
     #define READ_BYTE() (*vm->ip++)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
@@ -189,7 +188,7 @@ int vm_run(JnVM* vm)
     uint16_t offset;
     for (;;)
     {
-        J_Context* ctx = Jn_get_context();
+        J_Context* ctx = Jn_get_context(state);
         ctx->cur_line = vm_line(vm);
         ctx->column = vm_column(vm);
         uint8_t op = READ_BYTE();
@@ -201,82 +200,82 @@ int vm_run(JnVM* vm)
                 break;
             case OP_ADD:
                 a = pop(vm); b = pop(vm);
-                o = jn_intern_obj(eval_binary(b, a, EVAL_ADD));
+                o = jn_intern_obj(eval_binary(state, b, a, EVAL_ADD));
                 PUSH(vm, o);
                 break;
             case OP_SUB:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_SUB);
+                o = eval_binary(state, b, a, EVAL_SUB);
                 PUSH(vm, o);
                 break;
             case OP_MUL:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_MUL);
+                o = eval_binary(state, b, a, EVAL_MUL);
                 PUSH(vm, o);
                 break;
             case OP_BITAND:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_BAND);
+                o = eval_binary(state, b, a, EVAL_BAND);
                 PUSH(vm, o);
                 break;
             case OP_BITOR:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_BOR);
+                o = eval_binary(state, b, a, EVAL_BOR);
                 PUSH(vm, o);
                 break;
             case OP_PERC:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_PERC);
+                o = eval_binary(state, b, a, EVAL_PERC);
                 PUSH(vm, o);
                 break;
             case OP_DIV:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_DIV);
+                o = eval_binary(state, b, a, EVAL_DIV);
                 PUSH(vm, o);
                 break;
             case OP_BITAC:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_BAC);
+                o = eval_binary(state, b, a, EVAL_BAC);
                 PUSH(vm, o);
                 break;
             case OP_EQUAL:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_EQUAL);
+                o = eval_binary(state, b, a, EVAL_EQUAL);
                 PUSH(vm, o);
                 break;
             case OP_LSHIFT:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_LSHIFT);
+                o = eval_binary(state, b, a, EVAL_LSHIFT);
                 PUSH(vm, o);
                 break;
             case OP_RSHIFT:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_RSHIFT);
+                o = eval_binary(state, b, a, EVAL_RSHIFT);
                 PUSH(vm, o);
                 break;
             case OP_NEQ:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_NOTEQUAL);
+                o = eval_binary(state, b, a, EVAL_NOTEQUAL);
                 PUSH(vm, o);
                 break;
             case OP_GT:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_GT);
+                o = eval_binary(state, b, a, EVAL_GT);
                 PUSH(vm, o);
                 break;
             case OP_GTE:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_GTE);
+                o = eval_binary(state, b, a, EVAL_GTE);
                 PUSH(vm, o);
                 break;
             case OP_LT:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_LT);
+                o = eval_binary(state, b, a, EVAL_LT);
                 PUSH(vm, o);
                 break;
             case OP_LTE:
                 a = pop(vm); b = pop(vm);
-                o = eval_binary(b, a, EVAL_LTE);
+                o = eval_binary(state, b, a, EVAL_LTE);
                 PUSH(vm, o);
                 break;
             case OP_IMPORT: 
@@ -284,7 +283,7 @@ int vm_run(JnVM* vm)
                 bool is_std = READ_BYTE();
                 bool exists = file_exists(lib);
                 o = Jn_import_module(NULL, lib, is_std);
-                if (o == NULL) return die(vm, "Import error.");
+                if (o == NULL) return die(state,vm, "Import error.");
                 PUSH(vm, o);
                 break;
 
@@ -305,7 +304,7 @@ int vm_run(JnVM* vm)
                     values_count++;
                 }
                 if (fields_count > values_count)
-                    return die(vm, "For some reason you have more fields name than values.");
+                    return die(state,vm, "For some reason you have more fields name than values.");
                 JnObject* object_type = pop(vm);
                 if (object_type->type == OBJECT_TYPE)
                 {
@@ -314,7 +313,7 @@ int vm_run(JnVM* vm)
                     break;
                 }
                 if (!JN_IS_STRUCT(object_type))
-                    return die(vm, "Expected a struct type but (got '%d').", object_type->type);
+                    return die(state,vm, "Expected a struct type but (got '%d').", object_type->type);
                 
                 JnObject* instance_obj = bind_argument(object_type, fields, values, count);
 
@@ -333,7 +332,7 @@ int vm_run(JnVM* vm)
                     JN_ARRAY_DEFAULT(arr);
                 }
                 assert(arr != NULL);
-                o = JN_OBJECT(TUPLE_TYPE);
+                o = JN_OBJECT(state, TUPLE_TYPE);
                 o->tuple = arr;
                 PUSH(vm, o);
                 break;
@@ -349,7 +348,7 @@ int vm_run(JnVM* vm)
                     JN_ARRAY_DEFAULT(arr);
                 }
                 assert(arr != NULL);
-                o = JN_OBJECT(ARRAY_TYPE);
+                o = JN_OBJECT(state, ARRAY_TYPE);
                 o->arr = arr;
                 PUSH(vm, o);
                 break;
@@ -374,17 +373,17 @@ int vm_run(JnVM* vm)
                 int t_op = READ_BYTE();
                 o = pop(vm); a = pop(vm);
                 if (o->constant)
-                    return die(vm, "Seem like you are trying to reassign a variable of type const, \t did you mean ':=' but used '::'.");
+                    return die(state,vm, "Seem like you are trying to reassign a variable of type const, \t did you mean ':=' but used '::'.");
                 switch (t_op)
                 {
                     case TOKEN_APLUS:
-                        b = eval_binary(o, a, EVAL_ADD);
+                        b = eval_binary(state, o, a, EVAL_ADD);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_AMINUS:
-                        b = eval_binary(o, a, EVAL_SUB);
+                        b = eval_binary(state, o, a, EVAL_SUB);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
@@ -393,105 +392,105 @@ int vm_run(JnVM* vm)
                         jn_obj_reassign(o, a);
                         break;
                     case TOKEN_ASTAR:
-                        b = eval_binary(o, a, EVAL_MUL);
+                        b = eval_binary(state, o, a, EVAL_MUL);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ARSHIFT:
-                        b = eval_binary(o, a, EVAL_RSHIFT);
+                        b = eval_binary(state, o, a, EVAL_RSHIFT);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
 
                         break;
                     case TOKEN_ALSHIFT:
-                        b = eval_binary(o, a, EVAL_LSHIFT);
+                        b = eval_binary(state, o, a, EVAL_LSHIFT);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_BITAC:
-                        b = eval_binary(o, a, EVAL_BAC);
+                        b = eval_binary(state, o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_APERCENTAGE:
-                        b = eval_binary(o, a, EVAL_PERC);
+                        b = eval_binary(state, o, a, EVAL_PERC);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ABITAC:
-                        b = eval_binary(o, a, EVAL_BAC);
+                        b = eval_binary(state, o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ASLASH:
-                        b = eval_binary(o, a, EVAL_DIV);
+                        b = eval_binary(state, o, a, EVAL_DIV);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ABITAND:
-                        b = eval_binary(o, a, EVAL_BAND);
+                        b = eval_binary(state, o, a, EVAL_BAND);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     case TOKEN_ABITOR:
-                        b = eval_binary(o, a, EVAL_BOR);
+                        b = eval_binary(state, o, a, EVAL_BOR);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
                     default:
-                        return die(vm, "invalid operator.");
+                        return die(state,vm, "invalid operator.");
                 }
                 break;
             case OP_POW:
                 a = pop(vm); b = pop(vm);
-                a = eval_binary(b, a, EVAL_POW);
+                a = eval_binary(state, b, a, EVAL_POW);
                 PUSH(vm, a);
                 break;
             case OP_IN:
                 a = pop(vm);
                 b = pop(vm);
-                a = eval_binary(b, a, EVAL_IN);
+                a = eval_binary(state, b, a, EVAL_IN);
                 PUSH(vm, a);
                 break;
             case OP_NOT_IN:
                 a = pop(vm);
                 b = pop(vm);
-                a = eval_binary(b, a, EVAL_NOT_IN);
+                a = eval_binary(state, b, a, EVAL_NOT_IN);
                 PUSH(vm, a);
                 break;
             case OP_IS:
                 b = pop(vm); a = pop(vm);
-                a = eval_binary(a, b, EVAL_IS);
+                a = eval_binary(state, a, b, EVAL_IS);
                 if (NULL == a)
-                    return die(vm, "Invalid binary opration.");
+                    return die(state,vm, "Invalid binary opration.");
                 PUSH(vm, a);
                 break;
             case OP_AND:
                 b = pop(vm); a = pop(vm);
-                a = jn_intern_obj(eval_binary(a, b, EVAL_AND));
+                a = jn_intern_obj(eval_binary(state, a, b, EVAL_AND));
                 if (NULL == a)
-                    return die(vm, "Invalid binary opration.");
+                    return die(state,vm, "Invalid binary opration.");
                 PUSH(vm, a);
                 break;
             case OP_OR:
                 b = pop(vm); a = pop(vm);
-                a = jn_intern_obj(eval_binary(a, b, EVAL_OR));
+                a = jn_intern_obj(eval_binary(state, a, b, EVAL_OR));
                 if (NULL == a)
-                    return die(vm, "Invalid binary opration.");
+                    return die(state,vm, "Invalid binary opration.");
                 PUSH(vm, a);
                 break;
             case OP_NOT:
                 o = pop(vm);
-                PUSH(vm, jn_obj_bool(!is_truthy(o)));
+                PUSH(vm, jn_obj_bool(state, !is_truthy(o)));
                 break;
             case OP_MEMBER:
                 char* field = READ_IDENT(); o = pop(vm);
@@ -501,13 +500,13 @@ int vm_run(JnVM* vm)
                 case MODULE_TYPE:
                     entt = environ_get(o->module->env, field);
                     if (entt == NULL)
-                        return die(vm, "module does not have attribute '%s'.", field);
+                        return die(state,vm, "module does not have attribute '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
                 case INSTANCE_TYPE:
                     entt = environ_get(o->instance->fields, field);
                     if (entt == NULL)
-                        return die(vm, "struct object does not have field '%s'.", field);
+                        return die(state,vm, "struct object does not have field '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
                 case HASHMAP_TYPE:
@@ -515,11 +514,11 @@ int vm_run(JnVM* vm)
                 case STR_TYPE:
                     JN_CMethod method = call_method(o, field);
                     if (method == NULL)
-                        return die(vm, "object does not have field '%s'", field);
-                    PUSH(vm, jn_obj_method(o, method));
+                        return die(state,vm, "object does not have field '%s'", field);
+                    PUSH(vm, jn_obj_method(state, o, method));
                     break;
                 default:
-                    return die(vm, "Object does not support member attribute.");
+                    return die(state,vm, "Object does not support member attribute.");
                 }
                 break;
             case OP_RANGE:
@@ -530,22 +529,22 @@ int vm_run(JnVM* vm)
                     !JN_IS_INT(start_obj) && !JN_IS_CHAR(start_obj)
                     && !JN_IS_INT(stop_obj) && !JN_IS_CHAR(stop_obj)
                 )
-                    return vm_error(vm, JN_RAISE_EXCPETION(TYPE_ERROR, "range object require a int or char"));
+                    return vm_error(vm, JN_RAISE_EXCPETION(state, TYPE_ERROR, "range object require a int or char"));
                 
                 int start = JN_AS_INT(start_obj); int stop = JN_AS_INT(stop_obj);
                 int step = 0;
                 if (has_step)
                     step = JN_AS_INT(pop(vm));
-                PUSH(vm, JN_OBJECT_RANGE(start, stop, step));
+                PUSH(vm, JN_OBJECT_RANGE(state, start, stop, step));
                 break;
             case OP_GET_GLOBAL:
                 ident = READ_IDENT();
                 Jn_environ_E* ent = environ_get(vm->env, ident);
                 if (ent == NULL)
                 {
-                    JnObject* err_obj = JN_RAISE_EXCPETION(UNDEFINE_ERROR, "Seem like you did not define a variable '%s'.", ident);
+                    JnObject* err_obj = JN_RAISE_EXCPETION(state, UNDEFINE_ERROR, "Seem like you did not define a variable '%s'.", ident);
                     err_obj->expection.var_name = ident;
-                    return vm_error(vm, err_obj);
+                    return vm_error(state, vm, err_obj);
                 }
                 assert(ent->value != NULL);
                 PUSH(vm, jn_intern_obj(ent->value));
@@ -558,7 +557,7 @@ int vm_run(JnVM* vm)
             case OP_PLUS_PLUS:
                 o = pop(vm);
                 if (!JN_IS_INT(o))
-                    return die(vm, "++ expected an int.");
+                    return die(state,vm, "++ expected an int.");
                 ++JN_AS_INT(o);
                 PUSH(vm, o);
                 break;
@@ -568,15 +567,15 @@ int vm_run(JnVM* vm)
                 switch (o->type)
                 {
                     case INT_TYPE:
-                        o->int32 = -(o->int32);
+                        o->int_val = -(o->int_val);
                         PUSH(vm, o);
                         break;
                     case FLOAT_TYPE:
-                        o->float32 = -o->float32;
+                        o->float_val = -o->float_val;
                         PUSH(vm, o);
                         break;
                     default:
-                        return die(vm, "Invalid type.");
+                        return die(state,vm, "Invalid type.");
                 }
                 break;
             case OP_LEN:
@@ -584,10 +583,10 @@ int vm_run(JnVM* vm)
                 switch (o->type)
                 {
                 case ARRAY_TYPE:
-                    PUSH(vm, JN_RETURN_INT(JN_AS_ARRAY(o)->size));
+                    PUSH(vm, JN_RETURN_INT(state, JN_AS_ARRAY(o)->size));
                     break;
                 default:
-                    return die(vm, "Expected an iterable.");
+                    return die(state,vm, "Expected an iterable.");
                 }
                 break;
             case OP_POP:
@@ -600,7 +599,7 @@ int vm_run(JnVM* vm)
                 ident = READ_IDENT();
                 bool is_const = (bool)READ_BYTE();
                 if (o == NULL || ident == NULL)
-                    return die(vm, "Object not set.");
+                    return die(state,vm, "Object not set.");
                 o->constant = is_const;
                 environ_insert(vm->env, ident, o);
                 break;
@@ -608,16 +607,16 @@ int vm_run(JnVM* vm)
                 array = pop(vm);
                 JnObject* idx_key = pop(vm);
                 if (!array || !idx_key)
-                    return die(vm, "None value array or pos.");
+                    return die(state,vm, "None value array or pos.");
                 int index;
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
                         if (idx_key->type != INT_TYPE && idx_key->type != RANGE_TYPE)
-                            return die(vm, "getter attrib is not of type int or range.");
-                        index = (idx_key->type == INT_TYPE) ? idx_key->int32 : range_len(&idx_key->range);
+                            return die(state,vm, "getter attrib is not of type int or range.");
+                        index = (idx_key->type == INT_TYPE) ? idx_key->int_val : range_len(&idx_key->range);
                         o = JN_GET_ARRAY(array->arr, index);
-                        if (o == NULL) return die(vm, "Invalid array index.");
+                        if (o == NULL) return die(state,vm, "Invalid array index.");
                         PUSH(vm, o);
                         break;
                     case STR_TYPE:
@@ -627,30 +626,30 @@ int vm_run(JnVM* vm)
                             index += array->str->len;
                         }
                         if (index >= array->str->len)
-                            return die(vm, "invalid index got %d.", index);
-                        o = JN_RETURN_CHAR((array->str->chars[index]));
+                            return die(state,vm, "invalid index got %d.", index);
+                        o = JN_RETURN_CHAR(state, (array->str->chars[index]));
                         PUSH(vm, o);
                         break;
                     case RANGE_TYPE:
                         if (!JN_IS_INT(idx_key))
-                            return die(vm, "expected an int.");
-                        PUSH(vm, JN_RETURN_INT(range_at(&array->range, JN_AS_INT(idx_key))));
+                            return die(state,vm, "expected an int.");
+                        PUSH(vm, JN_RETURN_INT(state, range_at(&array->range, JN_AS_INT(idx_key))));
                         break;
                     case HASHMAP_TYPE:
                     Jn_HashEntry* entry = JN_HASHMAP_GET((array->hashmap), idx_key);
                     if (entry == NULL)
-                        return die(vm, "invalid key.");
+                        return die(state,vm, "invalid key.");
                     PUSH(vm, entry->value);
                     break;
                     default:
-                        return die(vm, "Expected an iterable but got '%s'.", "TODO");
+                        return die(state,vm, "Expected an iterable but got '%s'.", "TODO");
                 }
                 break;
             case OP_SET_INDEX:
                 value = pop(vm); array = pop(vm); pos = pop(vm);
                 if (JN_IS_ARRAY(array) && !JN_IS_INT(pos) && !JN_IS_RANGE(pos))
-                    return die(vm, "Expected type 'int' or 'range' but got 'TODO'.");
-                index = pos->int32;
+                    return die(state,vm, "Expected type 'int' or 'range' but got 'TODO'.");
+                index = pos->int_val;
                 switch (array->type)
                 {
                     case ARRAY_TYPE:
@@ -659,21 +658,21 @@ int vm_run(JnVM* vm)
                             index += array->arr->size;
                         }
                         if (index >= array->arr->size)
-                            return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->arr->size, index);
+                            return die(state,vm, "Got an invalid index; expected max '%d' but got '%d'.", array->arr->size, index);
                         array->arr->items[index] = value;
                         break;
                     case STR_TYPE:
                         if (index >= array->str->len)
-                                return die(vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
+                                return die(state,vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
                         if (!JN_IS_CHAR(value))
-                            return die(vm, "string index expect a char type.");
+                            return die(state,vm, "string index expect a char type.");
                         array->str->chars[index] = JN_AS_CHAR(value);
                         break;
                     case HASHMAP_TYPE:
                         JN_HASMAP_PUT(array->hashmap, pos, value);
                         break;
                     default:
-                        return die(vm, "type does not support index setting.");
+                        return die(state,vm, "type does not support index setting.");
                  }
                 break;
             case OP_SCOPE_ENTER:
@@ -710,13 +709,13 @@ int vm_run(JnVM* vm)
             case OP_GET_ITER:
                 JnObject* iterable = pop(vm);
                 if (!JN_IS_ITERABLE(iterable))
-                    return die(vm, "object is not iterable.");
-                PUSH(vm, JN_ITER_INIT(iterable));
+                    return die(state,vm, "object is not iterable.");
+                PUSH(vm, JN_ITER_INIT(state, iterable));
                 break;
             case OP_ITER_NEXT:
                 JnObject* iter_obj = pop(vm);
                 if (!_JN_CHECK_TYPE(iter_obj, ITER_TYPE))
-                    return die(vm, "Expected an iter type.");
+                    return die(state,vm, "Expected an iter type.");
                 JnIterObject* _iter = JN_AS_ITER(iter_obj);
                 JnObject* target = _iter->obj;
                 assert(target != NULL);
@@ -725,27 +724,27 @@ int vm_run(JnVM* vm)
                 case ARRAY_TYPE:
                     if (_iter->index >= JN_AS_ARRAY(target)->size)
                     {
-                        PUSH(vm, JN_RETURN_BOOL(false));
+                        PUSH(vm, JN_RETURN_BOOL(state, false));
                         break;
                     }
-                    PUSH(vm, JN_RETURN_INT(_iter->index));
+                    PUSH(vm, JN_RETURN_INT(state, _iter->index));
                     tmp = JN_AS_ARRAY(target)->items[_iter->index];
                     assert(tmp != NULL);
                     PUSH(vm, tmp);
                     _iter->index++;
-                    PUSH(vm, JN_RETURN_BOOL(true));
+                    PUSH(vm, JN_RETURN_BOOL(state, true));
                     break;
                 case HASHMAP_TYPE:
                     if (_iter->index >= JN_AS_HM(target)->size)
                     {
-                        PUSH(vm, JN_RETURN_BOOL(false));
+                        PUSH(vm, JN_RETURN_BOOL(state, false));
                         break;
                     }
-                    PUSH(vm, JN_RETURN_INT(_iter->index));
+                    PUSH(vm, JN_RETURN_INT(state, _iter->index));
                     tmp = target->hashmap->buckets[_iter->index].key;
                     PUSH(vm, tmp);
                     _iter->index++;
-                    PUSH(vm, JN_RETURN_BOOL(true));
+                    PUSH(vm, JN_RETURN_BOOL(state, true));
                     break;
                 default:
                     break;
@@ -764,38 +763,38 @@ int vm_run(JnVM* vm)
                 o = pop(vm);
 
                 if (NULL == o)
-                    return die(vm, "undefine function.");
+                    return die(state,vm, "undefine function.");
                 JnObject* arg = NULL;
                 switch (o->type)
                 {
                     case NATIVE_TYPE: {
-                        arg = JN_OBJECT_ARG(args, NULL, len);
+                        arg = JN_OBJECT_ARG(state, args, NULL, len);
                         a = JN_CALL_NATIVE(o, arg);
                         if (a == NULL)
-                            return die(vm, "SystemError: got NULL");
+                            return die(state,vm, "SystemError: got NULL");
                         PUSH(vm, a);
                         break;
                     }
                     case METHOD_TYPE:
-                        arg = JN_OBJECT_ARG(args, NULL, len);
+                        arg = JN_OBJECT_ARG(state, args, NULL, len);
                         a = o->method.fn(o->method.obj, arg);
-                        if (NULL == a) return die(vm, "Invalid method call.");
+                        if (NULL == a) return die(state,vm, "Invalid method call.");
                         PUSH(vm, a);
                         break;
                     case FUNCTION_TYPE: {
                         JnFunctionObject* fn = o->fn;
                         if (count != fn->arity)
-                            return die(
+                            return die(state,
                                 vm, 
                                 "function '%s' expected %d args but got %d",
                                 fn->name, fn->arity, count
                             );
-                        JnObject* res = call_function(vm, o, args);
+                        JnObject* res = call_function(state, vm, o, args);
                         PUSH(vm, res);
                         break;
                     }
                     default: 
-                        return die(vm, "Invalid function call.");
+                        return die(state,vm, "Invalid function call.");
                 }
                 break;
             }
@@ -803,7 +802,7 @@ int vm_run(JnVM* vm)
                 PUSH(vm, JN_RETURN_NONE); break;
             case OP_ERROR_MSG:
                 ident = READ_IDENT();
-                return vm_error(vm, JN_RAISE_EXCPETION(SYNTAX_ERROR, ident));
+                return vm_error(state, vm, JN_RAISE_EXCPETION(state, SYNTAX_ERROR, ident));
             case OP_END:
                 return INTERPRET_OK;
             case OP_RETURN:
@@ -813,7 +812,7 @@ int vm_run(JnVM* vm)
             case OP_ERROR:
                 return INTERPRET_RUNTIME_ERROR;
             default:
-                return die(vm, "System error.");
+                return die(state,vm, "System error.");
         }
     }
     #undef READ_BYTE
@@ -1072,7 +1071,7 @@ void compile(AST* node, Chuck* chuck)
 
         break;
     case AST_STRUCT:
-        JnObject* struct_obj =  JN_RETURN_STRUCT(NULL, node->struct_node.fields);
+        JnObject* struct_obj =  JN_RETURN_STRUCT(node->state, NULL, node->struct_node.fields);
         struct_obj->struct_obj->field_count = node->struct_node.count;
         idx = add_constant(chuck, struct_obj);
         WRITE_CHUCK(chuck, OP_CONSTANT);
@@ -1097,6 +1096,7 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_LAMBDA:
         JnObject* lambda_obj = jn_obj_lambda(
+            node->state,
             node->lambda_node.expr,
             node->lambda_node.args,
             node->lambda_node.count,
@@ -1108,6 +1108,7 @@ void compile(AST* node, Chuck* chuck)
         break;
     case AST_FUNCTION:
         JnObject* fn_obj = jn_obj_function(
+            node->state,
             node->fn_node.block,
             chuck->env, node->fn_node.params, node->fn_node.count, node->fn_node.name
         );

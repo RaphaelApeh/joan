@@ -37,53 +37,53 @@ static inline uint64_t hash_combine(uint64_t a, uint64_t b)
             (a << 6) + (a >> 2)));
 }
 
-JnObject* jn_obj_new(JnTypeObject type)
+JnObject* jn_obj_new(J_State* state, JnTypeObject type)
 {
-    JnObject* obj = gc_alloc(sizeof(JnObject), type);
+    JnObject* obj = gc_alloc(state, sizeof(JnObject), type);
     assert(obj != NULL);
     return obj;
 }
 
-JnObject* jn_obj_int(long int32)
+JnObject* jn_obj_int(J_State* state, long int_val)
 {
-    if (int32 <= 0)
+    if (int_val <= 0)
     {
         NoneObj.type = INT_TYPE;
-        NoneObj.int32 = int32;
+        NoneObj.int_val = int_val;
         return &NoneObj;
     }
-    JnObject* obj =  jn_obj_new(INT_TYPE);
-    obj->int32 = int32;
+    JnObject* obj =  jn_obj_new(state, INT_TYPE);
+    obj->int_val = int_val;
     return obj;
 }
 
-JnObject* jn_obj_string(char* str)
+JnObject* jn_obj_string(J_State* state, char* str)
 {
-    JnObject* obj =  jn_obj_new(STR_TYPE);
+    JnObject* obj =  jn_obj_new(state, STR_TYPE);
     JnStringObject* strObj = malloc(sizeof(JnStringObject));
     *strObj = JNSTR_OBJ(str);
     obj->str = strObj;
     return obj;
 }
 
-JnObject* jn_obj_char(char c)
+JnObject* jn_obj_char(J_State* state, char c)
 {
-    JnObject* obj =  jn_obj_new(CHAR_TYPE);
+    JnObject* obj =  jn_obj_new(state, CHAR_TYPE);
     obj->j_char = c;
     return obj;
 }
 
-JnObject* jn_obj_bool(bool bool8)
+JnObject* jn_obj_bool(J_State* state, bool bool_val)
 {
-    JnObject* obj =  jn_obj_new(BOOL_TYPE);
-    obj->bool8 = bool8;
+    JnObject* obj =  jn_obj_new(state, BOOL_TYPE);
+    obj->bool_val = bool_val;
     return obj;
 }
 
-JnObject* jn_obj_float(double float32)
+JnObject* jn_obj_float(J_State* state, double float_val)
 {
-    JnObject* obj =  jn_obj_new(FLOAT_TYPE);
-    obj->float32 = float32;
+    JnObject* obj =  jn_obj_new(state, FLOAT_TYPE);
+    obj->float_val = float_val;
     return obj;
 }
 
@@ -91,13 +91,13 @@ JnObject* jn_obj_float(double float32)
 JnObject* jn_obj_none(void)
 {
     NoneObj.type = NONE_TYPE;
-    NoneObj.int32 = 0;
+    NoneObj.int_val = 0;
     return &NoneObj;
 }
 
-JnObject* jn_obj_iter(JnObject* obj)
+JnObject* jn_obj_iter(J_State* state, JnObject* obj)
 {
-    JnObject* new_obj = jn_obj_new(ITER_TYPE);
+    JnObject* new_obj = jn_obj_new(state, ITER_TYPE);
     JnIterObject* iter = malloc(sizeof(JnIterObject)); // TODO
     iter->obj = obj;
     iter->index = 0;
@@ -123,28 +123,28 @@ int64_t range_at(JnRange* r, int64_t idx)
     return r->start + (idx * r->step);
 }
 
-JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step)
+JnObject* jn_obj_range(J_State* state, int64_t start, int64_t stop, int64_t step)
 {
-    JnObject* obj = jn_obj_new(RANGE_TYPE);
+    JnObject* obj = jn_obj_new(state, RANGE_TYPE);
     obj->range.start = start;
     obj->range.stop = stop;
     obj->range.step = (step == 0) ? 1 : step;
     return obj;
 }
 
-JnObject* jn_obj_arg(JnObject** args, char** arg_names, size_t count)
+JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t count)
 {
-    JnObject* obj = jn_obj_new(ARG_TYPE);
+    JnObject* obj = jn_obj_new(state, ARG_TYPE);
     obj->arg.args = args;
     obj->arg.count = count;
     obj->arg.arg_names = arg_names;
     return obj;
 }
 
-JnObject* jn_obj_error(int type, char* msg, ...)
+JnObject* jn_obj_error(J_State* state, int type, char* msg, ...)
 {
     char buffer[1 << 10];
-    JnObject* obj = jn_obj_new(ERROR_TYPE);
+    JnObject* obj = jn_obj_new(state, ERROR_TYPE);
     obj->expection.type = type;
     va_list arg; va_start(arg, msg);
     vsnprintf(buffer, sizeof(buffer), msg, arg);
@@ -193,18 +193,18 @@ char* jn_obj_cstring(JnObject* obj)
     return buffer;
 }
 
-JnObject* jn_obj_type(char* type_name, JnTypeObject type, Jn_CFunction fn)
+JnObject* jn_obj_type(J_State* state, char* type_name, JnTypeObject type, Jn_CFunction fn)
 {
-    JnObject* obj = jn_obj_new(OBJECT_TYPE);
+    JnObject* obj = jn_obj_new(state, OBJECT_TYPE);
     obj->type_val.typename = type_name;
     obj->type_val.type = type;
     obj->type_val.ctor = fn;
     return obj;
 }
 
-JnObject* jn_obj_method(JnObject* obj, JN_CMethod method)
+JnObject* jn_obj_method(J_State* state, JnObject* obj, JN_CMethod method)
 {
-    JnObject* new_obj = jn_obj_new(METHOD_TYPE);
+    JnObject* new_obj = jn_obj_new(state, METHOD_TYPE);
     new_obj->method.fn = method;
     new_obj->method.obj = obj;
     return new_obj;
@@ -247,7 +247,7 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
     {
         case INT_TYPE:
             _SET_TYPE(INT_TYPE);
-            dest->int32 = src->int32;
+            dest->int_val = src->int_val;
             break;
         case STR_TYPE:
             _SET_TYPE(STR_TYPE);
@@ -255,11 +255,11 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
             break;
         case BOOL_TYPE:
             _SET_TYPE(BOOL_TYPE);
-            dest->bool8 = src->bool8;
+            dest->bool_val = src->bool_val;
             break;
         case FLOAT_TYPE:
             _SET_TYPE(FLOAT_TYPE);
-            dest->float32 = src->float32;
+            dest->float_val = src->float_val;
             break;
         case CHAR_TYPE:
             _SET_TYPE(CHAR_TYPE);
@@ -293,7 +293,7 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
     #undef _SET_TYPE
 }
 
-static uint64_t hash_object(JnObject* obj)
+uint64_t Jn_object_hash(JnObject* obj)
 {
     if (!obj) return 0;
     uint64_t h;
@@ -302,7 +302,7 @@ static uint64_t hash_object(JnObject* obj)
         case NONE_TYPE:
             return LONG_HEX_NUM3;
         case INT_TYPE:
-            return hash_mix((uint64_t)obj->int32);
+            return hash_mix((uint64_t)obj->int_val);
         case BOOL_TYPE:
             return hash_mix(JN_AS_BOOL(obj));
         case FLOAT_TYPE:
@@ -325,7 +325,7 @@ static uint64_t hash_object(JnObject* obj)
         }
         case ITER_TYPE:
         {
-            h = hash_object(JN_AS_ITER(obj)->obj);
+            h = Jn_object_hash(JN_AS_ITER(obj)->obj);
             return hash_combine(h, hash_mix(JN_AS_ITER(obj)->index));
         }
         case MODULE_TYPE:
@@ -344,12 +344,12 @@ static uint64_t hash_object(JnObject* obj)
         }
         case METHOD_TYPE:
         {
-            h = hash_object(obj->method.obj);
+            h = Jn_object_hash(obj->method.obj);
             return hash_combine(h, hash_mix((uintptr_t)obj->method.fn));
         }
         case INSTANCE_TYPE:
         {
-            h = hash_object(obj->instance->obj);
+            h = Jn_object_hash(obj->instance->obj);
             return h;
         }
         case FUNCTION_TYPE:
@@ -371,13 +371,13 @@ JnObject* jn_intern_obj(JnObject* obj)
 {
     if (JN_IS_ARRAY(obj) || JN_IS_HASHMAP(obj) || JN_IS_STRUCT(obj))
         return obj;
-    uint64_t hash = hash_object(obj);
+    uint64_t hash = Jn_object_hash(obj);
     size_t idx = hash % JN_INTER_SIZE;
     InternEntry* entry = intern_pool[idx];
     
     while(entry)
     {
-        if (entry->obj->type == obj->type && hash_object(entry->obj) == hash_object(obj))
+        if (entry->obj->type == obj->type && Jn_object_hash(entry->obj) == Jn_object_hash(obj))
         {
             return entry->obj;
         }
@@ -392,7 +392,7 @@ JnObject* jn_intern_obj(JnObject* obj)
 }
 
 
-JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
+JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_environ* env)
 {
     Chuck* chuck = JN_ALLOC(sizeof(Chuck));
     chuck_init(chuck);
@@ -406,12 +406,13 @@ JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env)
     fn->arity = arity;
     fn->name = DEFAULT_LAMBDA_NAME;
     fn->is_lambda = 1;
-    JnObject* obj = jn_obj_new(FUNCTION_TYPE);
+    JnObject* obj = jn_obj_new(state, FUNCTION_TYPE);
     obj->fn = fn;
     return obj;
 }
 
 JnObject* jn_obj_function(
+    J_State* state,
     AST* block,
     Jn_environ* env,
     char** params, 
@@ -432,14 +433,14 @@ JnObject* jn_obj_function(
     fn->arity = arity;
     fn->is_lambda = false;
     fn->name = name;
-    JnObject* obj = jn_obj_new(FUNCTION_TYPE);
+    JnObject* obj = jn_obj_new(state, FUNCTION_TYPE);
     obj->fn = fn;
     return obj;
 }
 
-JnObject* jn_obj_struct(char* name, char** fields)
+JnObject* jn_obj_struct(J_State* state, char* name, char** fields)
 {
-    JnObject* obj = jn_obj_new(STRUCT_TYPE);
+    JnObject* obj = jn_obj_new(state, STRUCT_TYPE);
     JnStruct* struct_obj = JN_ALLOC(sizeof(JnStruct));
     struct_obj->fields = fields;
     struct_obj->name = name;
@@ -447,7 +448,7 @@ JnObject* jn_obj_struct(char* name, char** fields)
     return obj;
 }
 
-JnObject* bind_argument(JnObject* obj, char** fields, JnObject** values, long count)
+JnObject* bind_argument(J_State* state, JnObject* obj, char** fields, JnObject** values, long count)
 {
     Jn_environ* env = Jn_environ_init(NULL);
     for (int i = 0; i < obj->struct_obj->field_count; ++i)
@@ -463,16 +464,16 @@ JnObject* bind_argument(JnObject* obj, char** fields, JnObject** values, long co
         }
         Jn_environ_E* entt = environ_get(env, fields[i]);
         if (!entt || !entt->value)
-            return JN_RAISE_EXCPETION(UNDEFINE_ERROR, "Unkown field '%s'.", fields[i]);
+            return JN_RAISE_EXCPETION(state, UNDEFINE_ERROR, "Unkown field '%s'.", fields[i]);
         
         entt->value = values[i];
     }
-    return jn_obj_instance(obj, env);
+    return jn_obj_instance(state, obj, env);
 }
 
-JnObject* jn_obj_instance(JnObject* from_obj, Jn_environ* fields)
+JnObject* jn_obj_instance(J_State* state, JnObject* from_obj, Jn_environ* fields)
 {
-    JnObject* obj = jn_obj_new(INSTANCE_TYPE);
+    JnObject* obj = jn_obj_new(state, INSTANCE_TYPE);
     JnInstance* instance = JN_ALLOC(sizeof(JnInstance));
     instance->obj = from_obj;
     instance->fields = Jn_environ_init(fields);
@@ -480,9 +481,9 @@ JnObject* jn_obj_instance(JnObject* from_obj, Jn_environ* fields)
     return obj;
 }
 
-JnObject* jn_obj_module(char* name, char* path, Jn_environ* env)
+JnObject* jn_obj_module(J_State* state, char* name, char* path, Jn_environ* env)
 {
-    JnObject* obj = jn_obj_new(MODULE_TYPE);
+    JnObject* obj = jn_obj_new(state, MODULE_TYPE);
     JnModule* mod = malloc(sizeof(JnModule));
     mod->name = name;
     mod->env = env;
@@ -492,14 +493,6 @@ JnObject* jn_obj_module(char* name, char* path, Jn_environ* env)
     return obj;
 }
 
-JnObject* jn_obj_enum(Jn_Hashmap* map, char** fields, int count)
-{
-    assert(map != NULL);
-    for (int i = 0; i < count; ++i)
-    {
-        // TODO
-    }
-}
 
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx)
 {
@@ -563,15 +556,15 @@ char* Jn_object_cstring(JnObject* obj)
     switch (obj->type)
     {
         case INT_TYPE:
-            snprintf(buffer, sizeof(buffer), "%lld", obj->int32);
+            snprintf(buffer, sizeof(buffer), "%lld", obj->int_val);
             goto buf;
         case STR_TYPE:
             return strdup(obj->str->chars);
         case FLOAT_TYPE:
-            snprintf(buffer, sizeof(buffer), "%.15g", obj->float32);
+            snprintf(buffer, sizeof(buffer), "%.15g", obj->float_val);
             goto buf;
         case BOOL_TYPE:
-            snprintf(buffer, sizeof(buffer), "%s", obj->bool8 ? "true": "false");
+            snprintf(buffer, sizeof(buffer), "%s", obj->bool_val ? "true": "false");
             goto buf;
         case CHAR_TYPE:
             snprintf(buffer, sizeof(buffer), "%c", JN_AS_CHAR(obj));
@@ -653,13 +646,13 @@ bool is_truthy(JnObject* obj)
     switch (obj->type)
     {
     case BOOL_TYPE:
-        return obj->bool8;
+        return obj->bool_val;
     case CHAR_TYPE:
         return JN_AS_CHAR(obj) != '\0';
     case INT_TYPE:  
-        return obj->int32 != 0;
+        return obj->int_val != 0;
     case FLOAT_TYPE:
-        return obj->float32 != 0;
+        return obj->float_val != 0;
     case STR_TYPE:
         return obj->str->len != 0;
     case NATIVE_TYPE:

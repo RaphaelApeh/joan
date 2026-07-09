@@ -290,6 +290,7 @@ typedef struct AST{
         char* comment;
         const char* error_msg;
     };
+    J_State* state;
     char* filename;
     int line, col;
 } AST;

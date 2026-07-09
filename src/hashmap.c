@@ -1,26 +1,10 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include "Joan.h"
+#include <Joan.h>
 #include "object.h"
 
 
-static uint64_t hash_object(JnObject* obj)
-{
-    switch (obj->type)
-    {
-        case INT_TYPE:
-            return (uint64_t)obj->int32;
-        case BOOL_TYPE:
-            return obj->bool8;
-        case FLOAT_TYPE:
-            return obj->float32;
-        case STR_TYPE:
-            return obj->str->hash;
-        default:
-            return 0;
-    }
-}
 
 static Jn_HashEntry* get_hash_entry(Jn_Hashmap* map, JnObject* key)
 {
@@ -29,7 +13,7 @@ static Jn_HashEntry* get_hash_entry(Jn_Hashmap* map, JnObject* key)
     for (size_t i = 0; i < map->size; ++i)
     {
         Jn_HashEntry* entry =  &map->buckets[i];
-        if (entry->hash == hash_object(key))
+        if (entry->hash == Jn_object_hash(key))
             return entry;
     }
     return NULL;
@@ -48,7 +32,7 @@ static void insert_hash_entry(Jn_Hashmap* map, JnObject* key, JnObject* value)
     assert(map->buckets != NULL);
     size_t old_size = map->size;
     map->buckets[map->size++] = (Jn_HashEntry){
-        .key = key, .value = value, .hash = hash_object(key)
+        .key = key, .value = value, .hash = Jn_object_hash(key)
     };
     assert(old_size < map->size);
 
@@ -82,7 +66,7 @@ void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx)
     }
     assert(map->buckets != NULL);
     map->buckets[idx] = (Jn_HashEntry){
-        .key = key, .value = value, .hash = hash_object(key)
+        .key = key, .value = value, .hash = Jn_object_hash(key)
     };
     map->size++;
 }
@@ -94,21 +78,6 @@ void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value)
 }
 
 
-void Jn_hashmap_from_string(Jn_Hashmap* map, char* str, JnObject* value)
-{
-    assert(str != NULL || map != NULL || value != NULL);
-    JnObject* str_obj = JN_RETURN_STRING(str);
-    Jn_hashmap_put(map, str_obj, value);
-}
-
-JnObject* Jn_hashmap_get_string(Jn_Hashmap* map, char* str)
-{
-    assert(map != NULL || str != NULL);
-    Jn_HashEntry* ent = get_hash_entry(map, JN_RETURN_STRING(str));
-    if (ent == NULL)
-        return JN_RAISE_EXCPETION(UNDEFINE_ERROR, "object does not have field '%s'.", str);
-    return ent->value;
-}
 
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)
 {

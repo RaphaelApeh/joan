@@ -39,9 +39,9 @@ extern "C" {
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
-#define JOAN_VERSION_PATCH 2
+#define JOAN_VERSION_PATCH 3
 
-#define JOAN_VERSION "0.7.2"
+#define JOAN_VERSION "0.7.3"
 
 #ifdef _WIN32
     #ifdef JN_BUILD_DLL
@@ -107,37 +107,37 @@ typedef struct Jn_environ Jn_environ;
     if (!_JN_CHECK_TYPE(obj, t))        \
         return JN_RAISE_EXCPETION(TYPE_ERROR, "Got a type mismatch.");\
 } while (0)
-#define JN_OBJECT_ARG(objects, params, count) jn_obj_arg((objects), (params), (count))
+#define JN_OBJECT_ARG(state, objects, params, count) jn_obj_arg(state, (objects), (params), (count))
 #define JN_GET_ARGS(obj, idx) ((obj)->arg.args[idx])
 #define JN_MAKE_ARGS(cap) Jn_make_args(cap)
 #define JN_ADD_ARG(args, obj) Jn_add_arg(args, obj)
 #define JN_GET_INSTANCE(obj) obj->instance
-#define JN_OBJECT(type) jn_obj_new(type)
+#define JN_OBJECT(state, type) jn_obj_new(state, type)
 #define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
 #define JN_CALL_NATIVE(fn_obj, args) fn_obj->native_fn->fn(args)
-#define JN_RAISE_EXCPETION(t, msg, ...) jn_obj_error(t, msg, ##__VA_ARGS__)
+#define JN_RAISE_EXCPETION(state, t, msg, ...) jn_obj_error(state, t, msg, ##__VA_ARGS__)
 #define JN_RETURN_NONE jn_obj_none()
-#define JN_RETURN_INT(i) jn_obj_int((i))
-#define JN_RETURN_BOOL(b) jn_obj_bool((b))
-#define JN_RETURN_TRUE() JN_RETURN_BOOL(1)
-#define JN_RETURN_FALSE() JN_RETURN_BOOL(0)
-#define JN_RETURN_STRING(s) jn_obj_string((s))
-#define JN_RETURN_CHAR(c) jn_obj_char((c))
-#define JN_RETURN_FLOAT(d) jn_obj_float(d)
-#define JN_RETURN_TYPE_OBJECT(t_n, t, fn) jn_obj_type(t_n, t, fn)
+#define JN_RETURN_INT(state, i) jn_obj_int(state, (i))
+#define JN_RETURN_BOOL(state, b) jn_obj_bool(state, (b))
+#define JN_RETURN_TRUE(state) JN_RETURN_BOOL(state, 1)
+#define JN_RETURN_FALSE(state) JN_RETURN_BOOL(state, 0)
+#define JN_RETURN_STRING(state, s) jn_obj_string(state, (s))
+#define JN_RETURN_CHAR(state, c) jn_obj_char(state, (c))
+#define JN_RETURN_FLOAT(state, d) jn_obj_float(state, d)
+#define JN_RETURN_TYPE_OBJECT(state, t_n, t, fn) jn_obj_type(state, t_n, t, fn)
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
-#define JN_RETURN_STRUCT(name, fields) jn_obj_struct((name), fields)
+#define JN_RETURN_STRUCT(state, name, fields) jn_obj_struct(state, (name), fields)
 #define JN_RETURN_INSTANCE(obj, fields) jn_obj_instance((obj), (fields))
-#define JN_OBJECT_RANGE(start, stop, step) jn_obj_range(start, stop, step)
+#define JN_OBJECT_RANGE(state, start, stop, step) jn_obj_range(state, start, stop, step)
 #define JN_OBJECT_VALUE(obj) // TODO 
 #define JN_AS_CHAR(obj) (obj)->j_char
 #define JN_AS_STRING(obj) (obj)->str
 #define JN_AS_CSTRING(obj) (JN_AS_STRING(obj)->chars)
-#define JN_AS_INT(obj) (obj)->int32
-#define JN_AS_FLOAT(obj) (obj)->float32
+#define JN_AS_INT(obj) (obj)->int_val
+#define JN_AS_FLOAT(obj) (obj)->float_val
 #define JN_AS_ARRAY(obj) (obj)->arr
 #define JN_AS_ITER(obj) (obj)->iter
-#define JN_AS_BOOL(obj) (obj)->bool8
+#define JN_AS_BOOL(obj) (obj)->bool_val
 #define JN_AS_RANGE(obj) (&((obj)->range))
 #define JN_AS_HASHMAP(obj) (obj)->hashmap
 #define JN_AS_STRUCT(obj) (obj)->struct_obj
@@ -219,7 +219,7 @@ typedef struct Jn_environ Jn_environ;
 
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 #define JN_AS_HM(obj) obj->hashmap
-#define JN_ITER_INIT(obj) jn_obj_iter(obj)
+#define JN_ITER_INIT(state, obj) jn_obj_iter(state, obj)
 #define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX ERROR" : (type) ==   ASSERT_ERROR ? "ASSERTION ERROR" : (type) == TYPE_ERROR ? "TYPE ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT IMPLEMENT ERROR" : "UNDEFINE ERROR")
 // State
 
@@ -382,8 +382,6 @@ typedef double JnFloatObject;
 typedef bool JnBoolObject;
 typedef char JnCharObject;
 
-extern J_State Jn_globalState;
-
 // Object
 
 typedef struct JnObject{
@@ -408,9 +406,9 @@ typedef struct JnObject{
         JN_Args arg;
         Jn_Error expection;
         JnRange range;
-        JnIntObject int32;
-        JnFloatObject float32;
-        JnBoolObject bool8;
+        JnIntObject int_val;
+        JnFloatObject float_val;
+        JnBoolObject bool_val;
         JnCharObject j_char;
     };
     JnObject* next;
@@ -434,56 +432,57 @@ JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
 
 // Register native function
-JN_API void Jn_define_fn(const char*, Jn_CFunction);
+JN_API void Jn_define_fn(J_State* state, const char*, Jn_CFunction);
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
 
 // Compile & Run
+JN_API int Jn_parse(J_State*, const char*);
 JN_API int Jn_compile(J_State*);
 JN_API int Jn_exec(J_State*);
 
 // Load builtin function
 JN_API void Jn_load_Cfunctions(J_State* state);
 // Call user-define functions
-JN_API JnObject* Jn_call_fn(char* fn_name, JnObject* args);
-JN_API J_State* Jn_get_state(void);
-JN_API J_Context* Jn_get_context(void);
+JN_API JnObject* Jn_call_fn(J_State*, char* fn_name, JnObject* args);
+JN_API J_Context* Jn_get_context(J_State*);
 // Jn_exec_from_file(FILE* fptr);
-JN_API void Jn_program_init(void);
+JN_API void Jn_program_init(J_State*);
 JN_API int Jn_exec_program(J_State* state, char* source);
-JN_API int Jn_exec_string(char* str);
-JN_API int Jn_exec_REPL(char* source);
+JN_API int Jn_exec_string(J_State*, char*);
+JN_API int Jn_exec_REPL(J_State*, char* source);
 // Main Execution function
-JN_API int Jn_execute_main(char* filepath);
+JN_API int Jn_execute_main(J_State*, char*);
 // Execute for FILE ptr.
-JN_API int Jn_exec_from_file(FILE* fptr);
+JN_API int Jn_exec_from_file(J_State*, FILE*);
 
-JN_API void Jn_program_close(void);
+JN_API void Jn_program_close(J_State*);
 
 JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
 
 // Object functions
-JnObject* jn_obj_new(JnTypeObject type);
-JnObject* jn_obj_int(long o_int);
-JnObject* jn_obj_string(char* str);
-JnObject* jn_obj_char(char c);
+JnObject* jn_obj_new(J_State*, JnTypeObject type);
+JnObject* jn_obj_int(J_State*, long o_int);
+JnObject* jn_obj_string(J_State*, char* str);
+JnObject* jn_obj_char(J_State*, char c);
 JnObject* jn_obj_none(void);
-JnObject* jn_obj_bool(bool o_bool);
-JnObject* jn_obj_range(int64_t start, int64_t stop, int64_t step);
-JnObject* jn_obj_float(double o_float);
-JnObject* jn_obj_iter(JnObject* iter);
-JnObject* jn_obj_type(char* type_name, JnTypeObject type, Jn_CFunction fn);
-JnObject* jn_obj_function(AST* block, Jn_environ* env, char** params, int arity, char* name);
-JnObject* jn_obj_lambda(AST* expr, char** params, int arity, Jn_environ* env);
-JnObject* jn_obj_module(char* name, char* path, Jn_environ* env);
-JnObject* jn_obj_struct(char* name, char** fields);
-JnObject* jn_obj_arg(JnObject** args, char** arg_names, size_t count);
-JnObject* jn_obj_method(JnObject* obj, JN_CMethod method);
-JnObject* jn_obj_instance(JnObject* obj, Jn_environ* fields);
+JnObject* jn_obj_bool(J_State*, bool o_bool);
+JnObject* jn_obj_range(J_State*, int64_t start, int64_t stop, int64_t step);
+JnObject* jn_obj_float(J_State*, double o_float);
+JnObject* jn_obj_iter(J_State*, JnObject* iter);
+JnObject* jn_obj_type(J_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
+JnObject* jn_obj_function(J_State*, AST* block, Jn_environ* env, char** params, int arity, char* name);
+JnObject* jn_obj_lambda(J_State*, AST* expr, char** params, int arity, Jn_environ* env);
+JnObject* jn_obj_module(J_State*, char* name, char* path, Jn_environ* env);
+JnObject* jn_obj_struct(J_State*, char* name, char** fields);
+JnObject* jn_obj_arg(J_State*, JnObject** args, char** arg_names, size_t count);
+JnObject* jn_obj_method(J_State*, JnObject* obj, JN_CMethod method);
+JnObject* jn_obj_instance(J_State*, JnObject* obj, Jn_environ* fields);
+uint64_t Jn_object_hash(JnObject* obj);
 char* jn_obj_to_string(JnObject* obj);
 char* jn_obj_cstring(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
-JnObject* jn_obj_error(int type, char* msg, ...);
+JnObject* jn_obj_error(J_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
 

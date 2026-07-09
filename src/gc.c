@@ -4,9 +4,8 @@
 #include "gc.h"
 
 
-void* gc_alloc(size_t size, JnTypeObject type)
+void* gc_alloc(J_State* state, size_t size, JnTypeObject type)
 {
-    J_State* state = Jn_get_state();
     GC* gc = state->gc;
     JnObject* obj = malloc(size);
     assert(obj != NULL);

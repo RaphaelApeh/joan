@@ -1,6 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include <Joan.h>
 #include "token.h"
 #include "env.h"
 
@@ -23,6 +24,7 @@ typedef enum{
 } precedence;
 
 typedef struct joan_parser_t{
+    J_State* state;
     joan_lexer_t* l;
     Arena* arena;
     joan_token_t curr;

@@ -475,11 +475,17 @@ static AST* parse_for(joan_parser_t* p)
     return ast;
 }
 
+static AST* parse_instance(joan_parser_t* p, AST* instance_obj);
+
 static AST* parse_member(joan_parser_t* p, AST* obj)
 {
     // obj.field or obj.field()
     J_TokenType tok = p->curr.type;
     advance_parser_c(p);
+
+    if (check(p, TOKEN_LBRACE))
+        return parse_instance(p, obj);
+
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected identifier but got (%s).", GET_LEX(p));
     
@@ -582,7 +588,6 @@ static bool allow_instance(joan_parser_t* p, AST* node)
     }
     return ret;
 }
-static AST* parse_instance(joan_parser_t* p, AST* instance_obj);
 
 static AST* parse_postfix(joan_parser_t* p, AST* left)
 {
@@ -612,12 +617,6 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         if (match(p, TOKEN_AT) && check(p, TOKEN_IF))
         {
             return parse_inline_if(p, left);
-        }
-
-        if (allow_instance(p, left) && check(p, TOKEN_LBRACE))
-        {
-            left = parse_instance(p, left);
-            continue;
         }
 
         if (check(p, TOKEN_RANGE))
@@ -992,7 +991,7 @@ AST* parse_value(joan_parser_t* p)
     {
         case TOKEN_INT:
             long i = t.i;
-             JnObject* v =  jn_obj_int(i);
+             JnObject* v =  jn_obj_int(p->state, i);
             advance_parser_c(p);
             return ast_literal(p, v);
         case TOKEN_LPARN:
@@ -1005,7 +1004,7 @@ AST* parse_value(joan_parser_t* p)
         case TOKEN_FLOAT:
             double d = t.d;
             advance_parser_c(p);
-            return ast_literal(p,  jn_obj_float(d));
+            return ast_literal(p,  jn_obj_float(p->state, d));
         case TOKEN_HASH:
             advance_parser_c(p);
             if (check(p, TOKEN_LBRACE))
@@ -1032,14 +1031,14 @@ AST* parse_value(joan_parser_t* p)
                 len += next_len;
                 advance_parser_c(p);
             }
-            ast = ast_literal(p,  jn_obj_string(buff));
+            ast = ast_literal(p,  jn_obj_string(p->state, buff));
             free(buff);
             return ast;
         case TOKEN_CHAR:
             char c = t.c;
             ast = ast_literal(
                 p,
-                JN_RETURN_CHAR(c) 
+                JN_RETURN_CHAR(p->state, c) 
             );
             advance_parser_c(p);
             return ast;
@@ -1087,7 +1086,7 @@ AST* parse_value(joan_parser_t* p)
             ast->unary.right = parse_expr(p);
             return ast;
         case TOKEN_TRUE:
-            ast = ast_literal(p,  jn_obj_bool(true));
+            ast = ast_literal(p,  jn_obj_bool(p->state, true));
             advance_parser_c(p);
             return ast;
         case TOKEN_NONE:
@@ -1095,7 +1094,7 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast;
         case TOKEN_FALSE:
-            ast = ast_literal(p,  jn_obj_bool(false));
+            ast = ast_literal(p,  jn_obj_bool(p->state, false));
             advance_parser_c(p);
             return ast;
         case TOKEN_LBRACKET:

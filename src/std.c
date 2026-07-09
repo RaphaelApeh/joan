@@ -532,7 +532,7 @@ static JnObject* string_ctor(JnObject* args)
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn)
 {
     assert(state != NULL && name != NULL);
-    set_symbols(NULL, name);
+    set_symbols(state, name);
     JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
@@ -549,9 +549,8 @@ JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObj
 }
 
 
-JN_API void Jn_define_fn(const char* name, Jn_CFunction fn)
+JN_API void Jn_define_fn(J_State* state, const char* name, Jn_CFunction fn)
 {
-    J_State* state = Jn_get_state();
     JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
@@ -586,7 +585,7 @@ JN_API JnObject* Jn_call_fn(char* fn_name, JnObject* args)
     {
         environ_insert(child.env, fn->params[i], JN_GET_ARGS(args, i));
     }
-    int r = vm_run(&child);
+    int r = 0; // vm_run(&child);
     // if (r == 0)
     //     return pop(&child);
     return JN_RETURN_NONE;

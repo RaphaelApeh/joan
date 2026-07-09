@@ -1,9 +1,9 @@
 // functions
-let x = 1
+static let x = 1
 
-fn main() {
+typeof(name) == ARRAY_TYPE
+
+static fn main(x : string, y : float, xy: int=43) {
     println x
     return; // return nothing or None
 }
-
-main()

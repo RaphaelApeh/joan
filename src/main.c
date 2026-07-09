@@ -57,8 +57,9 @@ int main(int argc, char** argv)
     char** new_argv = argv + 1;
     int new_argc = argc - 1;
     char* source = NULL;
+    int exit_code;
     struct Command c = parse_args(argv, argc);
-
+    J_State state = {0};
     switch (c.type)
     {
         case C_ERROR:
@@ -69,23 +70,27 @@ int main(int argc, char** argv)
             version(); return 0;
         case C_REPL:
         {
-            _JN_INIT_PROGRAM  = true;
-            Jn_repl(); 
-            return 0;
+            goto repl;
         }
         case C_RUN_REPL:
-            if (!c.filename) return -1;
-            Jn_program_init();
-            Jn_execute_main(c.filename);
-            Jn_repl();
-            Jn_program_close();
-            return 0;
+        {
+            goto interative;
+        }
         case C_RUN:
-            Jn_program_init();
-            assert(c.filename);
-            Jn_execute_main(c.filename);
-            Jn_program_close();
-            return 0;
+        {
+            goto execute;
+        }
     }
-    return -1;
+    return 0;
+    repl:
+        Jn_repl();
+        return 0;
+    execute:
+        Jn_program_init(&state);
+        if (!c.filename)    return -1;
+        exit_code = Jn_execute_main(&state, c.filename);
+        Jn_program_close(&state);
+        return exit_code;
+    interative:
+        return 0;
 }

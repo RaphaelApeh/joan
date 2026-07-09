@@ -23,7 +23,7 @@ int64_t range_len(JnRange* r);
 int64_t range_at(JnRange* r, int64_t idx);
 JnObject* jn_intern_obj(JnObject* obj);
 void jn_obj_reassign(JnObject* dest, JnObject* src);
-JnObject* bind_argument(JnObject* obj, char** fields, JnObject** values, long count);
+JnObject* bind_argument(J_State*, JnObject* obj, char** fields, JnObject** values, long count);
 
 bool is_truthy(JnObject* obj);
 void print_JnObject(JnObject* obj);

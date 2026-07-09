@@ -125,10 +125,10 @@ bool isnumber(JnObject* obj)
 double tonumber(JnObject* obj)
 {
     if (obj->type == INT_TYPE)
-        return (double)obj->int32;
+        return (double)obj->int_val;
     if (obj->type == CHAR_TYPE)
         return (double)JN_AS_CHAR(obj);
-    return obj->float32;
+    return obj->float_val;
 }
 
 void runtime_error(char* msg, ...)
@@ -138,7 +138,7 @@ void runtime_error(char* msg, ...)
     vfprintf(stderr, msg, arg);
     va_end(arg);
     exit(72);
-}
+} 
 
 
 case_t* init_case(Arena* arena)

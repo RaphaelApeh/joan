@@ -7,11 +7,11 @@
 #include "eval.h"
 #include "helper.h"
 
-#define eval_bin(l, r, op) jn_obj_float(tonumber((l)) op tonumber((r)))
+#define eval_bin(l, r, op) jn_obj_float(state, tonumber((l)) op tonumber((r)))
 
-#define eval_bin_int(l, r, op) jn_obj_int((int)tonumber((l)) op (int)tonumber((r)))
+#define eval_bin_int(l, r, op) jn_obj_int(state, (int)tonumber((l)) op (int)tonumber((r)))
 
-#define eval_bin_bool(l, r, op) jn_obj_bool(tonumber((l)) op tonumber((r)))
+#define eval_bin_bool(l, r, op) jn_obj_bool(state, tonumber((l)) op tonumber((r)))
 
 // TODO
 
@@ -20,11 +20,11 @@ static uint64_t hash_object(JnObject* obj)
     switch (obj->type)
     {
         case INT_TYPE:
-            return (uint64_t)obj->int32;
+            return (uint64_t)obj->int_val;
         case BOOL_TYPE:
-            return obj->bool8;
+            return obj->bool_val;
         case FLOAT_TYPE:
-            return obj->float32;
+            return obj->float_val;
         case STR_TYPE:
             return obj->str->hash;
         case NONE_TYPE:
@@ -63,7 +63,7 @@ static char* format_string(char* fmt, JnObject* obj)
     return str;
 }
 
-JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
+JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
 {
     bool is_true = false;
     char* str = NULL;
@@ -76,17 +76,17 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
             is_true = true;
         else if (lhs == rhs)
             is_true = true;
-        return jn_obj_bool(is_true);
+        return JN_RETURN_BOOL(state, is_true);
     }else if (op == EVAL_AND)
     {
         if (is_truthy(lhs) && is_truthy(rhs))
             is_true = true;
-        return jn_obj_bool(is_true);
+        return JN_RETURN_BOOL(state, is_true);
     } else if (op == EVAL_OR)
     {
         if (is_truthy(lhs) || is_truthy(rhs))
             is_true = true;
-        return jn_obj_bool(is_true);   
+        return JN_RETURN_BOOL(state, is_true);   
     }
     if (JN_IS_ITERABLE(rhs) && (op == EVAL_IN || op == EVAL_NOT_IN))
     {
@@ -106,7 +106,7 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
                         break;
                     }
                 }
-                return JN_RETURN_BOOL(op == EVAL_IN ? is_true : !is_true);
+                return JN_RETURN_BOOL(state, op == EVAL_IN ? is_true : !is_true);
             }
             case ITER_TYPE: break; // TODO
             case HASHMAP_TYPE: {
@@ -115,7 +115,7 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
                     tmp = JN_HASHMAP_GET(rhs->hashmap, lhs) != NULL;
                 else
                     tmp = JN_HASHMAP_GET(rhs->hashmap, lhs) == NULL;
-                return JN_RETURN_BOOL(tmp);
+                return JN_RETURN_BOOL(state, tmp);
             }
         }
     }
@@ -127,12 +127,12 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
             case EVAL_ADD:
                 ot = lhs->type;
                 if (ot == INT_TYPE)
-                    return jn_obj_int((int)(tonumber(lhs) + tonumber(rhs)));
+                    return jn_obj_int(state, (int)(tonumber(lhs) + tonumber(rhs)));
                 return eval_bin(lhs, rhs, +);
             case EVAL_MUL:
                 return eval_bin(lhs, rhs, *);
             case EVAL_POW:
-                return JN_RETURN_INT(pow(tonumber(lhs), tonumber(rhs)));
+                return JN_RETURN_INT(state, pow(tonumber(lhs), tonumber(rhs)));
             case EVAL_EQUAL:
                 return eval_bin_bool(lhs, rhs, ==);
             case EVAL_SUB:
@@ -169,24 +169,24 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
     {
         // TODO: add support for multiple objects.
         char* s = format_string(lhs->str->chars, rhs);
-        return JN_RETURN_STRING(s);
+        return JN_RETURN_STRING(state, s);
     }
     if (JN_IS_CHAR(lhs) && JN_IS_STRING(rhs))
     {
         switch (op)
         {
         case EVAL_ADD:
-            return JN_RAISE_EXCPETION(TYPE_ERROR, "'+' is not supported for a char and string type.");
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "'+' is not supported for a char and string type.");
         case EVAL_IN:
             str = memchr(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs), JN_AS_STRING(rhs)->len);
             is_true = str != NULL;
-            return JN_RETURN_BOOL(is_true);
+            return JN_RETURN_BOOL(state, is_true);
         case EVAL_NOT_IN:
             str = memchr(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs), JN_AS_STRING(rhs)->len);
             is_true = str == NULL;
-            return JN_RETURN_BOOL(!is_true);        
+            return JN_RETURN_BOOL(state, !is_true);        
         default:
-            return JN_RAISE_EXCPETION(TYPE_ERROR, "char does not support this operator for string.");
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "char does not support this operator for string.");
         }
     }
     if (lhs->type == STR_TYPE && rhs->type == STR_TYPE)
@@ -195,30 +195,37 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
         {
             case EVAL_ADD:
                 str = strcat(lhs->str->chars, rhs->str->chars);
-                return jn_obj_string(str);
+                return JN_RETURN_STRING(state, str);
             case EVAL_IS:
             case EVAL_EQUAL:
-                return jn_obj_bool(
+                return JN_RETURN_BOOL(
+                    state,
                     lhs->str->hash == rhs->str->hash
                 );
             case EVAL_IN:
-                return jn_obj_bool(strstr(lhs->str->chars, rhs->str->chars) == NULL);
+                return JN_RETURN_BOOL(state, strstr(lhs->str->chars, rhs->str->chars) == NULL);
             case EVAL_NOTEQUAL:
-                return jn_obj_bool(
+                return JN_RETURN_BOOL(
+                    state,
                     lhs->str->hash != rhs->str->hash
                 );
             default:
                 goto end;
         }
     }
+    
+    if (JN_IS_ITERABLE(rhs))
+    {
+        /// 
+    }
     if (lhs->type == BOOL_TYPE && rhs->type == BOOL_TYPE)
     {
         switch (op)
         {
         case EVAL_EQUAL:
-            return jn_obj_bool(lhs->bool8 == rhs->bool8);
+            return JN_RETURN_BOOL(state, lhs->bool_val  == rhs->bool_val );
         case EVAL_NOTEQUAL:
-            return jn_obj_bool(lhs->bool8 != rhs->bool8);
+            return JN_RETURN_BOOL(state, lhs->bool_val  != rhs->bool_val );
         default:
             goto end;
         }
@@ -228,7 +235,7 @@ JnObject* eval_binary(JnObject* lhs, JnObject* rhs, BinaryOp op)
         return lhs;
     }
     printf("Left: %d; Right: %d\n", lhs->type, rhs->type);
-    return JN_RAISE_EXCPETION(TYPE_ERROR, "Type '%s' does not support operation with '%s'.", JN_OBJ_TO_STRING(lhs), JN_OBJ_TO_STRING(rhs));
+    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Type '%s' does not support operation with '%s'.", JN_OBJ_TO_STRING(lhs), JN_OBJ_TO_STRING(rhs));
     end:
         return NULL;
 }

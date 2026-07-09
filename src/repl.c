@@ -2,11 +2,9 @@
 #include <stdlib.h>
 #include "Joan.h"
 #include "repl.h"
-#include "vendor/linenoise.h" // TODO
+
 #define OPTPARSE_IMPLEMENTATION
 #include "vendor/optparse.h"
-
-int _JN_INIT_PROGRAM = false;
 
 enum { INCOMPLETE, OK};
 
@@ -120,23 +118,21 @@ static void print_help(void)
     );
 }
 
+JN_API void Jn_run_iterative(J_State* state)
+{
+    // TODO
+}
+
 JN_API void Jn_repl(void)
 {
     char line[256];
-    if  (_JN_INIT_PROGRAM)
-    {
-        fprintf(stderr, 
-            "Welcome to Joan v" JOAN_VERSION " at %s\n"
-            "\"!enter\" to exit shell.\n"
-            "\"!help\" for help info.\n",
-            __TIMESTAMP__
-        );
-        Jn_program_init();
-    } else {
-        fprintf(stderr, 
-        "\"!enter\" to exit shell.\n"
-        );
-    }
+    J_State state = {0};
+    Jn_program_init(&state);
+    fprintf(stderr, 
+        "Welcome to Joan v" JOAN_VERSION "\n"
+        "\"CTL-C\" to exit shell.\n"
+        "\"!help\" for help info.\n"
+    );
     for (;;)
     {
         fprintf(stderr, buffer_count == 0 ? ">>> " : "... ");
@@ -144,7 +140,6 @@ JN_API void Jn_repl(void)
             break;
         strcat(buffer, line);
         buffer_count += strlen(line);
-        if (strncmp(line, "!enter", 6) == 0) break;
         if (strncmp(line, "!help", 5) == 0) 
         {
             print_help();
@@ -157,14 +152,14 @@ JN_API void Jn_repl(void)
         if (type == INCOMPLETE)
             continue;
         
-        int exit_code = Jn_exec_REPL(buffer);
+        int exit_code = Jn_exec_REPL(&state, buffer);
         buffer[0] = 0;
         buffer_count = 0;
-        if (exit_code < 0)
+        if (exit_code < 0 || exit_code > 0)
         {
-            // DO something
+            //  exit() function
+            break;
         }
     }
-    if (_JN_INIT_PROGRAM)
-        Jn_program_close();
+    Jn_program_close(&state);
 }

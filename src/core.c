@@ -11,9 +11,6 @@
 #include "env.h"
 
 
-J_State Jn_globalState;
-static bool __set = false;
-
 struct Module_Reg {
     JnObject* module;
     char* name;
@@ -61,20 +58,7 @@ void* Jn_alloc(size_t size)
     return m;
 }
 
-
-JN_API J_State* Jn_get_state(void)
-{
-
-    J_State* state = &Jn_globalState;
-    assert(state->running);
-    return state;
-}
-
-JN_API J_Context* Jn_get_context(void)
-{
-    J_State* state = Jn_get_state();
-    return &state->cxt;
-}
+JN_API J_Context* Jn_get_context(J_State* state) { return &state->cxt; }
 
 JN_API Jn_Error* Jn_get_error(J_State* state)
 {
@@ -84,10 +68,6 @@ JN_API Jn_Error* Jn_get_error(J_State* state)
 
 void set_symbols(J_State* state, char* str)
 {
-    if (state == NULL)
-    {
-        state = Jn_get_state();
-    }
     assert(state != NULL);
     assert(state->symbols != NULL);
     if (state->symbols_count >= state->symbols_capacity)
@@ -98,12 +78,8 @@ void set_symbols(J_State* state, char* str)
     state->symbols[state->symbols_count++] = str;
 }
 
-JN_API void Jn_program_init(void)
+JN_API void Jn_program_init(J_State* state)
 {
-    assert(!__set && "program is already initialize.");
-    memset(&Jn_globalState, 0, sizeof(J_State));
-    J_State* state = &Jn_globalState;
-    __set = true;
     state->vm = malloc(sizeof(JnVM));
     state->gc = malloc(sizeof(GC));
     memset(&state->error, 0, sizeof(Jn_Error));
@@ -157,7 +133,7 @@ JN_API int Jn_compile(J_State* state)
 
 JN_API int Jn_exec(J_State* state)
 {
-    int i = vm_run(state->vm);
+    int i = vm_run(state, state->vm);
     gc_collect(state);
     if (i != 0)
     {
@@ -203,7 +179,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     return exit_code;
 }
 
-JN_API int Jn_execute_main(char* filepath)
+JN_API int Jn_execute_main(J_State* state, char* filepath)
 {
     if (!filepath)
     {
@@ -212,16 +188,14 @@ JN_API int Jn_execute_main(char* filepath)
     }
     J_Source src = read_source_file(filepath);
     assert(src.filename != NULL && src.source != NULL);
-    J_State* state = Jn_get_state();
     state->cxt.source = src;
-    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filepath));
+    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, filepath));
     int exit_code = Jn_exec_program(state, src.source);
     return exit_code;
 }
 
-JN_API int Jn_from_string(const char* string)
+JN_API int Jn_from_string(J_State* state, const char* string)
 {
-    J_State* state = Jn_get_state();
     joan_lexer_t l = {0};
     JnVM vm = {0};
     Chuck chuck = {0};
@@ -230,7 +204,7 @@ JN_API int Jn_from_string(const char* string)
     Jnvm_init(&vm, &chuck);
     vm.chuck = &chuck;
     p.arena = state->arena;
-    J_init_lexer(&l, string);
+    J_init_lexer(&l, (char *)string);
     jn_init_parser(state->parser, &l);
     vm.global = state->globals;
     vm.env = state->globals;
@@ -243,14 +217,13 @@ JN_API int Jn_from_string(const char* string)
             break;
     }
     write_chuck(vm.chuck, OP_END);
-    int i = vm_run(&vm);
+    int i = vm_run(state, &vm);
     return i;   
 }
 
-JN_API int Jn_exec_REPL(char* source)
+JN_API int Jn_exec_REPL(J_State* state, char* source)
 {
     if (!source) return -1;
-    J_State* state = Jn_get_state();
     state->cxt.source.filename = NULL;
     state->cxt.source.source = strdup(source);
     int exrt = Jn_exec_program(state, source);
@@ -282,10 +255,6 @@ static JnObject* find_module(char* name)
 
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
 {
-    if (state == NULL)
-    {
-        state = Jn_get_state();
-    }
     assert(state != NULL);
     char buff[100];
     char* filename;
@@ -299,12 +268,12 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     
     bool exists = file_exists(filename);
     if (!exists)
-        return  JN_RAISE_EXCPETION(IMPORT_ERROR, "cannot import %s.", filename);
+        return  JN_RAISE_EXCPETION(state, IMPORT_ERROR, "cannot import %s.", filename);
     JnObject* mod = find_module(filename);
     if (NULL != mod)
         return mod;
     J_State st = {0};
-    J_Context* cxt = Jn_get_context();
+    J_Context* cxt = Jn_get_context(state);
     J_Source old = cxt->source;
     J_Source src = read_source_file(filename);
     cxt->source = src;
@@ -330,17 +299,16 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     }
     write_chuck(&chuck, OP_END);
     cxt->source = old;
-    InterpretResult i = vm_run(&vm);
+    InterpretResult i = vm_run(state, &vm);
     if (i != INTERPRET_OK)
-        return JN_RAISE_EXCPETION(SYS_ERROR, "extra error message.");
-    JnObject* obj = jn_obj_module(path, filename, env);
+        return JN_RAISE_EXCPETION(state, SYS_ERROR, "extra error message.");
+    JnObject* obj = jn_obj_module(state, path, filename, env);
     module_register[module_count++] = (struct Module_Reg){obj, filename};
     return obj;
 }
 
-JN_API void Jn_program_close(void)
+JN_API void Jn_program_close(J_State* state)
 {
-    J_State* state = &Jn_globalState;
     assert(state->running && "Program has already stopped."); // TOD: better msg
     state->running = false;
     free(state->globals);
