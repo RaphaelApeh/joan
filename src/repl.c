@@ -130,7 +130,7 @@ JN_API void Jn_repl(void)
     Jn_program_init(&state);
     fprintf(stderr, 
         "Welcome to Joan v" JOAN_VERSION "\n"
-        "\"CTL-C\" to exit shell.\n"
+        "\"CTL-E\" to exit shell.\n"
         "\"!help\" for help info.\n"
     );
     for (;;)
@@ -140,6 +140,11 @@ JN_API void Jn_repl(void)
             break;
         strcat(buffer, line);
         buffer_count += strlen(line);
+        if (*line && *line == 5)
+        {
+            printf("Exiting....\n");
+            break;
+        }
         if (strncmp(line, "!help", 5) == 0) 
         {
             print_help();
@@ -157,8 +162,9 @@ JN_API void Jn_repl(void)
         buffer_count = 0;
         if (exit_code < 0 || exit_code > 0)
         {
+            printf("Eixt code: %d\n", exit_code);
             //  exit() function
-            break;
+            // break;
         }
     }
     Jn_program_close(&state);

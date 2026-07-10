@@ -171,7 +171,7 @@ static JnObject* call_function(J_State* state, JnVM* vm, JnObject* obj, JnObject
     InterpretResult r = vm_run(state, &child);
     if (r == INTERPRET_OK)
         return pop(&child);
-    return JN_RAISE_EXCPETION(SYS_ERROR, "Extra error to annoy you. Good luck debugging :).");
+    return JN_RAISE_EXCPETION(state, SYS_ERROR, "Extra error to annoy you. Good luck debugging :).");
 }
 
 static JnObject *a, *b, *key, *value, *array, *pos;
@@ -308,14 +308,14 @@ int vm_run(J_State* state, JnVM* vm)
                 JnObject* object_type = pop(vm);
                 if (object_type->type == OBJECT_TYPE)
                 {
-                    o = JN_OBJECT_ARG(values, NULL, values_count);
-                    PUSH(vm, (object_type->type_val.ctor(o)));
+                    o = JN_OBJECT_ARG(state, values, NULL, values_count);
+                    PUSH(vm, (object_type->type_val.ctor(state, o)));
                     break;
                 }
                 if (!JN_IS_STRUCT(object_type))
                     return die(state,vm, "Expected a struct type but (got '%d').", object_type->type);
                 
-                JnObject* instance_obj = bind_argument(object_type, fields, values, count);
+                JnObject* instance_obj = bind_argument(state, object_type, fields, values, count);
 
                 PUSH(vm, instance_obj);
                 // PUSH(vm, JN_RETURN_NONE);
@@ -365,7 +365,7 @@ int vm_run(J_State* state, JnVM* vm)
                     JN_DEFAULT_HM(map);
                 }
                 assert(map != NULL);
-                JnObject* obj = JN_OBJECT(HASHMAP_TYPE);
+                JnObject* obj = JN_OBJECT(state, HASHMAP_TYPE);
                 obj->hashmap = map;
                 PUSH(vm, obj);
                 break;
@@ -529,7 +529,7 @@ int vm_run(J_State* state, JnVM* vm)
                     !JN_IS_INT(start_obj) && !JN_IS_CHAR(start_obj)
                     && !JN_IS_INT(stop_obj) && !JN_IS_CHAR(stop_obj)
                 )
-                    return vm_error(vm, JN_RAISE_EXCPETION(state, TYPE_ERROR, "range object require a int or char"));
+                    return vm_error(state, vm, JN_RAISE_EXCPETION(state, TYPE_ERROR, "range object require a int or char"));
                 
                 int start = JN_AS_INT(start_obj); int stop = JN_AS_INT(stop_obj);
                 int step = 0;
@@ -769,7 +769,7 @@ int vm_run(J_State* state, JnVM* vm)
                 {
                     case NATIVE_TYPE: {
                         arg = JN_OBJECT_ARG(state, args, NULL, len);
-                        a = JN_CALL_NATIVE(o, arg);
+                        a = JN_CALL_NATIVE(state, o, arg);
                         if (a == NULL)
                             return die(state,vm, "SystemError: got NULL");
                         PUSH(vm, a);
@@ -777,7 +777,7 @@ int vm_run(J_State* state, JnVM* vm)
                     }
                     case METHOD_TYPE:
                         arg = JN_OBJECT_ARG(state, args, NULL, len);
-                        a = o->method.fn(o->method.obj, arg);
+                        a = o->method.fn(state, o->method.obj, arg);
                         if (NULL == a) return die(state,vm, "Invalid method call.");
                         PUSH(vm, a);
                         break;
@@ -1204,9 +1204,7 @@ void compile(AST* node, Chuck* chuck)
         if (node->for_node.cond)
             compile(node->for_node.cond, chuck);
         else {
-            idx = add_constant(chuck, JN_RETURN_BOOL(true));
-            WRITE_CHUCK(chuck, OP_CONSTANT);
-            WRITE_CHUCK(chuck, idx);
+            WRITE_CHUCK(chuck, OP_TRUE);
         }
         exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
         

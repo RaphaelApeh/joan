@@ -87,7 +87,7 @@ int main(int argc, char** argv)
         return 0;
     execute:
         Jn_program_init(&state);
-        if (!c.filename)    return -1;
+        if (!c.filename)   return -1;
         exit_code = Jn_execute_main(&state, c.filename);
         Jn_program_close(&state);
         return exit_code;

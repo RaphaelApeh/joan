@@ -135,12 +135,26 @@ joan/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/build
 .PHONY : joan/fast
 
+#=============================================================================
+# Target rules for targets named joan_shared
+
+# Build rule for target.
+joan_shared: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 joan_shared
+.PHONY : joan_shared
+
+# fast build rule for target.
+joan_shared/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/build
+.PHONY : joan_shared/fast
+
 src/arena.obj: src/arena.c.obj
 .PHONY : src/arena.obj
 
 # target to build an object file
 src/arena.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/arena.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/arena.c.obj
 .PHONY : src/arena.c.obj
 
 src/arena.i: src/arena.c.i
@@ -149,6 +163,7 @@ src/arena.i: src/arena.c.i
 # target to preprocess a source file
 src/arena.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/arena.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/arena.c.i
 .PHONY : src/arena.c.i
 
 src/arena.s: src/arena.c.s
@@ -157,6 +172,7 @@ src/arena.s: src/arena.c.s
 # target to generate assembly for a file
 src/arena.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/arena.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/arena.c.s
 .PHONY : src/arena.c.s
 
 src/ast.obj: src/ast.c.obj
@@ -165,6 +181,7 @@ src/ast.obj: src/ast.c.obj
 # target to build an object file
 src/ast.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/ast.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/ast.c.obj
 .PHONY : src/ast.c.obj
 
 src/ast.i: src/ast.c.i
@@ -173,6 +190,7 @@ src/ast.i: src/ast.c.i
 # target to preprocess a source file
 src/ast.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/ast.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/ast.c.i
 .PHONY : src/ast.c.i
 
 src/ast.s: src/ast.c.s
@@ -181,6 +199,7 @@ src/ast.s: src/ast.c.s
 # target to generate assembly for a file
 src/ast.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/ast.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/ast.c.s
 .PHONY : src/ast.c.s
 
 src/core.obj: src/core.c.obj
@@ -189,6 +208,7 @@ src/core.obj: src/core.c.obj
 # target to build an object file
 src/core.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/core.c.obj
 .PHONY : src/core.c.obj
 
 src/core.i: src/core.c.i
@@ -197,6 +217,7 @@ src/core.i: src/core.c.i
 # target to preprocess a source file
 src/core.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/core.c.i
 .PHONY : src/core.c.i
 
 src/core.s: src/core.c.s
@@ -205,6 +226,7 @@ src/core.s: src/core.c.s
 # target to generate assembly for a file
 src/core.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/core.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/core.c.s
 .PHONY : src/core.c.s
 
 src/cstring.obj: src/cstring.c.obj
@@ -213,6 +235,7 @@ src/cstring.obj: src/cstring.c.obj
 # target to build an object file
 src/cstring.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/cstring.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/cstring.c.obj
 .PHONY : src/cstring.c.obj
 
 src/cstring.i: src/cstring.c.i
@@ -221,6 +244,7 @@ src/cstring.i: src/cstring.c.i
 # target to preprocess a source file
 src/cstring.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/cstring.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/cstring.c.i
 .PHONY : src/cstring.c.i
 
 src/cstring.s: src/cstring.c.s
@@ -229,6 +253,7 @@ src/cstring.s: src/cstring.c.s
 # target to generate assembly for a file
 src/cstring.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/cstring.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/cstring.c.s
 .PHONY : src/cstring.c.s
 
 src/emit.obj: src/emit.c.obj
@@ -237,6 +262,7 @@ src/emit.obj: src/emit.c.obj
 # target to build an object file
 src/emit.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/emit.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/emit.c.obj
 .PHONY : src/emit.c.obj
 
 src/emit.i: src/emit.c.i
@@ -245,6 +271,7 @@ src/emit.i: src/emit.c.i
 # target to preprocess a source file
 src/emit.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/emit.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/emit.c.i
 .PHONY : src/emit.c.i
 
 src/emit.s: src/emit.c.s
@@ -253,6 +280,7 @@ src/emit.s: src/emit.c.s
 # target to generate assembly for a file
 src/emit.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/emit.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/emit.c.s
 .PHONY : src/emit.c.s
 
 src/env.obj: src/env.c.obj
@@ -261,6 +289,7 @@ src/env.obj: src/env.c.obj
 # target to build an object file
 src/env.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/env.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/env.c.obj
 .PHONY : src/env.c.obj
 
 src/env.i: src/env.c.i
@@ -269,6 +298,7 @@ src/env.i: src/env.c.i
 # target to preprocess a source file
 src/env.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/env.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/env.c.i
 .PHONY : src/env.c.i
 
 src/env.s: src/env.c.s
@@ -277,6 +307,7 @@ src/env.s: src/env.c.s
 # target to generate assembly for a file
 src/env.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/env.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/env.c.s
 .PHONY : src/env.c.s
 
 src/eval.obj: src/eval.c.obj
@@ -285,6 +316,7 @@ src/eval.obj: src/eval.c.obj
 # target to build an object file
 src/eval.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/eval.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/eval.c.obj
 .PHONY : src/eval.c.obj
 
 src/eval.i: src/eval.c.i
@@ -293,6 +325,7 @@ src/eval.i: src/eval.c.i
 # target to preprocess a source file
 src/eval.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/eval.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/eval.c.i
 .PHONY : src/eval.c.i
 
 src/eval.s: src/eval.c.s
@@ -301,6 +334,7 @@ src/eval.s: src/eval.c.s
 # target to generate assembly for a file
 src/eval.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/eval.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/eval.c.s
 .PHONY : src/eval.c.s
 
 src/gc.obj: src/gc.c.obj
@@ -309,6 +343,7 @@ src/gc.obj: src/gc.c.obj
 # target to build an object file
 src/gc.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/gc.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/gc.c.obj
 .PHONY : src/gc.c.obj
 
 src/gc.i: src/gc.c.i
@@ -317,6 +352,7 @@ src/gc.i: src/gc.c.i
 # target to preprocess a source file
 src/gc.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/gc.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/gc.c.i
 .PHONY : src/gc.c.i
 
 src/gc.s: src/gc.c.s
@@ -325,6 +361,7 @@ src/gc.s: src/gc.c.s
 # target to generate assembly for a file
 src/gc.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/gc.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/gc.c.s
 .PHONY : src/gc.c.s
 
 src/hashmap.obj: src/hashmap.c.obj
@@ -333,6 +370,7 @@ src/hashmap.obj: src/hashmap.c.obj
 # target to build an object file
 src/hashmap.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/hashmap.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/hashmap.c.obj
 .PHONY : src/hashmap.c.obj
 
 src/hashmap.i: src/hashmap.c.i
@@ -341,6 +379,7 @@ src/hashmap.i: src/hashmap.c.i
 # target to preprocess a source file
 src/hashmap.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/hashmap.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/hashmap.c.i
 .PHONY : src/hashmap.c.i
 
 src/hashmap.s: src/hashmap.c.s
@@ -349,6 +388,7 @@ src/hashmap.s: src/hashmap.c.s
 # target to generate assembly for a file
 src/hashmap.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/hashmap.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/hashmap.c.s
 .PHONY : src/hashmap.c.s
 
 src/helper.obj: src/helper.c.obj
@@ -357,6 +397,7 @@ src/helper.obj: src/helper.c.obj
 # target to build an object file
 src/helper.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/helper.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/helper.c.obj
 .PHONY : src/helper.c.obj
 
 src/helper.i: src/helper.c.i
@@ -365,6 +406,7 @@ src/helper.i: src/helper.c.i
 # target to preprocess a source file
 src/helper.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/helper.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/helper.c.i
 .PHONY : src/helper.c.i
 
 src/helper.s: src/helper.c.s
@@ -373,6 +415,7 @@ src/helper.s: src/helper.c.s
 # target to generate assembly for a file
 src/helper.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/helper.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/helper.c.s
 .PHONY : src/helper.c.s
 
 src/lexer.obj: src/lexer.c.obj
@@ -381,6 +424,7 @@ src/lexer.obj: src/lexer.c.obj
 # target to build an object file
 src/lexer.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/lexer.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/lexer.c.obj
 .PHONY : src/lexer.c.obj
 
 src/lexer.i: src/lexer.c.i
@@ -389,6 +433,7 @@ src/lexer.i: src/lexer.c.i
 # target to preprocess a source file
 src/lexer.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/lexer.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/lexer.c.i
 .PHONY : src/lexer.c.i
 
 src/lexer.s: src/lexer.c.s
@@ -397,6 +442,7 @@ src/lexer.s: src/lexer.c.s
 # target to generate assembly for a file
 src/lexer.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/lexer.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/lexer.c.s
 .PHONY : src/lexer.c.s
 
 src/main.obj: src/main.c.obj
@@ -405,6 +451,7 @@ src/main.obj: src/main.c.obj
 # target to build an object file
 src/main.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/main.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/main.c.obj
 .PHONY : src/main.c.obj
 
 src/main.i: src/main.c.i
@@ -413,6 +460,7 @@ src/main.i: src/main.c.i
 # target to preprocess a source file
 src/main.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/main.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/main.c.i
 .PHONY : src/main.c.i
 
 src/main.s: src/main.c.s
@@ -421,6 +469,7 @@ src/main.s: src/main.c.s
 # target to generate assembly for a file
 src/main.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/main.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/main.c.s
 .PHONY : src/main.c.s
 
 src/object.obj: src/object.c.obj
@@ -429,6 +478,7 @@ src/object.obj: src/object.c.obj
 # target to build an object file
 src/object.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/object.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/object.c.obj
 .PHONY : src/object.c.obj
 
 src/object.i: src/object.c.i
@@ -437,6 +487,7 @@ src/object.i: src/object.c.i
 # target to preprocess a source file
 src/object.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/object.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/object.c.i
 .PHONY : src/object.c.i
 
 src/object.s: src/object.c.s
@@ -445,6 +496,7 @@ src/object.s: src/object.c.s
 # target to generate assembly for a file
 src/object.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/object.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/object.c.s
 .PHONY : src/object.c.s
 
 src/parse.obj: src/parse.c.obj
@@ -453,6 +505,7 @@ src/parse.obj: src/parse.c.obj
 # target to build an object file
 src/parse.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parse.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/parse.c.obj
 .PHONY : src/parse.c.obj
 
 src/parse.i: src/parse.c.i
@@ -461,6 +514,7 @@ src/parse.i: src/parse.c.i
 # target to preprocess a source file
 src/parse.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parse.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/parse.c.i
 .PHONY : src/parse.c.i
 
 src/parse.s: src/parse.c.s
@@ -469,6 +523,7 @@ src/parse.s: src/parse.c.s
 # target to generate assembly for a file
 src/parse.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/parse.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/parse.c.s
 .PHONY : src/parse.c.s
 
 src/repl.obj: src/repl.c.obj
@@ -477,6 +532,7 @@ src/repl.obj: src/repl.c.obj
 # target to build an object file
 src/repl.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/repl.c.obj
 .PHONY : src/repl.c.obj
 
 src/repl.i: src/repl.c.i
@@ -485,6 +541,7 @@ src/repl.i: src/repl.c.i
 # target to preprocess a source file
 src/repl.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/repl.c.i
 .PHONY : src/repl.c.i
 
 src/repl.s: src/repl.c.s
@@ -493,6 +550,7 @@ src/repl.s: src/repl.c.s
 # target to generate assembly for a file
 src/repl.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/repl.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/repl.c.s
 .PHONY : src/repl.c.s
 
 src/semantic.obj: src/semantic.c.obj
@@ -501,6 +559,7 @@ src/semantic.obj: src/semantic.c.obj
 # target to build an object file
 src/semantic.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/semantic.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/semantic.c.obj
 .PHONY : src/semantic.c.obj
 
 src/semantic.i: src/semantic.c.i
@@ -509,6 +568,7 @@ src/semantic.i: src/semantic.c.i
 # target to preprocess a source file
 src/semantic.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/semantic.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/semantic.c.i
 .PHONY : src/semantic.c.i
 
 src/semantic.s: src/semantic.c.s
@@ -517,6 +577,7 @@ src/semantic.s: src/semantic.c.s
 # target to generate assembly for a file
 src/semantic.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/semantic.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/semantic.c.s
 .PHONY : src/semantic.c.s
 
 src/std.obj: src/std.c.obj
@@ -525,6 +586,7 @@ src/std.obj: src/std.c.obj
 # target to build an object file
 src/std.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/std.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/std.c.obj
 .PHONY : src/std.c.obj
 
 src/std.i: src/std.c.i
@@ -533,6 +595,7 @@ src/std.i: src/std.c.i
 # target to preprocess a source file
 src/std.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/std.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/std.c.i
 .PHONY : src/std.c.i
 
 src/std.s: src/std.c.s
@@ -541,6 +604,7 @@ src/std.s: src/std.c.s
 # target to generate assembly for a file
 src/std.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/std.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/std.c.s
 .PHONY : src/std.c.s
 
 src/token.obj: src/token.c.obj
@@ -549,6 +613,7 @@ src/token.obj: src/token.c.obj
 # target to build an object file
 src/token.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/token.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/token.c.obj
 .PHONY : src/token.c.obj
 
 src/token.i: src/token.c.i
@@ -557,6 +622,7 @@ src/token.i: src/token.c.i
 # target to preprocess a source file
 src/token.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/token.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/token.c.i
 .PHONY : src/token.c.i
 
 src/token.s: src/token.c.s
@@ -565,6 +631,7 @@ src/token.s: src/token.c.s
 # target to generate assembly for a file
 src/token.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/token.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/token.c.s
 .PHONY : src/token.c.s
 
 src/visits.obj: src/visits.c.obj
@@ -573,6 +640,7 @@ src/visits.obj: src/visits.c.obj
 # target to build an object file
 src/visits.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/visits.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/visits.c.obj
 .PHONY : src/visits.c.obj
 
 src/visits.i: src/visits.c.i
@@ -581,6 +649,7 @@ src/visits.i: src/visits.c.i
 # target to preprocess a source file
 src/visits.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/visits.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/visits.c.i
 .PHONY : src/visits.c.i
 
 src/visits.s: src/visits.c.s
@@ -589,6 +658,7 @@ src/visits.s: src/visits.c.s
 # target to generate assembly for a file
 src/visits.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/visits.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/visits.c.s
 .PHONY : src/visits.c.s
 
 src/vm.obj: src/vm.c.obj
@@ -597,6 +667,7 @@ src/vm.obj: src/vm.c.obj
 # target to build an object file
 src/vm.c.obj:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vm.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/vm.c.obj
 .PHONY : src/vm.c.obj
 
 src/vm.i: src/vm.c.i
@@ -605,6 +676,7 @@ src/vm.i: src/vm.c.i
 # target to preprocess a source file
 src/vm.c.i:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vm.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/vm.c.i
 .PHONY : src/vm.c.i
 
 src/vm.s: src/vm.c.s
@@ -613,6 +685,7 @@ src/vm.s: src/vm.c.s
 # target to generate assembly for a file
 src/vm.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/vm.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/vm.c.s
 .PHONY : src/vm.c.s
 
 # Help Target
@@ -625,6 +698,7 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... joan
+	@echo ... joan_shared
 	@echo ... src/arena.obj
 	@echo ... src/arena.i
 	@echo ... src/arena.s

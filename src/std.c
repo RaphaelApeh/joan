@@ -21,15 +21,13 @@
 #define MAX_OBJECT_ARGS 50
 
 
-JN_API JnObject* Jn_make_args(size_t capacity)
+JN_API JnObject* Jn_make_args(J_State* state, size_t capacity)
 {
-    if (capacity <= 0)
-        return NULL;
-    if (capacity > MAX_OBJECT_ARGS)
-        return JN_RAISE_EXCPETION(SYS_ERROR, "max object reached.");
+    assert(capacity > 0);
+    assert(capacity < MAX_OBJECT_ARGS);
     JnObject** objs = malloc(sizeof(JnObject *) * capacity);
     assert(objs);
-    JnObject* obj = jn_obj_new(ARG_TYPE);
+    JnObject* obj = jn_obj_new(state, ARG_TYPE);
     obj->arg.args = objs;
     obj->arg.count = 0;
     obj->arg.arg_names = NULL;
@@ -39,10 +37,7 @@ JN_API JnObject* Jn_make_args(size_t capacity)
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj)
 {
     assert(args && obj);
-    assert(JN_IS_ARGS(args));
-    int count = JN_ARGS_COUNT(args);
-    JN_GET_ARGS(args, count) = obj;
-    JN_ARGS_COUNT(args)++;
+    args->arg.args[args->arg.count++] = obj;
 }
 
 struct JnObjectMethod {
@@ -50,14 +45,14 @@ struct JnObjectMethod {
     JN_CMethod method;
 };
 
-static JnObject* push_method(JnObject* self, JnObject* args);
+static JnObject* push_method(J_State* state, JnObject* self, JnObject* args);
 
 // Hashmap methods
-static JnObject* hashmap_from_idx(JnObject* self, JnObject* args);
+static JnObject* hashmap_from_idx(J_State* state, JnObject* self, JnObject* args);
 
 // String methods
-static JnObject* string_ends(JnObject* self, JnObject* arg);
-static JnObject* string_starts(JnObject* self, JnObject* arg);
+static JnObject* string_ends(J_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg);
 
 static struct JnObjectMethod STRING_METHODS[] = {
     {"ends", string_ends},
@@ -112,16 +107,17 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
 }
 
 
-static JnObject* push_method(JnObject* self, JnObject* args)
+static JnObject* push_method(J_State* state, JnObject* self, JnObject* args)
 {
     if (!JN_IS_ITERABLE(self))
         return JN_RAISE_EXCPETION(
+            state,
             UNDEFINE_ERROR, 
             "push() method does not support '%s'.", 
             JN_OBJ_TO_STRING(self)
         );
     if (JN_ARGS_COUNT(args) != 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "obj.push() accept only one argumemt but got (%s).", JN_ARGS_COUNT(args));
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "obj.push() accept only one argumemt but got (%s).", JN_ARGS_COUNT(args));
     
     JnObject* obj = JN_GET_ARG(args);
     switch (JN_OBJ_TYPE(self))
@@ -131,13 +127,13 @@ static JnObject* push_method(JnObject* self, JnObject* args)
             break;
         case STR_TYPE:
             if (!JN_IS_STRING(obj))
-                return JN_RAISE_EXCPETION(TYPE_ERROR, "string:push() expected a string.");
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string:push() expected a string.");
             char* buff = strcat(JN_AS_CSTRING(self), JN_AS_CSTRING(obj));
             *(self->str) = JNSTR_OBJ(buff); // But it works in my machine.
             break;
         case HASHMAP_TYPE:
             if (JN_OBJ_TYPE(obj) != HASHMAP_TYPE)
-                return JN_RAISE_EXCPETION(TYPE_ERROR, "<Hashmap>.push() expected a hashmap object.");
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "<Hashmap>.push() expected a hashmap object.");
             Jn_Hashmap* map =  JN_AS_HASHMAP(obj);
             // TODO: think of a better way to implement it.
             for (int i = 0; i < map->size; ++i)
@@ -151,7 +147,7 @@ static JnObject* push_method(JnObject* self, JnObject* args)
             }
             break;
         default:
-            return JN_RAISE_EXCPETION(TYPE_ERROR, "Invalid stuff.");
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Invalid stuff.");
     }
     return JN_RETURN_NONE;
 }
@@ -159,68 +155,70 @@ static JnObject* push_method(JnObject* self, JnObject* args)
 
 // Hashmap Methods
 
-static JnObject* hashmap_from_idx(JnObject* self, JnObject* args)
+static JnObject* hashmap_from_idx(J_State* state, JnObject* self, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count != 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "from_index() expected one argument but (got %d).", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "from_index() expected one argument but (got %d).", count);
     if (JN_OBJ_TYPE(JN_GET_ARG(args)) != INT_TYPE)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "from_index() expect an integer.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "from_index() expect an integer.");
     int index = JN_AS_INT(JN_GET_ARG(args));
     JnObject* obj = Jnhashmap_get_from_index(JN_AS_HASHMAP(self), index);
     if (NULL == obj)
-        return JN_RAISE_EXCPETION(SYS_ERROR, "from_index(): internal error.");
+        return JN_RAISE_EXCPETION(state, SYS_ERROR, "from_index(): internal error.");
     return obj;
 }
 
 // String Methods
 
-static JnObject* string_ends(JnObject* self, JnObject* args)
+static JnObject* string_ends(J_State* state, JnObject* self, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (!JN_IS_STRING(self))
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "object is not of type 'string'.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "object is not of type 'string'.");
     if (count != 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "string.ends() expected 1 argument (got %d).", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string.ends() expected 1 argument (got %d).", count);
     JnObject* suf_object = JN_GET_ARG(args);
 
     bool ends = strends(
         JN_AS_CSTRING(self),
         JN_AS_CSTRING(suf_object)
     );
-    return JN_RETURN_BOOL(ends);
+    return JN_RETURN_BOOL(state, ends);
 }
 
 
-static JnObject* string_starts(JnObject* self, JnObject* arg)
+static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg)
 {
     int count = JN_ARGS_COUNT(arg);
     if (!JN_IS_STRING(self))
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "object is not of type 'string'.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "object is not of type 'string'.");
     if (count != 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "string.starts() expected 1 argument (got %d).", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string.starts() expected 1 argument (got %d).", count);
     JnObject* suf_object = JN_GET_ARG(arg);
 
     bool ends = strstarts(
         JN_AS_CSTRING(self),
         JN_AS_CSTRING(suf_object)
     );
-    return JN_RETURN_BOOL(ends);
+    return JN_RETURN_BOOL(state, ends);
 }
 
-static JnObject* native_getattr(JnObject* args)
+static JnObject* native_getattr(J_State* state, JnObject* args)
 {
     assert(false);
 }
 
 
-static JnObject* native_printf(JnObject* args)
+static JnObject* native_printf(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "Expected a least one argument but (got %d).", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Expected a least one argument but (got %d).", count);
     
-    JN_ARG_EXPECT_TYPE(JN_GET_ARG(args), STR_TYPE);
+    // JN_ARG_EXPECT_TYPE(JN_GET_ARG(args), STR_TYPE);
+    if (!JN_IS_STRING(JN_GET_ARG(args)))
+        return NULL;
     char* str = JN_AS_CSTRING(JN_GET_ARG(args));
     JnObject* obj;
     int arg_count = 1;
@@ -230,7 +228,7 @@ static JnObject* native_printf(JnObject* args)
         {
             if (arg_count >= count)
             {
-                return JN_RAISE_EXCPETION(TYPE_ERROR, "printf() got too many arguments (%d).", count);
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() got too many arguments (%d).", count);
             }
             str++;
             switch (*str)
@@ -238,26 +236,26 @@ static JnObject* native_printf(JnObject* args)
             case 's':
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_STRING(obj))
-                    return JN_RAISE_EXCPETION(TYPE_ERROR, "printf() %%s expect type string.");
+                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%s expect type string.");
                 printf("%s", JN_AS_CSTRING(obj));
                 break;
             case 'i':
             case 'd':
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_INT(obj))
-                    return JN_RAISE_EXCPETION(TYPE_ERROR, "printf() %%d expect type int.");
+                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%d expect type int.");
                 printf("%d", JN_AS_INT(obj));
                 break;
             case 'f':
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_FLOAT(obj))
-                    return JN_RAISE_EXCPETION(TYPE_ERROR, "printf() %%f expect type float.");
+                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%f expect type float.");
                 printf("%15.g", JN_AS_FLOAT(obj));
                 break;            
             case 'c':
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_CHAR(obj) && !JN_IS_INT(obj))
-                    return JN_RAISE_EXCPETION(TYPE_ERROR, "printf() %%c expect type char.");
+                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%c expect type char.");
                 if (JN_IS_CHAR(obj))
                     printf("%c", JN_AS_CHAR(obj));
                 else
@@ -288,12 +286,12 @@ static JnObject* native_printf(JnObject* args)
     return JN_RETURN_NONE;
 }
 
-static JnObject* native_assert(JnObject* args)
+static JnObject* native_assert(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count < 1 || count > 2)
     {
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "assert() expected one/two argument(s) but got (%d).", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "assert() expected one/two argument(s) but got (%d).", count);
     }
     char* err_msg;
     if (count == 2)
@@ -304,20 +302,20 @@ static JnObject* native_assert(JnObject* args)
     }
     if (!JN_TO_BOOL(JN_GET_ARG(args)))
     {
-        return JN_RAISE_EXCPETION(ASSERT_ERROR, err_msg);
+        return JN_RAISE_EXCPETION(state, ASSERT_ERROR, err_msg);
     }
     return JN_RETURN_NONE;
 }
 
-static JnObject* native_hasattr(JnObject* args)
+static JnObject* native_hasattr(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count != 2)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "hasattr() expected an 2 argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "hasattr() expected an 2 argument but got %d.", count);
     JnObject* obj = JN_GET_ARG(args), *str_obj = JN_GET_ARGS(args, 1);
     bool return_bool = false;
     if (!JN_IS_STRING(str_obj))
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "hasattr() expected a string object.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "hasattr() expected a string object.");
     switch (JN_OBJ_TYPE(obj))
     {
         case INT_TYPE:
@@ -328,60 +326,60 @@ static JnObject* native_hasattr(JnObject* args)
         case HASHMAP_TYPE:
         {
             return_bool = call_method(obj, JN_AS_CSTRING(str_obj)) != NULL;
-            return JN_RETURN_BOOL(return_bool);
+            return JN_RETURN_BOOL(state, return_bool);
         }
         case INSTANCE_TYPE:
         {
             JnInstance* instance = JN_GET_INSTANCE(obj);
             return_bool = environ_get(instance->fields, JN_AS_CSTRING(str_obj)) != NULL;
-            return JN_RETURN_BOOL(return_bool);
+            return JN_RETURN_BOOL(state, return_bool);
         }
         case STRUCT_TYPE:
         {
             return_bool = strstrcmp(JN_AS_STRUCT(obj)->fields, JN_AS_CSTRING(str_obj));
-            return JN_RETURN_BOOL(return_bool);
+            return JN_RETURN_BOOL(state, return_bool);
         }
         default:
-            return JN_RETURN_FALSE();
+            return JN_RETURN_FALSE(state);
     }
-    return JN_RAISE_EXCPETION(SYS_ERROR, "hasattr() something went wrong.");
+    return JN_RAISE_EXCPETION(state, SYS_ERROR, "hasattr() something went wrong.");
 }
 
-static JnObject* native_len(JnObject* args)
+static JnObject* native_len(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "len() expected an 1 argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "len() expected an 1 argument but got %d.", count);
     if (!JN_IS_ITERABLE(JN_GET_ARG(args)))
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "len() expect an iterable type.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "len() expect an iterable type.");
     int len = 0;
     JnObject* len_obj = JN_GET_ARG(args);
     switch(JN_OBJ_TYPE(len_obj))
     {
         case ARRAY_TYPE:
             len = (int)JN_AS_ARRAY(len_obj)->size;
-            return JN_RETURN_INT(len);
+            return JN_RETURN_INT(state, len);
         case STR_TYPE:
             len = JN_AS_STRING(len_obj)->len;
-            return JN_RETURN_INT(len);
+            return JN_RETURN_INT(state, len);
         case RANGE_TYPE:
             len = range_len(JN_AS_RANGE(len_obj));
-            return JN_RETURN_INT(len);
+            return JN_RETURN_INT(state, len);
         case HASHMAP_TYPE:
             len = (int)(JN_AS_HASHMAP(len_obj)->size);
-            return JN_RETURN_INT(len);
+            return JN_RETURN_INT(state, len);
     }
-    return JN_RAISE_EXCPETION(NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
+    return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
 }
 
-static JnObject* native_gets(JnObject* args)
+static JnObject* native_gets(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "gets() require one argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "gets() require one argument but got %d.", count);
     JnObject* obj = JN_GET_ARG(args);
     if (!JN_IS_STRING(obj))
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "gets() expects a string but got TODO");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "gets() expects a string but got TODO");
     fprintf(stderr, "%s", JN_AS_CSTRING(obj));
     char c;
     char* buff = malloc(sizeof(char) * 100);
@@ -396,85 +394,85 @@ static JnObject* native_gets(JnObject* args)
         buff[len++] = c;
     }
     buff[len] = '\0';
-    return JN_RETURN_STRING(buff);
+    return JN_RETURN_STRING(state, buff);
 }
 
-static JnObject* native_put(JnObject* args)
+static JnObject* native_put(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "put() require only one argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "put() require only one argument but got %d.", count);
     print_JnObject(JN_GET_ARG(args));
     return JN_RETURN_NONE;
 }
 
-static JnObject* native_toint(JnObject* args)
+static JnObject* native_toint(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "toint() require only one argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "toint() require only one argument but got %d.", count);
     JnObject* obj = JN_GET_ARG(args);
     switch(JN_OBJ_TYPE(obj))
     {
         case STR_TYPE:
-            return JN_RETURN_INT(strtol(JN_AS_CSTRING(obj), NULL, 10));
+            return JN_RETURN_INT(state, strtol(JN_AS_CSTRING(obj), NULL, 10));
         case INT_TYPE:
             return obj;
         case FLOAT_TYPE:
-            return JN_RETURN_INT((long)JN_AS_FLOAT(obj));
+            return JN_RETURN_INT(state, (long)JN_AS_FLOAT(obj));
         case CHAR_TYPE:
-            return JN_RETURN_INT((unsigned int)JN_AS_CHAR(obj));
+            return JN_RETURN_INT(state, (unsigned int)JN_AS_CHAR(obj));
         case BOOL_TYPE:
-            return JN_RETURN_INT(JN_AS_BOOL(obj));
+            return JN_RETURN_INT(state, JN_AS_BOOL(obj));
         default:
-            return JN_RAISE_EXCPETION(TYPE_ERROR, "toint() does not support this type 'TODO'. ");
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "toint() does not support this type 'TODO'. ");
     }
-    return NULL; // ERROR
+    return NULL;
 }
 
-static JnObject* native_tofloat(JnObject* args)
+static JnObject* native_tofloat(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "tofloat() require only one argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "tofloat() require only one argument but got %d.", count);
     JnObject* obj = JN_GET_ARG(args);
     switch(JN_OBJ_TYPE(obj))
     {
         case STR_TYPE:
-            return JN_RETURN_FLOAT(strtod(JN_AS_CSTRING(obj), NULL));
+            return JN_RETURN_FLOAT(state, strtod(JN_AS_CSTRING(obj), NULL));
         case INT_TYPE:
-            return JN_RETURN_FLOAT((double)JN_AS_INT(obj));
+            return JN_RETURN_FLOAT(state, (double)JN_AS_INT(obj));
         case FLOAT_TYPE:
             return obj;
         case BOOL_TYPE:
-            return JN_RETURN_FLOAT(JN_AS_BOOL(obj));
+            return JN_RETURN_FLOAT(state, JN_AS_BOOL(obj));
         default:
-            return JN_RAISE_EXCPETION(TYPE_ERROR, "tofloat() does not support this type 'TODO'. ");
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "tofloat() does not support this type 'TODO'. ");
     }
     return NULL;
 }
 
-static JnObject* native_tochar(JnObject* args)
+static JnObject* native_tochar(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "tochar() require only one argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "tochar() require only one argument but got %d.", count);
     JnObject* obj = JN_GET_ARG(args);
     switch(JN_OBJ_TYPE(obj))
     {
         case INT_TYPE:
-            return JN_RETURN_CHAR((char) JN_AS_INT(obj));
+            return JN_RETURN_CHAR(state, (char) JN_AS_INT(obj));
         case CHAR_TYPE:
             return obj;
         case FLOAT_TYPE:
-            return JN_RETURN_CHAR((char) JN_AS_FLOAT(obj));
+            return JN_RETURN_CHAR(state, (char) JN_AS_FLOAT(obj));
         default:
-            return JN_RAISE_EXCPETION(TYPE_ERROR, "tochar() does not support this type 'TODO'. ");
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "tochar() does not support this type 'TODO'. ");
     }
     return NULL;
 }
 
-static JnObject* native_isinstance(JnObject* arg)
+static JnObject* native_isinstance(J_State* state, JnObject* arg)
 {
     // Example:
     // isinstance("Hello", string) // true
@@ -482,13 +480,13 @@ static JnObject* native_isinstance(JnObject* arg)
     
 }
 
-static JnObject* native_sleep(JnObject* args)
+static JnObject* native_sleep(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "sleep() require only one argument but got %d.", count);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "sleep() require only one argument but got %d.", count);
     if (!JN_AS_INT(JN_GET_ARG(args)))
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "sleep() takes an int type but got TODO.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "sleep() takes an int type but got TODO.");
     
     #ifdef _WIN32
         sleep(JN_AS_INT(JN_GET_ARG(args)) * 1000);
@@ -500,20 +498,20 @@ static JnObject* native_sleep(JnObject* args)
 
 
 // Constructor
-static JnObject* bool_ctor(JnObject* args)
+static JnObject* bool_ctor(J_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "string{} expect one arguement.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string{} expect one arguement.");
     
     JnObject* obj = JN_GET_ARG(args);
     if (JN_TO_BOOL(obj))
-        return JN_RETURN_TRUE();
-    return JN_RETURN_FALSE();
+        return JN_RETURN_TRUE(state);
+    return JN_RETURN_FALSE(state);
 }
-static JnObject* string_ctor(JnObject* args)
+static JnObject* string_ctor(J_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1)
-        return JN_RAISE_EXCPETION(TYPE_ERROR, "string{} expect one arguement.");
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string{} expect one arguement.");
     
     JnObject* obj = JN_GET_ARG(args);
     switch (JN_OBJ_TYPE(obj))
@@ -521,7 +519,7 @@ static JnObject* string_ctor(JnObject* args)
     case INT_TYPE:
     case FLOAT_TYPE:
     case BOOL_TYPE:
-        return JN_RETURN_STRING(jn_obj_cstring(obj));
+        return JN_RETURN_STRING(state, jn_obj_cstring(obj));
     case STR_TYPE:
         return obj;
     default:
@@ -536,7 +534,7 @@ JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction f
     JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
-    JnObject* obj = JN_OBJECT(NATIVE_TYPE);
+    JnObject* obj = JN_OBJECT(state, NATIVE_TYPE);
     obj->native_fn = n_fn;
     Jn_register(state, name, doc, obj);
 }
@@ -554,7 +552,7 @@ JN_API void Jn_define_fn(J_State* state, const char* name, Jn_CFunction fn)
     JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
-    JnObject* obj = JN_OBJECT(NATIVE_TYPE);
+    JnObject* obj = JN_OBJECT(state, NATIVE_TYPE);
     obj->native_fn = n_fn;
     Jn_register(state, name, NULL, obj);
 }
@@ -565,16 +563,15 @@ JN_API void Jn_register_module(char* name, Jn_CModule* module)
     // TODO
 }
 
-JN_API JnObject* Jn_call_fn(char* fn_name, JnObject* args)
+JN_API JnObject* Jn_call_fn(J_State* state, char* fn_name, JnObject* args)
 {
-    J_State* state = Jn_get_state();
     Jn_environ_E* entt = environ_get(state->globals, fn_name);
     if (!entt || !entt->value)
         return NULL;
     JnObject* fn_obj = entt->value;
     assert(JN_IS_NATIVE(fn_obj) || JN_IS_FUNCTION(fn_obj));
     if (JN_IS_NATIVE(fn_obj))
-        return JN_CALL_NATIVE(fn_obj, args);
+        return JN_CALL_NATIVE(state, fn_obj, args);
     JnFunctionObject* fn = fn_obj->fn;
     JnVM child;
     Jnvm_init(&child, fn->chuck);
@@ -604,17 +601,17 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     char* filename = state->cxt.source.filename ? (char *)state->cxt.source.filename : "main";
 
     // types
-    Jn_register(state, "int", NULL, JN_RETURN_TYPE_OBJECT("int", INT_TYPE, native_toint));
-    Jn_register(state, "string", NULL, JN_RETURN_TYPE_OBJECT("string", STR_TYPE, string_ctor));
-    Jn_register(state, "float", NULL, JN_RETURN_TYPE_OBJECT("float", FLOAT_TYPE, native_tofloat));
-    Jn_register(state, "bool", NULL, JN_RETURN_TYPE_OBJECT("bool", BOOL_TYPE, bool_ctor));
-    Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT("char", CHAR_TYPE, native_tochar));
+    Jn_register(state, "int", NULL, JN_RETURN_TYPE_OBJECT(state, "int", INT_TYPE, native_toint));
+    Jn_register(state, "string", NULL, JN_RETURN_TYPE_OBJECT(state, "string", STR_TYPE, string_ctor));
+    Jn_register(state, "float", NULL, JN_RETURN_TYPE_OBJECT(state, "float", FLOAT_TYPE, native_tofloat));
+    Jn_register(state, "bool", NULL, JN_RETURN_TYPE_OBJECT(state, "bool", BOOL_TYPE, bool_ctor));
+    Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT(state, "char", CHAR_TYPE, native_tochar));
 
     // DEFAULT
-    Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_BOOL(win));
-    Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_BOOL(apple));
-    Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_BOOL(linux));
-    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(filename));
+    Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_BOOL(state, win));
+    Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_BOOL(state, apple));
+    Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_BOOL(state, linux));
+    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, filename));
     // Functions
     Jn_register_fn(state, "len", "Returns the length of an iterable", native_len);
     Jn_register_fn(state, "gets", "Get user input.", native_gets);

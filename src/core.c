@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include "Joan.h"
 #include "opcode.h"
 #include "object.h"
@@ -106,6 +108,7 @@ JN_API void Jn_program_init(J_State* state)
     assert(state->arena && "Arena not set...");
     state->vm->chuck->env = state->globals;
     state->vm->global = state->globals;
+    state->parser->state = state;
     Jnvm_init(state->vm, state->vm->chuck);
     assert(state->vm->chuck->lines);
     assert(state->vm->chuck->lines);
@@ -144,7 +147,7 @@ JN_API int Jn_exec(J_State* state)
 }
 
 
-JN_API int Jn_exec_program(J_State* state, char* source)
+JN_API int Jn_exec_program(J_State* state, const char* source)
 {
     if (source == NULL) return -1;
     assert(state->running && "program is not initialize.");
@@ -179,7 +182,7 @@ JN_API int Jn_exec_program(J_State* state, char* source)
     return exit_code;
 }
 
-JN_API int Jn_execute_main(J_State* state, char* filepath)
+JN_API int Jn_execute_main(J_State* state, const char* filepath)
 {
     if (!filepath)
     {
@@ -221,7 +224,7 @@ JN_API int Jn_from_string(J_State* state, const char* string)
     return i;   
 }
 
-JN_API int Jn_exec_REPL(J_State* state, char* source)
+JN_API int Jn_exec_REPL(J_State* state, const char* source)
 {
     if (!source) return -1;
     state->cxt.source.filename = NULL;

@@ -1,6 +1,6 @@
 # Joan
 
-```jx
-println "Hello, World"
+```c
+printf("Hello, World");
 ```
 ## TODO

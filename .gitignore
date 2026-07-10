@@ -3,3 +3,6 @@
 # cmake dir
 CMakeFiles
 *.env
+*dll
+*.a
+*.o

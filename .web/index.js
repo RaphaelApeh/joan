@@ -13,8 +13,8 @@ var getAll = function (selector, scope) {
 if (document.getElementsByClassName('demo').length > 0) {
   var i = 0;
   var txt = `
-    >>> let name = "John Doe"
-    >>> println "Hello, {}" << name
+    >>> let name = "John Doe";
+    >>> printf("Hello, %s", name);
     Hello, John Doe
   `;
   var speed = 60;

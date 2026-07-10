@@ -1,0 +1,7 @@
+
+fn main()
+{
+    if (!defined("InitWindow")) then
+        exit(1);    
+    return 0;
+}

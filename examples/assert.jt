@@ -1,4 +1,0 @@
-const user_input = gets("Enter a character: ")
-// ASSERT
-assert user_input != "", "No input provided." // EXIT
-println user_input

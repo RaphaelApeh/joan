@@ -33,9 +33,17 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#include <stdio.h>
+#ifndef _INC_STDIO
+#include  <stdio.h>
+#endif
+
+#ifndef _GCC_WRAP_STDINT_H
 #include <stdint.h>
+#endif
+
+#ifndef _STDBOOL_H
 #include <stdbool.h>
+#endif
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
@@ -87,8 +95,8 @@ typedef struct JnVM JnVM;
 typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
-typedef JnObject* (*Jn_CFunction)(JnObject* args);
-typedef JnObject* (*JN_CMethod) (JnObject* self, JnObject* args);
+typedef JnObject* (*Jn_CFunction)(J_State* state, JnObject* args);
+typedef JnObject* (*JN_CMethod) (J_State* state, JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_E Jn_environ_E;
@@ -109,12 +117,12 @@ typedef struct Jn_environ Jn_environ;
 } while (0)
 #define JN_OBJECT_ARG(state, objects, params, count) jn_obj_arg(state, (objects), (params), (count))
 #define JN_GET_ARGS(obj, idx) ((obj)->arg.args[idx])
-#define JN_MAKE_ARGS(cap) Jn_make_args(cap)
+#define JN_MAKE_ARGS(state, cap) Jn_make_args(state, cap)
 #define JN_ADD_ARG(args, obj) Jn_add_arg(args, obj)
 #define JN_GET_INSTANCE(obj) obj->instance
 #define JN_OBJECT(state, type) jn_obj_new(state, type)
 #define JN_OBJ_TO_STRING(obj) jn_obj_to_string(obj)
-#define JN_CALL_NATIVE(fn_obj, args) fn_obj->native_fn->fn(args)
+#define JN_CALL_NATIVE(state, fn_obj, args) fn_obj->native_fn->fn(state, args)
 #define JN_RAISE_EXCPETION(state, t, msg, ...) jn_obj_error(state, t, msg, ##__VA_ARGS__)
 #define JN_RETURN_NONE jn_obj_none()
 #define JN_RETURN_INT(state, i) jn_obj_int(state, (i))
@@ -265,7 +273,7 @@ typedef struct J_State
     char** symbols;
     J_Context cxt;
     size_t symbols_count, symbols_capacity;
-    bool running;
+    int running;
 } J_State;
 
 
@@ -425,7 +433,7 @@ void* Jn_alloc(size_t size);
 // Helpers
 unsigned long djb2_hash(unsigned const char* str);
 
-JN_API JnObject* Jn_make_args(size_t capacity);
+JN_API JnObject* Jn_make_args(J_State* state, size_t capacity);
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
 
 
@@ -448,11 +456,11 @@ JN_API JnObject* Jn_call_fn(J_State*, char* fn_name, JnObject* args);
 JN_API J_Context* Jn_get_context(J_State*);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(J_State*);
-JN_API int Jn_exec_program(J_State* state, char* source);
-JN_API int Jn_exec_string(J_State*, char*);
-JN_API int Jn_exec_REPL(J_State*, char* source);
+JN_API int Jn_exec_program(J_State* state, const char* source);
+JN_API int Jn_exec_string(J_State*, const char*);
+JN_API int Jn_exec_REPL(J_State*, const char* source);
 // Main Execution function
-JN_API int Jn_execute_main(J_State*, char*);
+JN_API int Jn_execute_main(J_State*, const char*);
 // Execute for FILE ptr.
 JN_API int Jn_exec_from_file(J_State*, FILE*);
 
@@ -497,4 +505,5 @@ JnObject* Jn_hashmap_get_string(Jn_Hashmap* map, char* str);
 #ifdef __cplusplus
 }
 #endif
-#endif
+
+#endif // JOAN_H
