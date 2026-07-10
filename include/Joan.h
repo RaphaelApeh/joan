@@ -451,6 +451,8 @@ JN_API int Jn_exec(J_State*);
 
 // Load builtin function
 JN_API void Jn_load_Cfunctions(J_State* state);
+// Load repl funtions
+JN_API void Jn_load_repl_functions(J_State* state);
 // Call user-define functions
 JN_API JnObject* Jn_call_fn(J_State*, char* fn_name, JnObject* args);
 JN_API J_Context* Jn_get_context(J_State*);

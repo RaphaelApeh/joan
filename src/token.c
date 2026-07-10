@@ -51,6 +51,7 @@ joan_token_t clean_token(joan_lexer_t* l)
 joan_token_t number_token(joan_lexer_t* l)
 {
     char* buff;
+    bool is_float = false;
     bool prev_us = false;
     if (l->start[0] == '0' && (peek(l) == 'x' || peek(l) == 'X'))
     {
@@ -93,30 +94,50 @@ joan_token_t number_token(joan_lexer_t* l)
         return make_error(l, "int cannot end with '_'.");
     if (peek(l) == '.' && isdigit(peek_next(l)))
     {
+        is_float = true;
         advance(l);
         prev_us = false;
-        while (isdigit(peek(l)) || peek(l) == '_' || peek(l) == 'f')
+        while (isdigit(peek(l)) || peek(l) == '_')
         {
             if (peek(l) == '_')
             {
                 if (prev_us)
-                    return make_error(l, "consecutive '_' in int.");
+                    return make_error(l, "consecutive '_' in number.");
                 prev_us = true;
-            } else 
-                prev_us = false;
+            }
+            else prev_us = false;
             advance(l);
         }
-        if (l->curr[-1] == '_')
-            return make_error(l, "float cannot end with '_'.");
+        if (l->curr[-1] == '_') return make_error(l, "Float cannot end with '_'.");
+    }
+    if (peek(l) == 'e' || peek(l) == 'E')
+    {
+        is_float = true;
+        advance(l);
+        if (peek(l) == '+' || peek(l) == '-')
+            advance(l);
+        if (!isdigit(peek(l))) return make_error(l, "expected digits after exponent.");
+        prev_us = false;
+        while (isdigit(peek(l)) || peek(l) == '_')
+        {
+            if (peek(l) == '_')
+            {
+                if (prev_us)    return make_error(l, "consecutive '_' in exponent.");
+                prev_us = true;
+            } else prev_us = false;
+            advance(l);
+        }
+        if (l->curr[-1] == '_') return make_error(l, "exponent cannot end with '_'.");
+    }
+    if (is_float)
+    {
         joan_token_t t = make_token(l, TOKEN_FLOAT);
-        // *d = atof(t.lexeme);
         buff = rm_num_sep(t.lexeme);
         t.d = strtod(buff, NULL);
         free(buff);
         return t;
     }
     joan_token_t t = make_token(l, TOKEN_INT);
-    // *i = atoi(t.lexeme);
     buff = rm_num_sep(t.lexeme);
     t.i = strtol(buff, NULL, 10);
     free(buff);
@@ -211,7 +232,7 @@ static joan_token_t token_char(joan_lexer_t* l)
     return t;
 }
 
-joan_token_t identifier(joan_lexer_t* l)
+joan_token_t token_identifier(joan_lexer_t* l)
 {
     joan_token_t tmp;
     while (isalnum(peek(l)) || peek(l) == '_') 
@@ -243,8 +264,6 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_NOT_IN;
     else if (strcmp(t.lexeme, "not") == 0)
         t.type = TOKEN_NOT;
-    else if (strcmp(t.lexeme, "of") == 0)
-        t.type = TOKEN_OF;
     else if (equal(t.lexeme, "import"))
         t.type = TOKEN_IMPORT;    
     else if (strcmp(t.lexeme, "enum") == 0)
@@ -263,8 +282,6 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_AND;
     else if (strcmp(t.lexeme, "is") == 0)
         t.type = TOKEN_IS;
-    else if (strcmp(t.lexeme, "do") == 0)
-        t.type = TOKEN_DO;
     else if (strcmp(t.lexeme, "while") == 0)
         t.type = TOKEN_WHILE;
     else if (strcmp(t.lexeme, "return") == 0)
@@ -273,8 +290,6 @@ joan_token_t identifier(joan_lexer_t* l)
         t.type = TOKEN_BREAK;
     else if (strcmp(t.lexeme, "continue") == 0)
         t.type = TOKEN_CONTINUE;
-    else if (strcmp(t.lexeme, "class") == 0)
-        t.type = TOKEN_CLASS;
     else if (strcmp(t.lexeme, "const") == 0)
         t.type = TOKEN_CONST;
     else if (strcmp(t.lexeme, "struct") == 0)
@@ -350,10 +365,10 @@ joan_token_t next_token(joan_lexer_t* l)
         ( c == '.' && isdigit(peek(l)) )
     )
     return number_token(l);
-    if (isalnum(c) || c == '_') return identifier(l);
+    if (isalnum(c) || c == '_') return token_identifier(l);
     switch (c)
     {
-        case '\n': // Don't need it but i will keep it for now.
+        case '\n': // Don't need it but i will keep it.
             return make_token(l, TOKEN_NEWLINE);
         case '(':
             return make_token(l, TOKEN_LPARN);

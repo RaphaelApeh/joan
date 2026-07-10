@@ -109,11 +109,17 @@ static int parse_buffer(char* str)
     return OK;
 }
 
+#if __WIN32
+#define _CFMT "CTL"
+#else
+#define _CFMT "CMD"
+#endif
+
 static void print_help(void)
 {
     // TODO: add a better help msg
     fprintf(stdout, 
-    "!enter  Exit shell.\n"
+    _CFMT "-E  Exit shell.\n"
     ".help Show this help message.\n"
     );
 }
@@ -130,7 +136,7 @@ JN_API void Jn_repl(void)
     Jn_program_init(&state);
     fprintf(stderr, 
         "Welcome to Joan v" JOAN_VERSION "\n"
-        "\"CTL-E\" to exit shell.\n"
+        "\"" _CFMT "-E\" to exit shell.\n"
         "\"!help\" for help info.\n"
     );
     for (;;)
@@ -162,7 +168,9 @@ JN_API void Jn_repl(void)
         buffer_count = 0;
         if (exit_code < 0 || exit_code > 0)
         {
-            printf("Eixt code: %d\n", exit_code);
+            #ifdef JOAN_DEBUG
+                printf("Eixt code: %d\n", exit_code);
+            #endif
             //  exit() function
             // break;
         }

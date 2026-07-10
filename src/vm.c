@@ -771,7 +771,7 @@ int vm_run(J_State* state, JnVM* vm)
                         arg = JN_OBJECT_ARG(state, args, NULL, len);
                         a = JN_CALL_NATIVE(state, o, arg);
                         if (a == NULL)
-                            return die(state,vm, "SystemError: got NULL");
+                            break;
                         PUSH(vm, a);
                         break;
                     }

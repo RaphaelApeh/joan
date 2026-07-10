@@ -116,7 +116,7 @@ void sweep(J_State* state){
         {
             JnObject* unreached = *obj;
             *obj = unreached->next;
-            #ifdef JOAN_DEBUG
+            #if defined(JOAN_DEBUG)
                 printf("Freeing object count (%d)....\n", count++);
             #endif
             Jn_freeObject(unreached);

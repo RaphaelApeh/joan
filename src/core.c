@@ -229,6 +229,7 @@ JN_API int Jn_exec_REPL(J_State* state, const char* source)
     if (!source) return -1;
     state->cxt.source.filename = NULL;
     state->cxt.source.source = strdup(source);
+    Jn_load_repl_functions(state);
     int exrt = Jn_exec_program(state, source);
     if (exrt < 0)
         return exrt;
