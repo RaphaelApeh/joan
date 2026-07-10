@@ -198,6 +198,14 @@ int vm_run(J_State* state, JnVM* vm)
                 o = READ_CONST();
                 PUSH(vm, jn_intern_obj(o));
                 break;
+            case OP_TRUE:
+            {
+                PUSH(vm, JN_RETURN_TRUE(state));
+            } break;
+            case OP_FALSE:
+            {
+                PUSH(vm, JN_RETURN_FALSE(state));
+            } break;
             case OP_ADD:
                 a = pop(vm); b = pop(vm);
                 o = jn_intern_obj(eval_binary(state, b, a, EVAL_ADD));

@@ -35,19 +35,24 @@ void usage(void)
     fprintf(stderr, 
     "Usage: joan [options] [file]\n"
     "Options: \n"
-    "-v --version output joan version\n"
-    "-f --file run a script\n"
-    "-r  execute a program and run on repl\n"
-    "-h --help output help information\n\n"
+    "-v --version: output joan version.\n"
+    "-f --file: execute script file.\n"
+    "-r --repl: REPL.\n"
+    "-c --command: execute a program string.\n"
+    "-i --iterative: run program into repl.\n"
+    "-h --help: output help information.\n\n"
     "Examples: \n"
+    "\t$ joan\n"
     "\t$ joan ./main.jt\n"
-    "\t$ joan -r ./main.jt\n"
+    "\t$ joan -c \"printf(\"Hello World\")\"\n"
+    "\t$ joan -i ./main.jt\n"
+    "\t$ joan --file main.jt.\n"
     );
 }
 
 void version(void)
 {
-    fprintf(stderr, 
+    fprintf(stdout, 
     "Joan " JOAN_VERSION
     );
 }
@@ -72,7 +77,7 @@ int main(int argc, char** argv)
         {
             goto repl;
         }
-        case C_RUN_REPL:
+        case C_ITERATIVE:
         {
             goto interative;
         }
@@ -83,7 +88,9 @@ int main(int argc, char** argv)
     }
     return 0;
     repl:
-        Jn_repl();
+        Jn_program_init(&state);
+        Jn_repl(&state);
+        Jn_program_close(&state);
         return 0;
     execute:
         Jn_program_init(&state);
@@ -92,5 +99,9 @@ int main(int argc, char** argv)
         Jn_program_close(&state);
         return exit_code;
     interative:
+        Jn_program_init(&state);
+        if (!c.filename) return -1;
+        Jn_run_iterative(&state, c.filename);
+        Jn_program_close(&state);
         return 0;
 }

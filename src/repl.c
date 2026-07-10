@@ -62,8 +62,10 @@ struct Command parse_args(char** args, int argc)
                 c.type = C_RUN;
                 c.filename = opts.optarg;
                 break;
+            case 'd':
+                c.debug = true; break;
             case 'i':
-                c.type = C_RUN_REPL;
+                c.type = C_ITERATIVE;
                 c.filename = opts.optarg;
                 break;
             case '?':
@@ -124,16 +126,15 @@ static void print_help(void)
     );
 }
 
-JN_API void Jn_run_iterative(J_State* state)
+JN_API void Jn_run_iterative(J_State* state, const char* filename)
 {
-    // TODO
+    Jn_exec_program(state, filename);
+    Jn_repl(state);
 }
 
-JN_API void Jn_repl(void)
+JN_API void Jn_repl(J_State* state)
 {
     char line[256];
-    J_State state = {0};
-    Jn_program_init(&state);
     fprintf(stderr, 
         "Welcome to Joan v" JOAN_VERSION "\n"
         "\"" _CFMT "-E\" to exit shell.\n"
@@ -163,7 +164,7 @@ JN_API void Jn_repl(void)
         if (type == INCOMPLETE)
             continue;
         
-        int exit_code = Jn_exec_REPL(&state, buffer);
+        int exit_code = Jn_exec_REPL(state, buffer);
         buffer[0] = 0;
         buffer_count = 0;
         if (exit_code < 0 || exit_code > 0)
@@ -175,5 +176,4 @@ JN_API void Jn_repl(void)
             // break;
         }
     }
-    Jn_program_close(&state);
 }

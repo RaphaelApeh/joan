@@ -427,7 +427,12 @@ typedef struct JnObject{
 } JnObject;
 
 
-JN_API void Jn_repl(void);
+// Run REPL
+JN_API void Jn_repl(J_State* state);
+
+// Execute and run repl
+JN_API void Jn_run_iterative(J_State* state, const char* filename);
+
 
 void* Jn_alloc(size_t size);
 // Helpers

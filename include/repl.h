@@ -6,16 +6,16 @@ typedef enum {
     C_VERSION,
     C_REPL,
     C_RUN, // execute program
-    C_RUN_REPL,
+    C_ITERATIVE,
     C_UNKOWN,
     C_ERROR,
 } CommandType;
 
 struct Command {
     char* filename, error_msg; // Can be NULL
+    bool debug;
     CommandType type;
 };
 
-extern int _JN_INIT_PROGRAM;
 struct Command parse_args(char** args, int argc);
 #endif
