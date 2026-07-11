@@ -1135,7 +1135,7 @@ void compile(AST* node, Chuck* chuck)
     case AST_IF:
         compile(node->if_node.condition, chuck);
         int false_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
-        // WRITE_CHUCK(chuck, OP_POP);
+        WRITE_CHUCK(chuck, OP_POP);
         compile(node->if_node.then, chuck);
         int end_jump = emit_jump(chuck, OP_JUMP);
         patch_jump(chuck, false_jump);

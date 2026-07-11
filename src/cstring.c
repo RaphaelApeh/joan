@@ -14,6 +14,18 @@ bool strends(const char* str, const char* suf)
 }
 
 
+char* str_sp(const char* str)
+{
+    char* s = str;
+    while (*s)
+    {
+        if (*s == '\\' && *s)
+            s += 2;
+        s++;
+    }
+    return strdup(s);
+}
+
 bool strstarts(const char* str, const char* pre)
 {
     int str_len = strlen(str), pre_len = strlen(pre);

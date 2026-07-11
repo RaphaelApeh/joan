@@ -16,7 +16,7 @@
 
 #define LONG_HEX_NUM 0xbf58476d1ce4e5b9ULL
 #define LONG_HEX_NUM2 0x94d049bb133111ebULL
-#define LONG_HEX_NUM3 0x9e37779b97f4e7c15ULL
+#define LONG_HEX_NUM3 0x9e3779b97f4e7c15ULL
 JnObject NoneObj = {0};
 
 static InternEntry* intern_pool[JN_INTER_SIZE];
@@ -46,12 +46,6 @@ JnObject* jn_obj_new(J_State* state, JnTypeObject type)
 
 JnObject* jn_obj_int(J_State* state, long int_val)
 {
-    if (int_val <= 0)
-    {
-        NoneObj.type = JN_INT_TYPE;
-        NoneObj.int_val = int_val;
-        return &NoneObj;
-    }
     JnObject* obj =  jn_obj_new(state, JN_INT_TYPE);
     obj->int_val = int_val;
     return obj;

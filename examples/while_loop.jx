@@ -1,7 +1,6 @@
 let arr = [1, 2, 3, 4]
-let l = len(arr)
 let n = 0
-while n < l{
-    println arr[n]
+while n < len(arr) {
+    printf("Element: %i", arr[n])
     n += 1
 }  
