@@ -39,7 +39,7 @@ struct Command parse_args(char** args, int argc)
         {"repl", 'r', OPTPARSE_OPTIONAL},
         {"file", 'f', OPTPARSE_REQUIRED},
         {"debug", 'd', OPTPARSE_NONE},
-        {"command", 'c', OPTPARSE_NONE},
+        {"command", 'c', OPTPARSE_REQUIRED},
         {"interative", 'i', OPTPARSE_REQUIRED},
         {0}
     };
@@ -64,6 +64,10 @@ struct Command parse_args(char** args, int argc)
                 break;
             case 'd':
                 c.debug = true; break;
+            case 'c':
+                // TODO
+                printf("Command: %s\n", opts.optarg);
+                break;
             case 'i':
                 c.type = C_ITERATIVE;
                 c.filename = opts.optarg;

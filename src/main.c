@@ -35,12 +35,12 @@ void usage(void)
     fprintf(stderr, 
     "Usage: joan [options] [file]\n"
     "Options: \n"
-    "-v --version: output joan version.\n"
-    "-f --file: execute script file.\n"
-    "-r --repl: REPL.\n"
-    "-c --command: execute a program string.\n"
-    "-i --iterative: run program into repl.\n"
-    "-h --help: output help information.\n\n"
+    "-v --version:      output joan version.\n"
+    "-f --file:         execute script file.\n"
+    "-r --repl:         REPL.\n"
+    "-c --command:      execute a program string.\n"
+    "-i --iterative:    run program into repl.\n"
+    "-h --help:         output help information.\n\n"
     "Examples: \n"
     "\t$ joan\n"
     "\t$ joan ./main.jt\n"
@@ -53,7 +53,7 @@ void usage(void)
 void version(void)
 {
     fprintf(stdout, 
-    "Joan " JOAN_VERSION
+    "Joan v" JOAN_VERSION
     );
 }
 
