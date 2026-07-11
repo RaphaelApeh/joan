@@ -31,12 +31,13 @@ SOFTWARE.
 #include <stdbool.h>
 #include <Joan.h>
 
-const char* source = "printf(\"Hello from joan.\")";
+const char* source = "printf(\"Hello from C. %s\", TEST)";
 
 int main(void)
 {
     J_State state = {0};
     Jn_program_init(&state);
+    Jn_register(&state, "TEST", "TEST IF IT WORKS.", JN_RETURN_STRING(&state, "IT WORK's."));
     Jn_exec_program(&state, source);
     Jn_program_close(&state);
     return 0;

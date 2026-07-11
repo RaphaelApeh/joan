@@ -31,12 +31,12 @@ void mark_object(JnObject* obj)
     obj->marked = true;
     switch (obj->type)
     {
-        case ARRAY_TYPE:
+        case JN_ARRAY_TYPE:
             for (int i = 0; i < obj->arr->size; ++i)
                 mark_object(obj->arr->items[i]);
             obj->marked = true;
             break;
-        case HASHMAP_TYPE:
+        case JN_HASHMAP_TYPE:
             for (long i = 0; i < obj->hashmap->size; ++i)
             {
                 mark_object(obj->hashmap->buckets[i].key);
@@ -60,16 +60,16 @@ void Jn_freeObject(JnObject* obj)
     if (NULL == obj) return;
     switch (obj->type)
     {
-        case STR_TYPE:
+        case JN_STRING_TYPE:
             free(obj->str->chars);
             free(obj->str);
             break;
-        case ARRAY_TYPE:
+        case JN_ARRAY_TYPE:
             for (int i = 0; i < obj->arr->size; ++i)
                 Jn_freeObject(obj->arr->items[i]);
             free(obj->arr);
             break;
-        case HASHMAP_TYPE:
+        case JN_HASHMAP_TYPE:
             for (int i = 0; i < obj->hashmap->size; ++i)
             {
                 Jn_freeObject(obj->hashmap->buckets[i].key);
@@ -77,26 +77,26 @@ void Jn_freeObject(JnObject* obj)
             }
             free(obj->hashmap);
             break;
-        case FUNCTION_TYPE:
+        case JN_FUNCTION_TYPE:
             chuck_free(obj->fn->chuck);
             free(obj->fn->chuck);
             free(obj->fn->env->buckets);
             free(obj->fn->env);
             free(obj->fn);
             break;
-        case NATIVE_TYPE:
+        case JN_NATIVE_TYPE:
             free(obj->native_fn);
             break;
-        case ITER_TYPE:
+        case JN_ITER_TYPE:
             Jn_freeObject(obj->iter->obj);
             free(obj->iter);
             break;
-        case MODULE_TYPE:
+        case JN_MODULE_TYPE:
             free(obj->module->env->buckets);
             free(obj->module->env);
             free(obj->module);
             break;
-        case INSTANCE_TYPE:
+        case JN_INSTANCE_TYPE:
             free(obj->instance->fields->buckets);
             free(obj->instance->fields);
             // free(obj->instance->obj);

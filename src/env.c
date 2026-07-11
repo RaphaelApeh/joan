@@ -67,7 +67,7 @@ void environ_insert(Jn_environ* env, char* key, JnObject* obj)
         env->capacity *= 2;
         env->buckets = realloc(env->buckets, sizeof(Jn_environ_E) * env->capacity);
     }
-    if (obj->type == STRUCT_TYPE)
+    if (obj->type == JN_STRUCT_TYPE)
     {
         obj->struct_obj->name = key;
     }else if (JN_IS_FUNCTION(obj))

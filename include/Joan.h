@@ -62,27 +62,27 @@ extern "C" {
 #endif
 
 typedef enum{
-    NONE_TYPE = 0,
-    STR_TYPE,
-    CHAR_TYPE,
-    INT_TYPE,
-    BOOL_TYPE,
-    FLOAT_TYPE,
-    ARRAY_TYPE,
-    TUPLE_TYPE,
-    RANGE_TYPE,
-    HASHMAP_TYPE,
-    FUNCTION_TYPE,
-    NATIVE_TYPE,
-    METHOD_TYPE,
-    ITER_TYPE,
-    INSTANCE_TYPE,
-    MODULE_TYPE,
-    OBJECT_TYPE,
-    ENUM_TYPE,
-    STRUCT_TYPE,
-    ARG_TYPE,
-    ERROR_TYPE,
+    JN_NONE_TYPE = 0,
+    JN_STRING_TYPE,
+    JN_CHAR_TYPE,
+    JN_INT_TYPE,
+    JN_BOOL_TYPE,
+    JN_FLOAT_TYPE,
+    JN_ARRAY_TYPE,
+    JN_TUPLE_TYPE,
+    JN_RANGE_TYPE,
+    JN_HASHMAP_TYPE,
+    JN_FUNCTION_TYPE,
+    JN_NATIVE_TYPE,
+    JN_METHOD_TYPE,
+    JN_ITER_TYPE,
+    JN_INSTANCE_TYPE,
+    JN_MODULE_TYPE,
+    JN_OBJECT_TYPE,
+    JN_ENUM_TYPE,
+    JN_STRUCT_TYPE,
+    JN_ARG_TYPE,
+    JN_ERROR_TYPE,
 } JnTypeObject;
 
 typedef struct AST AST;
@@ -151,24 +151,24 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_STRUCT(obj) (obj)->struct_obj
 #define JN_OBJ_TYPE(obj) (obj)->type
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
-#define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, NONE_TYPE)
-#define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, BOOL_TYPE)
+#define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, JN_NONE_TYPE)
+#define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, JN_BOOL_TYPE)
 #define JN_TO_BOOL(obj) is_truthy(obj)
-#define JN_IS_INT(obj) _JN_CHECK_TYPE(obj, INT_TYPE)
-#define JN_IS_STRING(obj) _JN_CHECK_TYPE(obj, STR_TYPE)
-#define JN_IS_FLOAT(obj) _JN_CHECK_TYPE(obj, FLOAT_TYPE)
-#define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, ARRAY_TYPE)
-#define JN_IS_ARGS(args) _JN_CHECK_TYPE(args, ARG_TYPE)
-#define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, HASHMAP_TYPE)
-#define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, ITER_TYPE)
-#define JN_IS_NATIVE(obj) _JN_CHECK_TYPE(obj, NATIVE_TYPE)
-#define JN_IS_CHAR(obj) _JN_CHECK_TYPE(obj, CHAR_TYPE)
-#define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, RANGE_TYPE)
-#define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, ERROR_TYPE)
-#define JN_IS_STRUCT(obj) _JN_CHECK_TYPE(obj, STRUCT_TYPE)
-#define JN_IS_TUPLE(obj) _JN_CHECK_TYPE(obj, TUPLE_TYPE)
-#define JN_IS_INSTANCE(obj) _JN_CHECK_TYPE(obj, INSTANCE_TYPE)
-#define JN_IS_FUNCTION(obj) _JN_CHECK_TYPE(obj, FUNCTION_TYPE)
+#define JN_IS_INT(obj) _JN_CHECK_TYPE(obj, JN_INT_TYPE)
+#define JN_IS_STRING(obj) _JN_CHECK_TYPE(obj, JN_STRING_TYPE)
+#define JN_IS_FLOAT(obj) _JN_CHECK_TYPE(obj, JN_FLOAT_TYPE)
+#define JN_IS_ARRAY(obj) _JN_CHECK_TYPE(obj, JN_ARRAY_TYPE)
+#define JN_IS_ARGS(args) _JN_CHECK_TYPE(args, JN_ARG_TYPE)
+#define JN_IS_HASHMAP(obj) _JN_CHECK_TYPE(obj, JN_HASHMAP_TYPE)
+#define JN_IS_ITER(obj) _JN_CHECK_TYPE(obj, JN_ITER_TYPE)
+#define JN_IS_NATIVE(obj) _JN_CHECK_TYPE(obj, JN_NATIVE_TYPE)
+#define JN_IS_CHAR(obj) _JN_CHECK_TYPE(obj, JN_CHAR_TYPE)
+#define JN_IS_RANGE(obj) _JN_CHECK_TYPE(obj, JN_RANGE_TYPE)
+#define JN_IS_ERROR(obj) _JN_CHECK_TYPE(obj, JN_ERROR_TYPE)
+#define JN_IS_STRUCT(obj) _JN_CHECK_TYPE(obj, JN_STRUCT_TYPE)
+#define JN_IS_TUPLE(obj) _JN_CHECK_TYPE(obj, JN_TUPLE_TYPE)
+#define JN_IS_INSTANCE(obj) _JN_CHECK_TYPE(obj, JN_INSTANCE_TYPE)
+#define JN_IS_FUNCTION(obj) _JN_CHECK_TYPE(obj, JN_FUNCTION_TYPE)
 #define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
@@ -270,14 +270,14 @@ typedef struct J_State
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     Jn_environ* globals;
-    char** symbols;
+    const char** symbols;
     J_Context cxt;
     size_t symbols_count, symbols_capacity;
     int running;
 } J_State;
 
 
-void set_symbols(J_State* state, char* str);
+void set_symbols(J_State* state, const char* str);
 /*
 
 Jn_CModule math_mod[] = {

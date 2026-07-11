@@ -4,6 +4,7 @@ file(GLOB SOURCES "src/*.c")
 # file(GLOB SOURCES "src/*.c")
 
 # find_package(OpenGL REQUIRED)
+
 add_executable(joan ${SOURCES})
 include_directories(include)
 add_library(joan_shared SHARED ${SOURCES})

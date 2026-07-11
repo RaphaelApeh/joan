@@ -1,7 +1,7 @@
 // functions
 static let x = 1
 
-typeof(name) == ARRAY_TYPE
+typeof(name) == JN_ARRAY_TYPE
 
 static fn main(x : string, y : float, xy: int=43) {
     println x

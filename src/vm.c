@@ -108,7 +108,7 @@ static int vm_error(J_State* state, JnVM* vm, JnObject* obj)
         struct FuzzMatch matches[300]; // TODO
         int n = fuzzy_match(
             obj->expection.var_name,
-            state->symbols,
+            (char **)state->symbols,
             state->symbols_count,
             matches
         );
@@ -314,7 +314,7 @@ int vm_run(J_State* state, JnVM* vm)
                 if (fields_count > values_count)
                     return die(state,vm, "For some reason you have more fields name than values.");
                 JnObject* object_type = pop(vm);
-                if (object_type->type == OBJECT_TYPE)
+                if (object_type->type == JN_OBJECT_TYPE)
                 {
                     o = JN_OBJECT_ARG(state, values, NULL, values_count);
                     PUSH(vm, (object_type->type_val.ctor(state, o)));
@@ -340,7 +340,7 @@ int vm_run(J_State* state, JnVM* vm)
                     JN_ARRAY_DEFAULT(arr);
                 }
                 assert(arr != NULL);
-                o = JN_OBJECT(state, TUPLE_TYPE);
+                o = JN_OBJECT(state, JN_TUPLE_TYPE);
                 o->tuple = arr;
                 PUSH(vm, o);
                 break;
@@ -356,7 +356,7 @@ int vm_run(J_State* state, JnVM* vm)
                     JN_ARRAY_DEFAULT(arr);
                 }
                 assert(arr != NULL);
-                o = JN_OBJECT(state, ARRAY_TYPE);
+                o = JN_OBJECT(state, JN_ARRAY_TYPE);
                 o->arr = arr;
                 PUSH(vm, o);
                 break;
@@ -373,7 +373,7 @@ int vm_run(J_State* state, JnVM* vm)
                     JN_DEFAULT_HM(map);
                 }
                 assert(map != NULL);
-                JnObject* obj = JN_OBJECT(state, HASHMAP_TYPE);
+                JnObject* obj = JN_OBJECT(state, JN_HASHMAP_TYPE);
                 obj->hashmap = map;
                 PUSH(vm, obj);
                 break;
@@ -505,21 +505,21 @@ int vm_run(J_State* state, JnVM* vm)
                 Jn_environ_E* entt = NULL;
                 switch (o->type)
                 {
-                case MODULE_TYPE:
+                case JN_MODULE_TYPE:
                     entt = environ_get(o->module->env, field);
                     if (entt == NULL)
                         return die(state,vm, "module does not have attribute '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
-                case INSTANCE_TYPE:
+                case JN_INSTANCE_TYPE:
                     entt = environ_get(o->instance->fields, field);
                     if (entt == NULL)
                         return die(state,vm, "struct object does not have field '%s'.", field);
                     PUSH(vm, entt->value);
                     break;
-                case HASHMAP_TYPE:
-                case ARRAY_TYPE:
-                case STR_TYPE:
+                case JN_HASHMAP_TYPE:
+                case JN_ARRAY_TYPE:
+                case JN_STRING_TYPE:
                     JN_CMethod method = call_method(o, field);
                     if (method == NULL)
                         return die(state,vm, "object does not have field '%s'", field);
@@ -574,11 +574,11 @@ int vm_run(J_State* state, JnVM* vm)
                 if (NULL == o) break;
                 switch (o->type)
                 {
-                    case INT_TYPE:
+                    case JN_INT_TYPE:
                         o->int_val = -(o->int_val);
                         PUSH(vm, o);
                         break;
-                    case FLOAT_TYPE:
+                    case JN_FLOAT_TYPE:
                         o->float_val = -o->float_val;
                         PUSH(vm, o);
                         break;
@@ -590,7 +590,7 @@ int vm_run(J_State* state, JnVM* vm)
                 o = pop(vm);
                 switch (o->type)
                 {
-                case ARRAY_TYPE:
+                case JN_ARRAY_TYPE:
                     PUSH(vm, JN_RETURN_INT(state, JN_AS_ARRAY(o)->size));
                     break;
                 default:
@@ -619,15 +619,15 @@ int vm_run(J_State* state, JnVM* vm)
                 int index;
                 switch (array->type)
                 {
-                    case ARRAY_TYPE:
-                        if (idx_key->type != INT_TYPE && idx_key->type != RANGE_TYPE)
+                    case JN_ARRAY_TYPE:
+                        if (idx_key->type != JN_INT_TYPE && idx_key->type != JN_RANGE_TYPE)
                             return die(state,vm, "getter attrib is not of type int or range.");
-                        index = (idx_key->type == INT_TYPE) ? idx_key->int_val : range_len(&idx_key->range);
+                        index = (idx_key->type == JN_INT_TYPE) ? idx_key->int_val : range_len(&idx_key->range);
                         o = JN_GET_ARRAY(array->arr, index);
                         if (o == NULL) return die(state,vm, "Invalid array index.");
                         PUSH(vm, o);
                         break;
-                    case STR_TYPE:
+                    case JN_STRING_TYPE:
                         index = JN_AS_INT(idx_key);
                         if (index < 0)
                         {
@@ -638,12 +638,12 @@ int vm_run(J_State* state, JnVM* vm)
                         o = JN_RETURN_CHAR(state, (array->str->chars[index]));
                         PUSH(vm, o);
                         break;
-                    case RANGE_TYPE:
+                    case JN_RANGE_TYPE:
                         if (!JN_IS_INT(idx_key))
                             return die(state,vm, "expected an int.");
                         PUSH(vm, JN_RETURN_INT(state, range_at(&array->range, JN_AS_INT(idx_key))));
                         break;
-                    case HASHMAP_TYPE:
+                    case JN_HASHMAP_TYPE:
                     Jn_HashEntry* entry = JN_HASHMAP_GET((array->hashmap), idx_key);
                     if (entry == NULL)
                         return die(state,vm, "invalid key.");
@@ -660,7 +660,7 @@ int vm_run(J_State* state, JnVM* vm)
                 index = pos->int_val;
                 switch (array->type)
                 {
-                    case ARRAY_TYPE:
+                    case JN_ARRAY_TYPE:
                         if (index < 0)
                         {
                             index += array->arr->size;
@@ -669,14 +669,14 @@ int vm_run(J_State* state, JnVM* vm)
                             return die(state,vm, "Got an invalid index; expected max '%d' but got '%d'.", array->arr->size, index);
                         array->arr->items[index] = value;
                         break;
-                    case STR_TYPE:
+                    case JN_STRING_TYPE:
                         if (index >= array->str->len)
                                 return die(state,vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
                         if (!JN_IS_CHAR(value))
                             return die(state,vm, "string index expect a char type.");
                         array->str->chars[index] = JN_AS_CHAR(value);
                         break;
-                    case HASHMAP_TYPE:
+                    case JN_HASHMAP_TYPE:
                         JN_HASMAP_PUT(array->hashmap, pos, value);
                         break;
                     default:
@@ -722,14 +722,14 @@ int vm_run(J_State* state, JnVM* vm)
                 break;
             case OP_ITER_NEXT:
                 JnObject* iter_obj = pop(vm);
-                if (!_JN_CHECK_TYPE(iter_obj, ITER_TYPE))
+                if (!_JN_CHECK_TYPE(iter_obj, JN_ITER_TYPE))
                     return die(state,vm, "Expected an iter type.");
                 JnIterObject* _iter = JN_AS_ITER(iter_obj);
                 JnObject* target = _iter->obj;
                 assert(target != NULL);
                 switch (target->type)
                 {
-                case ARRAY_TYPE:
+                case JN_ARRAY_TYPE:
                     if (_iter->index >= JN_AS_ARRAY(target)->size)
                     {
                         PUSH(vm, JN_RETURN_BOOL(state, false));
@@ -742,7 +742,7 @@ int vm_run(J_State* state, JnVM* vm)
                     _iter->index++;
                     PUSH(vm, JN_RETURN_BOOL(state, true));
                     break;
-                case HASHMAP_TYPE:
+                case JN_HASHMAP_TYPE:
                     if (_iter->index >= JN_AS_HM(target)->size)
                     {
                         PUSH(vm, JN_RETURN_BOOL(state, false));
@@ -775,7 +775,7 @@ int vm_run(J_State* state, JnVM* vm)
                 JnObject* arg = NULL;
                 switch (o->type)
                 {
-                    case NATIVE_TYPE: {
+                    case JN_NATIVE_TYPE: {
                         arg = JN_OBJECT_ARG(state, args, NULL, len);
                         a = JN_CALL_NATIVE(state, o, arg);
                         if (a == NULL)
@@ -783,13 +783,13 @@ int vm_run(J_State* state, JnVM* vm)
                         PUSH(vm, a);
                         break;
                     }
-                    case METHOD_TYPE:
+                    case JN_METHOD_TYPE:
                         arg = JN_OBJECT_ARG(state, args, NULL, len);
                         a = o->method.fn(state, o->method.obj, arg);
                         if (NULL == a) return die(state,vm, "Invalid method call.");
                         PUSH(vm, a);
                         break;
-                    case FUNCTION_TYPE: {
+                    case JN_FUNCTION_TYPE: {
                         JnFunctionObject* fn = o->fn;
                         if (count != fn->arity)
                             return die(state,

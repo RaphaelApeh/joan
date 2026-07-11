@@ -26,11 +26,11 @@ SOFTWARE.
 
 
 LangType :: enum {
-    NONE_TYPE,
-    INT_TYPE,
+    JN_NONE_TYPE,
+    JN_INT_TYPE,
     STRING_TYPE,
-    FLOAT_TYPE,
-    CHAR_TYPE,
+    JN_FLOAT_TYPE,
+    JN_CHAR_TYPE,
     FUNC_TYPE,
-    OBJECT_TYPE
+    JN_OBJECT_TYPE
 }

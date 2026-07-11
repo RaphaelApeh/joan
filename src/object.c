@@ -48,18 +48,18 @@ JnObject* jn_obj_int(J_State* state, long int_val)
 {
     if (int_val <= 0)
     {
-        NoneObj.type = INT_TYPE;
+        NoneObj.type = JN_INT_TYPE;
         NoneObj.int_val = int_val;
         return &NoneObj;
     }
-    JnObject* obj =  jn_obj_new(state, INT_TYPE);
+    JnObject* obj =  jn_obj_new(state, JN_INT_TYPE);
     obj->int_val = int_val;
     return obj;
 }
 
 JnObject* jn_obj_string(J_State* state, char* str)
 {
-    JnObject* obj =  jn_obj_new(state, STR_TYPE);
+    JnObject* obj =  jn_obj_new(state, JN_STRING_TYPE);
     JnStringObject* strObj = malloc(sizeof(JnStringObject));
     *strObj = JNSTR_OBJ(str);
     obj->str = strObj;
@@ -68,21 +68,21 @@ JnObject* jn_obj_string(J_State* state, char* str)
 
 JnObject* jn_obj_char(J_State* state, char c)
 {
-    JnObject* obj =  jn_obj_new(state, CHAR_TYPE);
+    JnObject* obj =  jn_obj_new(state, JN_CHAR_TYPE);
     obj->j_char = c;
     return obj;
 }
 
 JnObject* jn_obj_bool(J_State* state, bool bool_val)
 {
-    JnObject* obj =  jn_obj_new(state, BOOL_TYPE);
+    JnObject* obj =  jn_obj_new(state, JN_BOOL_TYPE);
     obj->bool_val = bool_val;
     return obj;
 }
 
 JnObject* jn_obj_float(J_State* state, double float_val)
 {
-    JnObject* obj =  jn_obj_new(state, FLOAT_TYPE);
+    JnObject* obj =  jn_obj_new(state, JN_FLOAT_TYPE);
     obj->float_val = float_val;
     return obj;
 }
@@ -90,14 +90,14 @@ JnObject* jn_obj_float(J_State* state, double float_val)
 
 JnObject* jn_obj_none(void)
 {
-    NoneObj.type = NONE_TYPE;
+    NoneObj.type = JN_NONE_TYPE;
     NoneObj.int_val = 0;
     return &NoneObj;
 }
 
 JnObject* jn_obj_iter(J_State* state, JnObject* obj)
 {
-    JnObject* new_obj = jn_obj_new(state, ITER_TYPE);
+    JnObject* new_obj = jn_obj_new(state, JN_ITER_TYPE);
     JnIterObject* iter = malloc(sizeof(JnIterObject)); // TODO
     iter->obj = obj;
     iter->index = 0;
@@ -125,7 +125,7 @@ int64_t range_at(JnRange* r, int64_t idx)
 
 JnObject* jn_obj_range(J_State* state, int64_t start, int64_t stop, int64_t step)
 {
-    JnObject* obj = jn_obj_new(state, RANGE_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_RANGE_TYPE);
     obj->range.start = start;
     obj->range.stop = stop;
     obj->range.step = (step == 0) ? 1 : step;
@@ -134,7 +134,7 @@ JnObject* jn_obj_range(J_State* state, int64_t start, int64_t stop, int64_t step
 
 JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t count)
 {
-    JnObject* obj = jn_obj_new(state, ARG_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_ARG_TYPE);
     obj->arg.args = args;
     obj->arg.count = count;
     obj->arg.arg_names = arg_names;
@@ -144,7 +144,7 @@ JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t c
 JnObject* jn_obj_error(J_State* state, int type, char* msg, ...)
 {
     char buffer[1 << 10];
-    JnObject* obj = jn_obj_new(state, ERROR_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_ERROR_TYPE);
     obj->expection.type = type;
     va_list arg; va_start(arg, msg);
     vsnprintf(buffer, sizeof(buffer), msg, arg);
@@ -176,13 +176,13 @@ char* jn_obj_cstring(JnObject* obj)
     static char buffer[256];
     switch (JN_OBJ_TYPE(obj))
     {
-    case INT_TYPE:
+    case JN_INT_TYPE:
         snprintf(buffer, 256, "%ld", JN_AS_INT(obj));
         break;
-    case FLOAT_TYPE:
+    case JN_FLOAT_TYPE:
         snprintf(buffer, 256, "%15g", JN_AS_FLOAT(obj));
         break;
-    case BOOL_TYPE:
+    case JN_BOOL_TYPE:
         snprintf(buffer, 256, "%s", JN_AS_BOOL(obj) ? "true" : "false");
         break;
     default:
@@ -195,7 +195,7 @@ char* jn_obj_cstring(JnObject* obj)
 
 JnObject* jn_obj_type(J_State* state, char* type_name, JnTypeObject type, Jn_CFunction fn)
 {
-    JnObject* obj = jn_obj_new(state, OBJECT_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_OBJECT_TYPE);
     obj->type_val.typename = type_name;
     obj->type_val.type = type;
     obj->type_val.ctor = fn;
@@ -204,7 +204,7 @@ JnObject* jn_obj_type(J_State* state, char* type_name, JnTypeObject type, Jn_CFu
 
 JnObject* jn_obj_method(J_State* state, JnObject* obj, JN_CMethod method)
 {
-    JnObject* new_obj = jn_obj_new(state, METHOD_TYPE);
+    JnObject* new_obj = jn_obj_new(state, JN_METHOD_TYPE);
     new_obj->method.fn = method;
     new_obj->method.obj = obj;
     return new_obj;
@@ -216,21 +216,21 @@ char* jn_obj_to_string(JnObject* obj)
     char* type = NULL;
     switch (obj->type)
     {
-        case ARRAY_TYPE:
+        case JN_ARRAY_TYPE:
             type = "Array"; break;
-        case INT_TYPE:
+        case JN_INT_TYPE:
             type = "int"; break;
-        case STR_TYPE:
+        case JN_STRING_TYPE:
             type = "string"; break;
-        case BOOL_TYPE:
+        case JN_BOOL_TYPE:
             type = "bool"; break;
-        case CHAR_TYPE:
+        case JN_CHAR_TYPE:
             type = "char"; break;
-        case HASHMAP_TYPE:
+        case JN_HASHMAP_TYPE:
             type = "hashmap"; break;
-        case MODULE_TYPE:
+        case JN_MODULE_TYPE:
             type = "module"; break;
-        case OBJECT_TYPE:
+        case JN_OBJECT_TYPE:
             type = obj->type_val.typename; break;
         default:
             type = "<object>"; break;
@@ -245,48 +245,48 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
     assert(dest && src);
     switch (src->type)
     {
-        case INT_TYPE:
-            _SET_TYPE(INT_TYPE);
+        case JN_INT_TYPE:
+            _SET_TYPE(JN_INT_TYPE);
             dest->int_val = src->int_val;
             break;
-        case STR_TYPE:
-            _SET_TYPE(STR_TYPE);
+        case JN_STRING_TYPE:
+            _SET_TYPE(JN_STRING_TYPE);
             dest->str = src->str;
             break;
-        case BOOL_TYPE:
-            _SET_TYPE(BOOL_TYPE);
+        case JN_BOOL_TYPE:
+            _SET_TYPE(JN_BOOL_TYPE);
             dest->bool_val = src->bool_val;
             break;
-        case FLOAT_TYPE:
-            _SET_TYPE(FLOAT_TYPE);
+        case JN_FLOAT_TYPE:
+            _SET_TYPE(JN_FLOAT_TYPE);
             dest->float_val = src->float_val;
             break;
-        case CHAR_TYPE:
-            _SET_TYPE(CHAR_TYPE);
+        case JN_CHAR_TYPE:
+            _SET_TYPE(JN_CHAR_TYPE);
             dest->j_char = src->j_char;
             break;
-        case RANGE_TYPE:
-            _SET_TYPE(RANGE_TYPE);
+        case JN_RANGE_TYPE:
+            _SET_TYPE(JN_RANGE_TYPE);
             dest->range = src->range;
             break;
-        case ARRAY_TYPE:
-            _SET_TYPE(ARRAY_TYPE);
+        case JN_ARRAY_TYPE:
+            _SET_TYPE(JN_ARRAY_TYPE);
             dest->arr = src->arr;
             break;
-        case HASHMAP_TYPE:
-            _SET_TYPE(HASHMAP_TYPE);
+        case JN_HASHMAP_TYPE:
+            _SET_TYPE(JN_HASHMAP_TYPE);
             dest->hashmap = src->hashmap;
             break;
-        case FUNCTION_TYPE:
-            _SET_TYPE(FUNCTION_TYPE);
+        case JN_FUNCTION_TYPE:
+            _SET_TYPE(JN_FUNCTION_TYPE);
             dest->fn = src->fn;
             break;
-        case STRUCT_TYPE:
-            _SET_TYPE(STRUCT_TYPE);
+        case JN_STRUCT_TYPE:
+            _SET_TYPE(JN_STRUCT_TYPE);
             dest->struct_obj = src->struct_obj;
             break;
-        case INSTANCE_TYPE:
-            _SET_TYPE(INSTANCE_TYPE);
+        case JN_INSTANCE_TYPE:
+            _SET_TYPE(JN_INSTANCE_TYPE);
             dest->instance = src->instance;
             break;
     }
@@ -299,41 +299,41 @@ uint64_t Jn_object_hash(JnObject* obj)
     uint64_t h;
     switch (obj->type)
     {
-        case NONE_TYPE:
+        case JN_NONE_TYPE:
             return LONG_HEX_NUM3;
-        case INT_TYPE:
+        case JN_INT_TYPE:
             return hash_mix((uint64_t)obj->int_val);
-        case BOOL_TYPE:
+        case JN_BOOL_TYPE:
             return hash_mix(JN_AS_BOOL(obj));
-        case FLOAT_TYPE:
+        case JN_FLOAT_TYPE:
             union {
                 double d;
                 uint64_t u;
             } bits;
             bits.d = JN_AS_FLOAT(obj);
             return hash_mix(bits.u);
-        case STR_TYPE:
+        case JN_STRING_TYPE:
             return hash_mix(JN_AS_STRING(obj)->hash);
-        case CHAR_TYPE:
+        case JN_CHAR_TYPE:
             return hash_mix((unsigned char) JN_AS_CHAR(obj));
-        case RANGE_TYPE:
+        case JN_RANGE_TYPE:
         {
             h = hash_mix(JN_AS_RANGE(obj)->start);
             h = hash_combine(h, hash_mix(JN_AS_RANGE(obj)->stop));
             h = hash_combine(h, hash_mix(JN_AS_RANGE(obj)->step));
             return h;          
         }
-        case ITER_TYPE:
+        case JN_ITER_TYPE:
         {
             h = Jn_object_hash(JN_AS_ITER(obj)->obj);
             return hash_combine(h, hash_mix(JN_AS_ITER(obj)->index));
         }
-        case MODULE_TYPE:
+        case JN_MODULE_TYPE:
         {
             h = hash_mix(djb2_hash(obj->module->name));
             return hash_combine(h, hash_mix(djb2_hash(obj->module->path)));
         }
-        case STRUCT_TYPE:
+        case JN_STRUCT_TYPE:
         {
             h = hash_mix(djb2_hash(obj->struct_obj->name));
             for (int i = 0; i < obj->struct_obj->field_count; ++i)
@@ -342,25 +342,25 @@ uint64_t Jn_object_hash(JnObject* obj)
             }
             return h;
         }
-        case METHOD_TYPE:
+        case JN_METHOD_TYPE:
         {
             h = Jn_object_hash(obj->method.obj);
             return hash_combine(h, hash_mix((uintptr_t)obj->method.fn));
         }
-        case INSTANCE_TYPE:
+        case JN_INSTANCE_TYPE:
         {
             h = Jn_object_hash(obj->instance->obj);
             return h;
         }
-        case FUNCTION_TYPE:
+        case JN_FUNCTION_TYPE:
         {
             return hash_mix(djb2_hash(obj->fn->name));
         }
-        case NATIVE_TYPE:
+        case JN_NATIVE_TYPE:
         {
             return hash_mix(djb2_hash(obj->native_fn->fnName));
         }
-        case OBJECT_TYPE:
+        case JN_OBJECT_TYPE:
             return hash_mix(djb2_hash(obj->type_val.typename));
         default:
             return hash_mix((uintptr_t)obj);
@@ -406,7 +406,7 @@ JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_
     fn->arity = arity;
     fn->name = DEFAULT_LAMBDA_NAME;
     fn->is_lambda = 1;
-    JnObject* obj = jn_obj_new(state, FUNCTION_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_FUNCTION_TYPE);
     obj->fn = fn;
     return obj;
 }
@@ -433,14 +433,14 @@ JnObject* jn_obj_function(
     fn->arity = arity;
     fn->is_lambda = false;
     fn->name = name;
-    JnObject* obj = jn_obj_new(state, FUNCTION_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_FUNCTION_TYPE);
     obj->fn = fn;
     return obj;
 }
 
 JnObject* jn_obj_struct(J_State* state, char* name, char** fields)
 {
-    JnObject* obj = jn_obj_new(state, STRUCT_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_STRUCT_TYPE);
     JnStruct* struct_obj = JN_ALLOC(sizeof(JnStruct));
     struct_obj->fields = fields;
     struct_obj->name = name;
@@ -473,7 +473,7 @@ JnObject* bind_argument(J_State* state, JnObject* obj, char** fields, JnObject**
 
 JnObject* jn_obj_instance(J_State* state, JnObject* from_obj, Jn_environ* fields)
 {
-    JnObject* obj = jn_obj_new(state, INSTANCE_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_INSTANCE_TYPE);
     JnInstance* instance = JN_ALLOC(sizeof(JnInstance));
     instance->obj = from_obj;
     instance->fields = Jn_environ_init(fields);
@@ -483,7 +483,7 @@ JnObject* jn_obj_instance(J_State* state, JnObject* from_obj, Jn_environ* fields
 
 JnObject* jn_obj_module(J_State* state, char* name, char* path, Jn_environ* env)
 {
-    JnObject* obj = jn_obj_new(state, MODULE_TYPE);
+    JnObject* obj = jn_obj_new(state, JN_MODULE_TYPE);
     JnModule* mod = malloc(sizeof(JnModule));
     mod->name = name;
     mod->env = env;
@@ -555,18 +555,18 @@ char* Jn_object_cstring(JnObject* obj)
     static char buffer[0xff];
     switch (obj->type)
     {
-        case INT_TYPE:
+        case JN_INT_TYPE:
             snprintf(buffer, sizeof(buffer), "%lld", obj->int_val);
             goto buf;
-        case STR_TYPE:
+        case JN_STRING_TYPE:
             return strdup(obj->str->chars);
-        case FLOAT_TYPE:
+        case JN_FLOAT_TYPE:
             snprintf(buffer, sizeof(buffer), "%.15g", obj->float_val);
             goto buf;
-        case BOOL_TYPE:
+        case JN_BOOL_TYPE:
             snprintf(buffer, sizeof(buffer), "%s", obj->bool_val ? "true": "false");
             goto buf;
-        case CHAR_TYPE:
+        case JN_CHAR_TYPE:
             snprintf(buffer, sizeof(buffer), "%c", JN_AS_CHAR(obj));
             goto buf;
         default:
@@ -582,56 +582,56 @@ void print_JnObject(JnObject* obj)
     
     switch (JN_OBJ_TYPE(obj))
     {
-        case INT_TYPE:
+        case JN_INT_TYPE:
             fprintf(stderr, "%lld", JN_AS_INT(obj)); break;
-        case CHAR_TYPE:
+        case JN_CHAR_TYPE:
             fprintf(stderr, "%c", JN_AS_CHAR(obj)); break;
-        case STR_TYPE:
+        case JN_STRING_TYPE:
             fprintf(stderr, "\"%s\"", (JN_AS_STRING(obj)->len != 0) ? JN_AS_CSTRING(obj) : "None");
             break;
-        case BOOL_TYPE:
+        case JN_BOOL_TYPE:
             fprintf(stderr, (JN_AS_BOOL(obj)) ? "true": "false"); break;
-        case FLOAT_TYPE:
+        case JN_FLOAT_TYPE:
             fprintf(stderr, "%.15g", JN_AS_FLOAT(obj)); break;
-        case ARRAY_TYPE:
+        case JN_ARRAY_TYPE:
             print_array(obj);
             break;
-        case TUPLE_TYPE:
+        case JN_TUPLE_TYPE:
             print_tuple(obj);
             break;
-        case HASHMAP_TYPE:
+        case JN_HASHMAP_TYPE:
             print_hashmap(obj);
             break;
-        case MODULE_TYPE:
+        case JN_MODULE_TYPE:
             fprintf(stderr, "<Module '%s' at '%s'>", obj->module->name, obj->module->path);
             break;
-        case NONE_TYPE:
+        case JN_NONE_TYPE:
             fprintf(stderr, "None");
             break;
-        case RANGE_TYPE:
+        case JN_RANGE_TYPE:
             fprintf(stderr, "<Range (%lld, %lld, %ld)>", obj->range.start, obj->range.stop, obj->range.step);
             break;
-        case ENUM_TYPE:
+        case JN_ENUM_TYPE:
             fprintf(stderr, "<Enum>");
             break;
-        case FUNCTION_TYPE:
+        case JN_FUNCTION_TYPE:
             fprintf(stdout, "<function '%s' args=%d>",obj->fn->name, obj->fn->arity);
             break;
-        case ITER_TYPE:
+        case JN_ITER_TYPE:
             fprintf(stderr, "<iter '");
             print_JnObject(obj->iter->obj);
             fprintf(stderr, "' >");
             break;
-        case OBJECT_TYPE:
+        case JN_OBJECT_TYPE:
             fprintf(stderr, "<%s>", obj->type_val.typename); break;
-        case METHOD_TYPE:
+        case JN_METHOD_TYPE:
             fprintf(stdout, "<method function for '"); print_JnObject(obj->method.obj); fprintf(stdout, "' at %p>", obj->method.fn);
             break;
-        case STRUCT_TYPE:
+        case JN_STRUCT_TYPE:
             fprintf(stdout, "struct{%s}", (obj->struct_obj->name) ? obj->struct_obj->name : "<unsigned>"); break;
-        case INSTANCE_TYPE:
+        case JN_INSTANCE_TYPE:
             fprintf(stdout, "<struct{%s} at '%p'>", obj->instance->obj->struct_obj->name, obj->instance->obj); break;
-        case NATIVE_TYPE:
+        case JN_NATIVE_TYPE:
             fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;
         default:
@@ -645,19 +645,22 @@ bool is_truthy(JnObject* obj)
     if (!obj) return false;
     switch (obj->type)
     {
-    case BOOL_TYPE:
+    case JN_NONE_TYPE: return false;
+    case JN_BOOL_TYPE:
         return obj->bool_val;
-    case CHAR_TYPE:
+    case JN_CHAR_TYPE:
         return JN_AS_CHAR(obj) != '\0';
-    case INT_TYPE:  
+    case JN_INT_TYPE:  
         return obj->int_val != 0;
-    case FLOAT_TYPE:
+    case JN_FLOAT_TYPE:
         return obj->float_val != 0;
-    case STR_TYPE:
+    case JN_STRING_TYPE:
         return obj->str->len != 0;
-    case NATIVE_TYPE:
-    case ENUM_TYPE:
-    case FUNCTION_TYPE:
+    case JN_INSTANCE_TYPE:
+    case JN_STRUCT_TYPE:
+    case JN_NATIVE_TYPE:
+    case JN_ENUM_TYPE:
+    case JN_FUNCTION_TYPE:
         return true;
     default:
         return false;

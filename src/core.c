@@ -68,7 +68,7 @@ JN_API Jn_Error* Jn_get_error(J_State* state)
     return &state->error;
 }
 
-void set_symbols(J_State* state, char* str)
+void set_symbols(J_State* state, const char* str)
 {
     assert(state != NULL);
     assert(state->symbols != NULL);
@@ -155,7 +155,7 @@ JN_API int Jn_exec_program(J_State* state, const char* source)
     if (!l.filename)
         l.filename = strdup("main"); // repl
     state->parser->arena = state->arena;
-    J_init_lexer(&l, source);
+    J_init_lexer(&l, (char *)source);
     jn_init_parser(state->parser, &l);
     state->vm->global = state->globals;
     state->vm->env = state->globals;
@@ -192,7 +192,7 @@ JN_API int Jn_execute_main(J_State* state, const char* filepath)
     J_Source src = read_source_file(filepath);
     assert(src.filename != NULL && src.source != NULL);
     state->cxt.source = src;
-    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, filepath));
+    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, (char *)filepath));
     int exit_code = Jn_exec_program(state, src.source);
     return exit_code;
 }

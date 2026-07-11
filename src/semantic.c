@@ -48,7 +48,7 @@ void warning(JnSemantic* sem, AST* node, const char* msg, ...)
     fprintf(
         stderr, 
         "%s:%d:%d Warning: %s\n", 
-        node->filename, 
+        node->filename ? node->filename : "<main>", 
         node->line, 
         node->col, 
         msg
@@ -115,7 +115,7 @@ bool symbol_lookup(JnSemantic* sem, JnScope* scope, const char* name)
     struct FuzzMatch matches[300];    
     int n = fuzzy_match(
         name,
-        sem->state->symbols,
+        (char **)sem->state->symbols,
         sem->state->symbols_count,
         matches
     );
