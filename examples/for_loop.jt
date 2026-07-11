@@ -1,8 +1,8 @@
-arr := 0..30:2
+let arr = 0..30:2
 
 // NEW: let and const support
 for let i = 0; i < len(arr); i += 1 {
-    println arr[i]
+    printf("Hello %v", arr[i])
 }
 
 println "Done"

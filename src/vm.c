@@ -704,7 +704,7 @@ int vm_run(J_State* state, JnVM* vm)
             case OP_JUMP_IF_FALSE:
                 offset = (READ_BYTE() << 8);
                 offset |= READ_BYTE();
-                o = pop(vm);//vm_peek(vm, 0);
+                o = vm_peek(vm, 0);
                 assert(o != NULL);
                 if (!is_truthy(o))
                     vm->ip += offset;
@@ -918,7 +918,10 @@ void compile(AST* node, Chuck* chuck)
     case AST_BLOCK:
         WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
         for (size_t i = 0; i < node->block.count; i++)
+        {
             compile(node->block.statements[i], chuck);
+            // WRITE_CHUCK(chuck, OP_POP);
+        }
         write_chuck_loc(chuck, OP_SCOPE_EXIT, line, column);
         break;
     case AST_PRINTLN:
@@ -1201,8 +1204,6 @@ void compile(AST* node, Chuck* chuck)
         loop->break_count = 0;
         loop->continue_count = 0;
         
-        WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
-
         if (node->for_node.init != NULL)
             compile(node->for_node.init, chuck);
 
@@ -1215,11 +1216,13 @@ void compile(AST* node, Chuck* chuck)
             WRITE_CHUCK(chuck, OP_TRUE);
         }
         exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
+
+        WRITE_CHUCK(chuck, OP_POP);
         
         compile(node->for_node.block, chuck);
 
         int continue_target = current_offset(chuck);
-
+        // WRITE_CHUCK(chuck, OP_POP);
         for (int i = 0; i < loop->continue_count; ++i)
         {
             patch_jump_to(chuck, loop->continues[i], continue_target);
@@ -1231,11 +1234,11 @@ void compile(AST* node, Chuck* chuck)
         emit_loop(chuck, offset);
         patch_jump(chuck, exit_jump);
 
+        WRITE_CHUCK(chuck, OP_POP);
         for (int i = 0; i < loop->break_count; i++)
         {
             patch_jump(chuck, loop->breaks[i]);
         }
-        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
         loop_depth--;
         break;
     case AST_LOOP:
@@ -1269,10 +1272,11 @@ void compile(AST* node, Chuck* chuck)
         
         compile(node->while_node.cond, chuck);
         exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        WRITE_CHUCK(chuck, OP_POP);
         compile(node->while_node.block, chuck);
         emit_loop(chuck, offset);
         patch_jump(chuck, exit_jump);
-        
+        WRITE_CHUCK(chuck, OP_POP);
         for (int i = 0; i < loop->continue_count; i++)
         {
             patch_jump(chuck, loop->continues[i]);

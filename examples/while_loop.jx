@@ -1,6 +1,6 @@
-arr := [1, 2, 3, 4]
-l := len(arr)
-n := 0
+let arr = [1, 2, 3, 4]
+let l = len(arr)
+let n = 0
 while n < l{
     println arr[n]
     n += 1
