@@ -1145,7 +1145,7 @@ void compile(AST* node, Chuck* chuck)
             elif_node elif = node->if_node.elseif->children[i];
             compile(elif.cond, chuck);
             int elif_false = emit_jump(chuck, OP_JUMP_IF_FALSE);
-            // WRITE_CHUCK(chuck, OP_POP);
+            WRITE_CHUCK(chuck, OP_POP);
             compile(elif.stmt, chuck);
             int elif_end = emit_jump(chuck, OP_JUMP);
             patch_jump(chuck, elif_false);
