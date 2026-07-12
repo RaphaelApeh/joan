@@ -18,7 +18,6 @@
 #include "optionals/c_string.h"
 #endif
 
-#define JNSTR_OBJ(s) (JnStringObject){.chars = str_esc(s), .len = strlen((s)), .hash = djb2_hash((s))}
 
 #define LONG_HEX_NUM 0xbf58476d1ce4e5b9ULL
 #define LONG_HEX_NUM2 0x94d049bb133111ebULL
@@ -231,7 +230,7 @@ char* jn_obj_to_string(JnObject* obj)
         case JN_MODULE_TYPE:
             type = "module"; break;
         case JN_OBJECT_TYPE:
-            type = obj->type_val.typename; break;
+            type = (char *)obj->type_val.typename; break;
         default:
             type = "<object>"; break;
     }
@@ -579,7 +578,6 @@ char* Jn_object_cstring(JnObject* obj)
 void print_JnObject(JnObject* obj)
 {
     if (NULL == obj) return;
-    
     switch (JN_OBJ_TYPE(obj))
     {
         case JN_INT_TYPE:

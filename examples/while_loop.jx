@@ -1,6 +1,6 @@
 let arr = [1, 2, 3, 4]
 let n = 0
 while n < len(arr) {
-    printf("Element: %i", arr[n])
+    printf("Element: %v", arr[n])
     n += 1
 }  

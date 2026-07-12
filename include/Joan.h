@@ -107,8 +107,6 @@ typedef struct Jn_environ Jn_environ;
 // max JnObject object store
 #define JN_MAX_OBJECT 0xff << 10
 
-#define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
-
 #define JN_ARGS_COUNT(obj) ((obj)->arg.count)
 #define JN_GET_ARG(obj) ((obj)->arg.args[0])
 #define JN_ARG_EXPECT_TYPE(obj, t) do { \

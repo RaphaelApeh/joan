@@ -266,6 +266,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
                 printf("%s", JN_TO_BOOL(obj) ? "true" : "false");
                 break;
             case 'v':
+                obj = JN_GET_ARGS(args, arg_count);
                 print_JnObject(obj);
                 break;
             case 'p':
