@@ -1,4 +1,4 @@
-hm := #{None}
+let hm = #{None}
 
 const __IS_MAIN__ : bool = true
 
@@ -15,11 +15,11 @@ fn main()
     append_value("name", "John")
     append_value("age", 32)
     append_value(None, "name is None")
-    println hm
+    printf("Values: %v", hm)
     return None
 }
 
 if __IS_MAIN__ then
     main()
 else
-    println "unable to run main"
+    printf("unable to run main")

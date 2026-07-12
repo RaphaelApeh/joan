@@ -19,7 +19,7 @@ AST* ast_create(joan_parser_t* p, AST_TYPE type)
     ast->state = p->state;
     ast->line = p->curr.line;
     ast->col = p->curr.column;
-    ast->filename = p->l->filename;
+    ast->filename = (p->l->filename) ? p->l->filename : "main";
     return ast;
 }
 

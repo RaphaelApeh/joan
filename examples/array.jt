@@ -1,6 +1,10 @@
-arr := [21, "Hello World", 32.32]
-copy := []
-count :: len(arr)
-for i := 0; i < count ; i += 1 then
-    println i
-println copy 
+
+// Dynamic add objects to an array
+let arr = [21, "Hello World", 32.32]
+let copy = []
+
+for i := 0; i < len(arr); i++
+{
+    copy.push(arr[i])
+}
+printf("copy: %v", copy)
