@@ -12,8 +12,6 @@
 #define DEFAULT_LAMBDA_NAME "<lambda>"
 typedef struct JnObject JnObject;
 
-#define JNSTR_OBJ(s) (JnStringObject){.chars = strdup((s)), .len = strlen((s)), .hash = djb2_hash((s))}
-
 typedef struct InternEntry {
     JnObject* obj;
     struct InternEntry* next;

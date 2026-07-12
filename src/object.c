@@ -14,6 +14,12 @@
 #include "gc.h"
 
 
+#ifndef C_STRING_H
+#include "optionals/c_string.h"
+#endif
+
+#define JNSTR_OBJ(s) (JnStringObject){.chars = str_esc(s), .len = strlen((s)), .hash = djb2_hash((s))}
+
 #define LONG_HEX_NUM 0xbf58476d1ce4e5b9ULL
 #define LONG_HEX_NUM2 0x94d049bb133111ebULL
 #define LONG_HEX_NUM3 0x9e3779b97f4e7c15ULL

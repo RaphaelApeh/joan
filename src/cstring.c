@@ -14,16 +14,54 @@ bool strends(const char* str, const char* suf)
 }
 
 
-char* str_sp(const char* str)
+char* str_esc(const char* str)
 {
-    char* s = str;
+    if (NULL == str) return NULL;
+
+    size_t esc_len = 0;
+    char* s = (char *)str;
     while (*s)
     {
-        if (*s == '\\' && *s)
-            s += 2;
+        switch (*s)
+        {
+        case '\n':
+        case '\'':
+        case '\t':
+        case '\r':
+        case '\f':
+        case '\v':
+        case '\0':
+        case '\\':
+            esc_len += 2; break;
+        default:
+            esc_len += 1; break;
+        }
         s++;
     }
-    return strdup(s);
+    char* esc = malloc(esc_len + 1);
+    if (NULL == esc) return NULL;
+    char* d = esc;
+    s = (char *)str;
+
+    while (*s)
+    {
+        switch (*s)
+        {
+            case '\\': *d++ = '\\'; *d++ = '\\'; break;
+            case '\n': *d++ = '\\'; *d++ = '\n'; break;
+            case '\r': *d++ = '\\'; *d++ = '\r'; break;
+            case '\t': *d++ = '\\'; *d++ = '\t'; break;
+            case '\b': *d++ = '\\'; *d++ = '\b'; break;
+            case '\f': *d++ = '\\'; *d++ = '\f'; break;
+            case '\v': *d++ = '\\'; *d++ = '\v'; break;
+            case '\0': *d++ = '\\'; *d++ = '\0'; break;
+            default:
+                *d++ = *s; break;
+        }
+        s++;
+    }
+    *d = '\0';
+    return esc;
 }
 
 bool strstarts(const char* str, const char* pre)
