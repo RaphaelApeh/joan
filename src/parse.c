@@ -55,7 +55,7 @@ static bool is_assign_token(J_TokenType type)
         case TOKEN_APERCENTAGE:
         case TOKEN_ARSHIFT:
         case TOKEN_ALSHIFT:
-        case TOKEN_ABITAC:
+        case TOKEN_AXOR:
         case TOKEN_ABITAND:
         case TOKEN_ABITOR:
         case TOKEN_SETTER:
@@ -117,6 +117,7 @@ precedence get_prec(J_TokenType type)
     switch (type)
     {
     case TOKEN_EQEQ:
+    case TOKEN_IS:
     case TOKEN_NEQ:
         return PREC_EQ;
     
@@ -124,34 +125,39 @@ precedence get_prec(J_TokenType type)
     case TOKEN_LT:
     case TOKEN_GTE:
     case TOKEN_LTE:
+    case TOKEN_IN:
+    case TOKEN_NOT_IN:
         return PREC_COMP;
     
-    case TOKEN_STAR:
+    case TOKEN_MUL:
     case TOKEN_SLASH:
-    case TOKEN_PLUS:
+    case TOKEN_PERCENTAGE:
+        return PREC_FACTOR;
+    
     case TOKEN_RSHIFT:
     case TOKEN_LSHIFT:
-    case TOKEN_PERCENTAGE:
+        return PREC_SHIFT;
+    
     case TOKEN_BITAND:
+        return PREC_BITAND;
     case TOKEN_POW:
+        return PREC_POWER;
+    
     case TOKEN_BITOR:
-    case TOKEN_BITAC:
+        return PREC_BITOR;
+    case TOKEN_XOR:
+        return PREC_BITXOR;
+    
+    case TOKEN_PLUS:
     case TOKEN_MINUS:
         return PREC_TERM;
     
     case TOKEN_AND:
         return PREC_AND;
     
-    case TOKEN_NOT_IN:
-    case TOKEN_IN:
-        return PREC_IN;
-
     case TOKEN_OR:
         return PREC_OR;
-    
-    case TOKEN_IS:
-        return PREC_PRIMARY;
-    
+        
     default:
         return PREC_NONE;
     }
@@ -297,7 +303,7 @@ static AST* parse_match(joan_parser_t* p)
     {
         if (match(p, TOKEN_ELSE))
         {
-            match(p, TOKEN_EXR);
+            match(p, TOKEN_DCOLON);
             if (match(p, TOKEN_THEN))
                 else_stmt = parse_expr(p);
             else if (check(p, TOKEN_LBRACE))
@@ -306,7 +312,7 @@ static AST* parse_match(joan_parser_t* p)
         {
             AST* sub = parse_expr(p);
             AST* block = NULL;
-            if (!match(p, TOKEN_EXR))
+            if (!match(p, TOKEN_DCOLON))
                 return parse_error(p, "Expected '=>'");
             if (match(p, TOKEN_THEN))
                 block = parse_expr(p);
@@ -507,7 +513,7 @@ static AST* parse_enum(joan_parser_t* p)
     
     char* ident = GET_LEX(p);
     advance_parser_c(p);
-    match(p, TOKEN_EXR);
+    match(p, TOKEN_DCOLON);
     if (!match(p, TOKEN_LBRACE))
         return parse_error(p, "Expected an '{' but got '%s'.", GET_LEX(p));
     
@@ -737,7 +743,7 @@ static AST* parse_lambda(joan_parser_t* p)
         if (match(p, TOKEN_BITOR)) break;
     } while(true);
     args[len] = NULL;
-    match(p, TOKEN_EXR);
+    match(p, TOKEN_DCOLON);
     AST* expr = parse_expr(p);
     AST* ast = ast_create(p, AST_LAMBDA);
     ast->lambda_node.count = len;
@@ -1131,7 +1137,7 @@ AST* parse_prec(joan_parser_t* p, precedence prec)
             break;
         J_TokenType op = p->curr.type;
         advance_parser_c(p);
-        AST* right = parse_prec(p, next_pr);
+        AST* right = parse_prec(p, op == TOKEN_POW ? next_pr - 1 : next_pr);
         left = ast_binary(p, left, op, right);
     }
     return  left;

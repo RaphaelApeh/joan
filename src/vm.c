@@ -418,7 +418,7 @@ int vm_run(J_State* state, JnVM* vm)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_BITAC:
+                    case TOKEN_XOR:
                         b = eval_binary(state, o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
@@ -430,7 +430,7 @@ int vm_run(J_State* state, JnVM* vm)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_ABITAC:
+                    case TOKEN_AXOR:
                         b = eval_binary(state, o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
@@ -962,7 +962,7 @@ void compile(AST* node, Chuck* chuck)
             case TOKEN_PLUS:
                 write_chuck_loc(chuck, OP_ADD, line, column);
                 break;
-            case TOKEN_STAR:
+            case TOKEN_MUL:
                 write_chuck_loc(chuck, OP_MUL, line, column);
                 break;
             case TOKEN_MINUS:
@@ -998,7 +998,7 @@ void compile(AST* node, Chuck* chuck)
             case TOKEN_BITOR:
                 WRITE_CHUCK(chuck, OP_BITOR);
                 break;
-            case TOKEN_BITAC:
+            case TOKEN_XOR:
                 WRITE_CHUCK(chuck, OP_BITAC);
                 break;
             case TOKEN_PERCENTAGE:

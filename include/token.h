@@ -21,7 +21,7 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
 
     TOKEN_PLUS,
     TOKEN_MINUS,
-    TOKEN_STAR,
+    TOKEN_MUL,
     TOKEN_SLASH,
     TOKEN_POW,
     TOKEN_COMMA,
@@ -34,12 +34,12 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_GT_EQ,
     TOKEN_BITOR,
     TOKEN_BITAND,
-    TOKEN_BITAC,
+    TOKEN_XOR,
     TOKEN_HASH, // #
     TOKEN_PI,
     TOKEN_AT,
     TOKEN_RANGE,
-    TOKEN_EXR,
+    TOKEN_DCOLON,
 
     TOKEN_APLUS, // +=
     TOKEN_AMINUS, // -=
@@ -47,7 +47,7 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_ARSHIFT, // >>=
     TOKEN_ALSHIFT, // <<=
     TOKEN_APERCENTAGE, // %=
-    TOKEN_ABITAC, // ^=
+    TOKEN_AXOR, // ^=
     TOKEN_ASLASH, // /=
     TOKEN_ABITAND, // &=
     TOKEN_ABITOR, // |= TODO: name change

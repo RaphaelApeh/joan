@@ -430,7 +430,7 @@ joan_token_t next_token(joan_lexer_t* l)
                 return make_token(l, TOKEN_ASTAR);
             } else if (peek_advance(l, '*'))
                 return make_token(l, TOKEN_POW);
-            return make_token(l, TOKEN_STAR);
+            return make_token(l, TOKEN_MUL);
         case '=':
             if (peek(l) == '='){
                 advance(l);
@@ -438,7 +438,7 @@ joan_token_t next_token(joan_lexer_t* l)
             } else if (peek(l) == '>')
             {
                 advance(l);
-                return make_token(l, TOKEN_EXR);
+                return make_token(l, TOKEN_DCOLON);
             }
             return make_token(l, TOKEN_EQUAL);
         case '>':
@@ -457,8 +457,8 @@ joan_token_t next_token(joan_lexer_t* l)
             return make_token(l, TOKEN_GT);
         case '^':
             if (peek_advance(l, '='))
-                return make_token(l, TOKEN_ABITAC);
-            return make_token(l, TOKEN_BITAC);
+                return make_token(l, TOKEN_AXOR);
+            return make_token(l, TOKEN_XOR);
         case '<':
             if (peek(l) == '='){
                 advance(l);
