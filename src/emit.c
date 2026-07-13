@@ -33,7 +33,7 @@ static void chuck_grow(Chuck* chuck)
 void patch_jump_to(Chuck* chuck, int jump_offset, int target_offset)
 {
     assert(chuck != NULL);
-    int dist = target_offset - jump_offset - 3;
+    int dist = target_offset - jump_offset - 2;
     if (dist < 0)
     {
         fprintf(stderr, "patch_jump_to: backward jumps not allowed.\n");

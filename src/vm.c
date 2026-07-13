@@ -1069,6 +1069,7 @@ void compile(AST* node, Chuck* chuck)
             compile(caseObj.pattern, chuck);
             WRITE_CHUCK(chuck, OP_EQUAL);
             int next_case = emit_jump(chuck, OP_JUMP_IF_FALSE);
+            WRITE_CHUCK(chuck, OP_POP);
             compile(caseObj.block, chuck);
             end_jumps[end_count++] = emit_jump(chuck, OP_JUMP);
             patch_jump(chuck, next_case);
@@ -1226,11 +1227,14 @@ void compile(AST* node, Chuck* chuck)
         for (int i = 0; i < loop->continue_count; ++i)
         {
             patch_jump_to(chuck, loop->continues[i], continue_target);
+            // TODO: Does not work yet.
         }
         
         if (node->for_node.incr)
+        {
             compile(node->for_node.incr, chuck);
-
+            WRITE_CHUCK(chuck, OP_POP); // TODO: Note: if the node does not push value to the stack it crashes.
+        }
         emit_loop(chuck, offset);
         patch_jump(chuck, exit_jump);
 
