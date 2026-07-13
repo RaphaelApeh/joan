@@ -23,7 +23,6 @@
 
 JN_API JnObject* Jn_make_args(J_State* state, size_t capacity)
 {
-    assert(capacity > 0);
     assert(capacity < MAX_OBJECT_ARGS);
     JnObject** objs = malloc(sizeof(JnObject *) * capacity);
     assert(objs);
@@ -600,7 +599,7 @@ JN_API JnObject* Jn_call_fn(J_State* state, char* fn_name, JnObject* args)
     Jnvm_init(&child, fn->chuck);
     child.env = fn->env;
     child.chuck = fn->chuck;
-    assert(fn->arity > JN_ARGS_COUNT(args));
+    assert(JN_ARGS_COUNT(args) == fn->arity);
     for (int i = 0; i < fn->arity; ++i)
     {
         environ_insert(child.env, fn->params[i], JN_GET_ARGS(args, i));
