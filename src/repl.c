@@ -116,16 +116,16 @@ static int parse_buffer(char* str)
 }
 
 #if __WIN32
-#define _CFMT "CTL"
+#define _CFMT "CTL-Z"
 #else
-#define _CFMT "CMD"
+#define _CFMT "CTL-D"
 #endif
 
 static void print_help(void)
 {
     // TODO: add a better help msg
     fprintf(stdout, 
-    _CFMT "-E  Exit shell.\n"
+    _CFMT " Exit shell.\n"
     ".help Show this help message.\n"
     );
 }
@@ -141,21 +141,19 @@ JN_API void Jn_repl(J_State* state)
     char line[256];
     fprintf(stderr, 
         "Welcome to Joan v" JOAN_VERSION "\n"
-        "\"" _CFMT "-E\" to exit shell.\n"
+        "\"" _CFMT "\" to exit shell.\n"
         "\"!help\" for help info.\n"
     );
     for (;;)
     {
         fprintf(stderr, buffer_count == 0 ? ">>> " : "... ");
         if (!fgets(line, sizeof(line), stdin))
-            break;
-        strcat(buffer, line);
-        buffer_count += strlen(line);
-        if (*line && *line == 5)
         {
             printf("Exiting....\n");
             break;
         }
+        strcat(buffer, line);
+        buffer_count += strlen(line);
         if (strncmp(line, "!help", 5) == 0) 
         {
             print_help();

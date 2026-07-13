@@ -38,10 +38,7 @@ typedef enum{
     AST_HASHMAP,
     AST_LOOP,
     AST_MEMBER,
-    AST_MEMBER_SETTER,
     AST_MODULE,
-    AST_GETTER,
-    AST_SETTER,
     AST_DEFINE,
     AST_INSTANCE,
     AST_ENUM,
@@ -54,7 +51,6 @@ typedef enum{
     AST_FUNCTION,
     AST_CALL,
     AST_TUPLE,
-    AST_PROPERTY,
     AST_ARRAY_INDEX,
     AST_STRUCT,
     AST_RETURN,
@@ -62,7 +58,7 @@ typedef enum{
     AST_PRINTLN,
     AST_CONTINUE,
     AST_CLASS,
-    AST_DO,
+    AST_FOR_EACH,
     AST_IMPORT,
     AST_COMMENT,
 
@@ -145,29 +141,6 @@ typedef struct AST{
 
             param_t* params;
         } call;
-
-        struct {
-            AST* obj;
-            GetterType type;
-            param_t* params;
-            const char* ident;
-        } getter;
-
-        struct {
-            AST* obj;
-            AST* value;
-            const char* ident;
-        } setter;
-
-        struct {
-            const char* ident;
-            param_t* params;
-        } instance_T;
-
-        struct {
-            AST* object;
-            const char* attr;
-        } property;
 
         struct {
             AST** elements;
@@ -258,11 +231,6 @@ typedef struct AST{
             int count;
         } import_node;
 
-        struct {
-            AST* condition;
-            AST* body;
-        } do_node;
-
         struct{
             char** fields;
             char* ident;
@@ -281,6 +249,13 @@ typedef struct AST{
             attr_t* attrs;
             klass_t* base; // inheritance
         }class_node;
+
+        struct {
+            const char* index, *ident;
+            AST* iter;
+            AST* block;
+        } foreach_node;
+
         struct{
             AST* subject;
             case_t* cases;

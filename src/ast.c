@@ -183,15 +183,6 @@ AST* ast_call(joan_parser_t* p, AST* callee)
     return ast;
 }
 
-AST* ast_instance(const char* ident, param_t* param)
-{
-    AST* ast = malloc(sizeof(ast));
-    ast->type = AST_INSTANCE;
-    ast->instance_T.ident = ident;
-    ast->instance_T.params = param;
-    return ast;
-}
-
 AST* ast_error(joan_parser_t* p, const char* msg)
 {
     AST* ast = ast_create(p, AST_ERROR);

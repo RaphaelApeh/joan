@@ -437,6 +437,52 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
     return ast;
 }
 
+static AST* parse_for_each(joan_parser_t* p)
+{
+    /*
+    Example:
+        #for x in arr{
+            printf("Hello World")
+        }
+        #for i, x in arr{
+            printf("Hello World")
+        }
+    */
+    advance_parser_c(p); // for
+
+    if (!check(p, TOKEN_IDENTIFIER))
+        return parse_error(p, "Expected an identifier.");
+    
+    char* index = get_lexeme(p);
+    char* var = NULL;
+    if (match(p, TOKEN_COMMA))
+    {
+        var = get_lexeme(p);
+    }
+    SKIP(p, TOKEN_IN, "Expected an 'in' token.");
+
+    AST* iter = parse_expr(p);
+    AST* block = NULL;
+    if (match(p, TOKEN_THEN)) // TODO: parse_then(p);
+        block = parse_expr(p);
+    else if (match(p, TOKEN_LBRACE))
+        block = parse_block(p);
+    else
+        return parse_error(p, "Expected a block body.");
+    
+    AST* ast = ast_create(p, AST_FOR_EACH);
+    ast->foreach_node.block = block;
+    if (NULL == var)
+    {
+        ast->foreach_node.ident = index;
+        ast->foreach_node.index = NULL;
+    }else {
+        ast->foreach_node.ident = var;
+        ast->foreach_node.index = index;
+    }
+    return ast;
+}
+
 static AST* parse_for(joan_parser_t* p)
 {
     /*
@@ -1017,6 +1063,8 @@ AST* parse_value(joan_parser_t* p)
                 return parse_hashmap(p);
             else if (check(p, TOKEN_DEFINE))
                 return parse_c_define(p);
+            else if (check(p, TOKEN_FOR))
+                return parse_for_each(p);
             return parse_error(p, "Error invalid expression");
         case TOKEN_STRING:
             size_t len = strlen(t.lexeme), cap = len + 1;

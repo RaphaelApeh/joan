@@ -1198,7 +1198,51 @@ void compile(AST* node, Chuck* chuck)
         jump = emit_jump(chuck, OP_JUMP);
         loop->continues[loop->continue_count++] = jump;
         break;
+    
+    case AST_FOR_EACH: {
+        loop = &loop_stack[loop_depth++];
+        loop->break_count = 0;
+        loop->continue_count = 0;
 
+        WRITE_CHUCK(chuck, OP_SCOPE_ENTER);
+        compile(node->foreach_node.iter, chuck);
+
+        WRITE_CHUCK(chuck, OP_GET_ITER);
+        int loop_start = current_offset(chuck);
+
+        WRITE_CHUCK(chuck, OP_ITER_NEXT);
+
+        int exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
+        WRITE_CHUCK(chuck, OP_POP);
+        if (node->foreach_node.index)
+        {
+            id = add_ident(chuck, (char *)node->foreach_node.index);
+            WRITE_CHUCK(chuck, id);
+            WRITE_CHUCK(chuck, 0);
+        } else {
+            WRITE_CHUCK(chuck, OP_POP);
+        }
+        id = add_ident(chuck, (char *)node->foreach_node.ident);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, 0);
+
+        compile(node->foreach_node.block, chuck);
+
+        int continue_target = current_offset(chuck);
+        for (int i = 0; i < loop->continue_count; ++i)
+            patch_jump_to(chuck, loop->continues[i], continue_target);
+        
+        emit_loop(chuck, loop_start);
+        patch_jump(chuck, exit_jump);
+        WRITE_CHUCK(chuck, OP_POP);
+        // WRITE_CHUCK(chuck, OP_POP); // TODO
+
+        for (int i = 0; i < loop->break_count; i++)
+            patch_jump(chuck, loop->breaks[i]);
+            
+        WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
+        loop_depth++;
+    } break;
     case AST_FOR:
         loop = &loop_stack[loop_depth++];
         
