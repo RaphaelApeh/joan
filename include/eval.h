@@ -1,5 +1,5 @@
-#ifndef EVAL_H
-#define EVAL_H
+#ifndef JOAN_EVAL_H
+#define JOAN_EVAL_H
 #include "object.h"
 
 typedef enum{
@@ -29,4 +29,4 @@ typedef enum{
 
 JnObject* eval_binary(J_State*, JnObject* lhs, JnObject* rhs, BinaryOp op);
 
-#endif
+#endif //JOAN_EVAL_H

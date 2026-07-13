@@ -71,7 +71,6 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_FALSE,
 
     TOKEN_LET,
-    TOKEN_OF,
     TOKEN_IF,
     TOKEN_ELSEIF,
     TOKEN_ELSE,
@@ -88,7 +87,6 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_AND,
 
     TOKEN_FN,
-    TOKEN_DO,
     TOKEN_DEFINE,
     TOKEN_IMPORT,
     TOKEN_ENUM,
@@ -122,12 +120,6 @@ typedef struct joan_token_t{
 joan_token_t clean_token(joan_lexer_t * l);
 
 joan_token_t make_token(joan_lexer_t * l, J_TokenType type);
-
-joan_token_t number(joan_lexer_t * l);
-
-joan_token_t identifier(joan_lexer_t * l);
-// TODO: improve on token_string function
-joan_token_t token_string(joan_lexer_t * l);
 
 joan_token_t next_token(joan_lexer_t * l);
 

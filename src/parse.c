@@ -413,7 +413,6 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
     if (match(p, TOKEN_RPARN))
     {
         ast->call.callee = callee;
-        ast->call.params = NULL;
         ast->call.pos_args = args;
         ast->call.pos_count = 0;
         return ast;
@@ -431,7 +430,6 @@ static AST* parse_call(joan_parser_t* p, AST* callee)
         return parse_error(p, "Invalid syntax expected ')'.");
 
     ast->call.callee = callee;
-    ast->call.params = NULL;
     ast->call.pos_args = args;
     ast->call.pos_count = len;
     return ast;

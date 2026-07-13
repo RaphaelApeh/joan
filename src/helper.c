@@ -168,29 +168,6 @@ void call_add_pos(AST* call, AST* arg)
     call->call.pos_args[call->call.pos_count++] = arg;
 }
 
-param_t* param_init(void)
-{
-    param_t* param = malloc(sizeof(param));
-    param->count = 0;
-    param->capacity = 10;
-    param->params = malloc(sizeof(param_o) * 10);
-    return param;
-}
-
-void param_add(param_t* param, const char* ident, AST* value)
-{
-    if (NULL == param)
-        perror("param is NULL");
-    if (param->count >= param->capacity)
-    {
-        param->capacity *= 2;
-        param->params = realloc(param->params, sizeof(param_o) * param->capacity);
-    }
-    param->params[param->count++] = (param_o){
-        .ident = (char *)ident, .ast = value
-    };
-}
-
 elseif* elseif_init(void)
 {
     elseif* elif = malloc(sizeof(elseif));

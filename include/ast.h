@@ -1,5 +1,5 @@
-#ifndef AST_H
-#define AST_H
+#ifndef JOAN_AST_H
+#define JOAN_AST_H
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -8,10 +8,6 @@
 #include "arena.h"
 
 typedef uint64_t u64;
-typedef struct param_o param_o;
-typedef struct param_t param_t;
-typedef struct klass_o klass_o;
-typedef struct klass_t klass_t;
 typedef struct case_t case_t;
 typedef struct case_o case_o;
 typedef struct elseif elseif;
@@ -138,8 +134,6 @@ typedef struct AST{
 
             AST** pos_args;
             int pos_count;
-
-            param_t* params;
         } call;
 
         struct {
@@ -244,12 +238,6 @@ typedef struct AST{
             int count;
         } instance_node;
         
-        struct{
-            const char* ident;
-            attr_t* attrs;
-            klass_t* base; // inheritance
-        }class_node;
-
         struct {
             const char* index, *ident;
             AST* iter;
@@ -304,18 +292,15 @@ AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* el
 //BREAK, CONTINUE
 AST* ast_break(joan_parser_t* p);
 AST* ast_continue(joan_parser_t* p);
+AST* ast_return(joan_parser_t* p, AST* value);
+// Call
+AST* ast_call(joan_parser_t* p, AST* callee, AST** args, size_t count);
 
-// obj()
-AST* ast_call(joan_parser_t* p, AST* callee);
 
 //Match
 AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def);
-//CLASS, STRUCT
-AST* ast_struct(joan_parser_t* p, const char* ident, attr_t* attr);
-
-//AST* ast_class(const char* ident, attr_t* attr, klass_t* base);
 
 //ERROR
 AST* ast_error(joan_parser_t* p, const char* msg);
 
-#endif
+#endif // JOAN_AST_H

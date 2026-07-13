@@ -161,25 +161,12 @@ AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def)
     return ast;
 }
 
-AST* ast_class(joan_parser_t* p, const char* ident, attr_t* attr, klass_t* base)
-{
-    AST* ast = ast_create(p, AST_MATCH);
-    ast->type = AST_CLASS;
-    ast->class_node.ident = ident;
-    ast->class_node.base = base;
-    ast->class_node.attrs = attr;
-    return ast;
-}
-
-
-AST* ast_call(joan_parser_t* p, AST* callee)
+AST* ast_call(joan_parser_t* p, AST* callee, AST** args, size_t count)
 {
     AST* ast = ast_create(p, AST_CALL);
     ast->call.callee = callee;
-    ast->call.pos_count = 0;
-    //TODO
-    //ast->call.pos_args = p_alloc(p, sizeof(AST *) * 8);
-    //ast->call.params = param_init();
+    ast->call.pos_count = count;
+    ast->call.pos_args = args;
     return ast;
 }
 

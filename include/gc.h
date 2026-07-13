@@ -1,5 +1,5 @@
-#ifndef GC_H
-#define GC_H
+#ifndef JOAN_GC_H
+#define JOAN_GC_H
 #include <stdbool.h>
 #include <stdint.h>
 #include "Joan.h"
@@ -16,4 +16,4 @@ void mark_object(JnObject* obj);
 void mark_roots(JnVM* vm);
 void sweep(J_State* state);
 void gc_collect(J_State* state);
-#endif
+#endif // JOAN_GC_H

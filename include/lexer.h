@@ -1,6 +1,6 @@
-#ifndef LEXER_H
+#ifndef JOAN_LEXER_H
 
-#define LEXER_H
+#define JOAN_LEXER_H
 
 #include <stdbool.h>
 
@@ -17,4 +17,4 @@ char peek(joan_lexer_t* l);
 char advance(joan_lexer_t* l);
 bool at_end(joan_lexer_t* l);
 
-#endif
+#endif //JOAN_LEXER_H
