@@ -447,6 +447,11 @@ JN_API void Jn_define_fn(J_State* state, const char*, Jn_CFunction);
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
 
+
+// Variable stuff
+JN_API JnObject* Jn_get_variable(J_State* state, const char* name);
+JN_API bool Jn_has_variable(J_State* state, const char* name);
+
 // Compile & Run
 JN_API int Jn_parse(J_State*, const char*);
 JN_API int Jn_compile(J_State*);

@@ -570,6 +570,21 @@ JN_API void Jn_register_module(char* name, Jn_CModule* module)
     // TODO
 }
 
+
+JN_API bool Jn_has_variable(J_State* state, const char* name)
+{
+    return environ_get(state->globals, (char *)name) != NULL;
+}
+
+JN_API JnObject* Jn_get_variable(J_State* state, const char* name)
+{
+    assert(state && name);
+    Jn_environ_E* ent = environ_get(state->globals, (char*)name);
+    if (NULL == ent) return NULL;
+    if (NULL == ent->value) return NULL;
+    return ent->value;
+}
+
 JN_API JnObject* Jn_call_fn(J_State* state, char* fn_name, JnObject* args)
 {
     Jn_environ_E* entt = environ_get(state->globals, fn_name);
