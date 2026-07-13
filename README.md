@@ -1,6 +1,9 @@
 # Joan
 
-```c
-printf("Hello, World");
+```rs
+fn main(){
+    printf("Hello, World")
+}
 ```
+## Installation
 ## TODO
