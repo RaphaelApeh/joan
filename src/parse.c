@@ -1123,9 +1123,9 @@ AST* parse_value(joan_parser_t* p)
         case TOKEN_RETURN:
             ast = ast_create(p, AST_RETURN);
             advance_parser_c(p);
-            if (check(p, TOKEN_SEMICOLON))
+            if (is_stmt_end(p) || p->has_newl)
             {
-                advance_parser_c(p);
+                match(p, TOKEN_SEMICOLON);
                 ast->return_stmt.value = NULL;
                 return ast;
             }

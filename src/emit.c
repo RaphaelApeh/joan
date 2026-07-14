@@ -44,8 +44,8 @@ void patch_jump_to(Chuck* chuck, int jump_offset, int target_offset)
         fprintf(stderr, "patch_jump_to: jump too large.\n");
         exit(EXIT_FAILURE);
     }
-    chuck->code[jump_offset + 1] = (dist >> 8) & 0xff;
-    chuck->code[jump_offset + 2] = dist & 0xff;
+    chuck->code[jump_offset] = (dist >> 8) & 0xff;
+    chuck->code[jump_offset + 1] = dist & 0xff;
 }
 
 void write_chuck(Chuck* chuck, uint8_t byte)

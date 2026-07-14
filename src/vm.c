@@ -1216,6 +1216,11 @@ void compile(AST* node, Chuck* chuck)
 
         int exit_jump = emit_jump(chuck, OP_JUMP_IF_FALSE);
         WRITE_CHUCK(chuck, OP_POP);
+
+        id = add_ident(chuck, (char *)node->foreach_node.ident);
+        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, 0);
+        
         if (node->foreach_node.index)
         {
             id = add_ident(chuck, (char *)node->foreach_node.index);
@@ -1224,9 +1229,6 @@ void compile(AST* node, Chuck* chuck)
         } else {
             WRITE_CHUCK(chuck, OP_POP);
         }
-        id = add_ident(chuck, (char *)node->foreach_node.ident);
-        WRITE_CHUCK(chuck, OP_SET_GLOBAL);
-        WRITE_CHUCK(chuck, 0);
 
         compile(node->foreach_node.block, chuck);
 
@@ -1237,13 +1239,12 @@ void compile(AST* node, Chuck* chuck)
         emit_loop(chuck, loop_start);
         patch_jump(chuck, exit_jump);
         WRITE_CHUCK(chuck, OP_POP);
-        // WRITE_CHUCK(chuck, OP_POP); // TODO
 
         for (int i = 0; i < loop->break_count; i++)
             patch_jump(chuck, loop->breaks[i]);
             
         WRITE_CHUCK(chuck, OP_SCOPE_EXIT);
-        loop_depth++;
+        loop_depth--;
     } break;
     case AST_FOR:
         loop = &loop_stack[loop_depth++];
