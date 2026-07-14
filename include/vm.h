@@ -1,7 +1,6 @@
 #ifndef JOAN_VM_H
 #define JOAN_VM_H
 #include <stdint.h>
-//#include "gc.h"
 #include "object.h"
 #include "env.h"
 #include "parse.h"

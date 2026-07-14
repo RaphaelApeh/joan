@@ -43,8 +43,10 @@ typedef struct joan_parser_t{
     J_State* state;
     joan_lexer_t* l;
     Arena* arena;
+    joan_token_t prev;
     joan_token_t curr;
     joan_token_t next;
+    bool has_newl;
 } joan_parser_t;
 
 
@@ -55,6 +57,7 @@ void advance_parser_c(joan_parser_t* p);
 AST* parse_value(joan_parser_t* p);
 // Main function for the parser.
 AST* parse_stmt(joan_parser_t* p);
+AST* parse_stmt_check(joan_parser_t* p, AST* stmt);
 AST* parse_expr(joan_parser_t* p);
 AST* parse_error(joan_parser_t* p, const char* msg, ...);
 

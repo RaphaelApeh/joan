@@ -1140,7 +1140,7 @@ void compile(AST* node, Chuck* chuck)
         compile(node->if_node.then, chuck);
         int end_jump = emit_jump(chuck, OP_JUMP);
         patch_jump(chuck, false_jump);
-        // WRITE_CHUCK(chuck, OP_POP);
+        WRITE_CHUCK(chuck, OP_POP);
         for (size_t i = 0; i < node->if_node.elseif->count; i++)
         {
             elif_node elif = node->if_node.elseif->children[i];
@@ -1150,12 +1150,14 @@ void compile(AST* node, Chuck* chuck)
             compile(elif.stmt, chuck);
             int elif_end = emit_jump(chuck, OP_JUMP);
             patch_jump(chuck, elif_false);
-            // WRITE_CHUCK(chuck, OP_POP);
+            WRITE_CHUCK(chuck, OP_POP);
             patch_jump(chuck, elif_end);
+            WRITE_CHUCK(chuck, OP_POP);
         }
         if (node->if_node.else_node)
             compile(node->if_node.else_node, chuck);
         patch_jump(chuck, end_jump);
+        WRITE_CHUCK(chuck, OP_POP);
         break;
     case AST_HASHMAP:
         for (size_t i = 0; i < node->hmp_node.count; ++i)

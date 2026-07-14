@@ -1,8 +1,24 @@
+__AUTHOR__ := "John Doe";
 
-fn main()
+if __AUTHOR__ {
+    printf("Hello, %s", __AUTHOR__);
+} elseif !__AUTHOR__ {
+    printf("NO Author");
+} else {
+    printf("Sorry..");
+}
+
+
+fn fib(num)
 {
-    for i := 0; i < 10; i++{
-        printf("Number: %d", i);
+    assert(typeof(num) == INTEGER, "fib() expected an 'int'.");
+    a := 0;
+    b := 1;
+    for ;a < num;{
+        printf("%d", a);
+        c := a + b;
+        a = b;
+        b = c;
     }
 }
-main();
+fib(1_000_000);

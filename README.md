@@ -2,7 +2,7 @@
 
 ```rs
 fn main(){
-    printf("Hello, World")
+    printf("Hello, World");
 }
 ```
 ## Installation

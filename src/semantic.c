@@ -28,6 +28,7 @@ void Jn_semantic_check(JnSemantic* sem, AST* node)
     }
     if (sem->warnings)
     {
+        print_source_line(sem->state->cxt.source.source, sem->state->cxt.cur_line, sem->state->cxt.column);
         fprintf(stdout, "(%d) semantice warning(s).\n", sem->warnings);
     }
 }

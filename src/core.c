@@ -120,10 +120,12 @@ JN_API void Jn_program_init(J_State* state)
 JN_API int Jn_compile(J_State* state)
 {
     JnSemantic sem;
+    joan_parser_t* p = state->parser;
     Jn_semantic_init(state, &sem);
-    while(state->parser->curr.type != TOKEN_EOF)
+    while(p->curr.type != TOKEN_EOF)
     {
-        AST* stmt = parse_stmt(state->parser);
+        AST* stmt = parse_stmt(p);
+        stmt = parse_stmt_check(p, stmt);
         compile(stmt, state->vm->chuck);
         Jn_semantic_check(&sem, stmt);
         if (sem.errors)
@@ -167,6 +169,7 @@ JN_API int Jn_exec_program(J_State* state, const char* source)
     if (exit_code < 0)
     {
         Jn_Error* err = Jn_get_error(state);
+        err->filename = "main";
         fprintf(
             stderr, 
             "%s:%d:%d Error [%s] %s\n",

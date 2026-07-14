@@ -84,6 +84,21 @@ static bool is_stmt_end(joan_parser_t* p)
     }
 }
 
+AST* parse_stmt_check(joan_parser_t* p, AST* stmt)
+{
+    if (stmt->type == AST_COMMENT) // TODO
+        return stmt;
+    if (
+        ( p->prev.type !=TOKEN_RBRACE && p->curr.type != TOKEN_EOF) && !match(p, TOKEN_SEMICOLON)
+        && !p->has_newl
+    )
+    {
+        return parse_error(p, "Expected a newline or a semicolon after a statement.");
+    }
+    return stmt;
+}
+
+
 void advance_parser(joan_parser_t* p)
 {
     p->curr = p->next;
@@ -101,6 +116,7 @@ void jn_init_parser(joan_parser_t* p, joan_lexer_t* l)
     assert(p != NULL && l != NULL);
     p->l = l;
     p->next = clean_token(l);
+    // p->curr = p->next;
     advance_parser_c(p);
 }
 
@@ -169,7 +185,7 @@ AST* parse_block(joan_parser_t* p)
     AST* block = new_block(p);
     while (!check(p, TOKEN_RBRACE) && !check(p, TOKEN_EOF))
     {
-        add_block(block, parse_stmt(p));
+        add_block(block, parse_stmt_check(p, parse_stmt(p)));
     }
     match(p, TOKEN_RBRACE);
     return block;
@@ -178,9 +194,13 @@ AST* parse_block(joan_parser_t* p)
 
 void advance_parser_c(joan_parser_t* p)
 {
+    p->prev = p->curr;
     p->curr = p->next;
+    p->has_newl = false;
     do {
         p->next = next_token(p->l);
+        if (p->next.type == TOKEN_NEWLINE)
+            p->has_newl = true;
     }  while(p->next.type == TOKEN_NEWLINE);
 }
 

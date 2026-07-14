@@ -22,6 +22,8 @@ static void visit_ident(JnSemantic* sem, AST* node)
 
 static void visit_reassign(JnSemantic* sem, AST* node)
 {
+    if (node->reassign.op == TOKEN_WALRUS || node->reassign.op == TOKEN_DCOLON)
+        return;
     if (node->reassign.expr->type == AST_CALL)
     {
         error(sem, node, "WTF. reasigning a call expression.");
@@ -165,6 +167,8 @@ void Jn_visit(JnSemantic* sem, AST* node)
         visit_println(sem, node); break;
     case AST_WHILE:
 	visit_while(sem, node); break;
+    case AST_ERROR:
+        error(sem, node, node->error_msg); break;
     default:
         break;
     }
