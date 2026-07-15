@@ -1,14 +1,14 @@
-let name = "John Doe"
-let x = 43
-pi := 3.14
+let name = "John Doe";
+let x = 43;
+pi := 3.14;
 
 //pi = None // Error
-x = 10 // OK
-name = "Jane Doe" // OK
-println name
-println x
-println pi
+x = 10; // OK
+name = "Jane Doe"; // OK
+printf("Name: %s", name);
+printf("X: %i", x);
+printf("PI: %f", pi);
 
-let y = x
-x = 5
-println x // 5
+let y = x;
+x = 5;
+printf("X: %d", x); // 5

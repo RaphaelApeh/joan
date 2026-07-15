@@ -1,6 +1,9 @@
+#include <assert.h>
 #include <string.h>
 #include <stdlib.h>
-#include "Joan.h"
+
+#include <Joan.h>
+
 #include "repl.h"
 
 #define OPTPARSE_IMPLEMENTATION
@@ -132,7 +135,11 @@ static void print_help(void)
 
 JN_API void Jn_run_iterative(J_State* state, const char* filename)
 {
-    Jn_exec_program(state, filename);
+    int exit_code = Jn_execute_main(state, filename);
+    if (exit_code != 0)
+    {
+        // TODO
+    }
     Jn_repl(state);
 }
 

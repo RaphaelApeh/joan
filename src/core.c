@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "Joan.h"
+#include <Joan.h>
+
 #include "opcode.h"
 #include "object.h"
 #include "semantic.h"
@@ -139,7 +140,6 @@ JN_API int Jn_compile(J_State* state)
 JN_API int Jn_exec(J_State* state)
 {
     int i = vm_run(state, state->vm);
-    gc_collect(state);
     if (i != 0)
     {
         reset_vm(state->vm);
@@ -318,6 +318,7 @@ JN_API void Jn_program_close(J_State* state)
 {
     assert(state->running && "Program has already stopped."); // TOD: better msg
     state->running = false;
+    gc_collect(state);
     free(state->globals);
     arena_free(state->arena);
     free(state->arena);
