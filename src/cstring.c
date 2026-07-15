@@ -16,6 +16,7 @@ bool strends(const char* str, const char* suf)
 
 char* str_esc(const char* str)
 {
+    // TODO: add Python-type of string escape
     if (NULL == str) return NULL;
 
     size_t esc_len = 0;

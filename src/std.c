@@ -52,11 +52,18 @@ static JnObject* hashmap_from_idx(J_State* state, JnObject* self, JnObject* args
 // String methods
 static JnObject* string_ends(J_State* state, JnObject* self, JnObject* arg);
 static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg);
+
 
 static struct JnObjectMethod STRING_METHODS[] = {
     {"ends", string_ends},
     {"starts", string_starts},
     {"push", push_method},
+    {"split", string_split},
+    {"repl", string_repl},
+    {"strip", string_strip},
     {NULL, NULL}
 };
 
@@ -203,6 +210,68 @@ static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg)
     return JN_RETURN_BOOL(state, ends);
 }
 
+static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg)
+{
+    /*
+    Example:
+        "Josephine,Jane,Joan".split(',');
+    */
+    if (JN_ARGS_COUNT(arg) != 1)
+    {
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".split() expected one arguments but got (%d).", JN_ARGS_COUNT(arg));
+    }
+    JnObject* char_obj = JN_GET_ARG(arg);
+    if (!JN_IS_CHAR(char_obj))
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".split() expect a char type but got .TODO.");
+    char* obj_str = JN_AS_CSTRING(self);
+    int size;
+    char c = JN_AS_CHAR(char_obj);
+    char** items = strsplt(obj_str, c, &size);
+    JnArrayObject* arr = NULL;
+    for (int i = 0; i < size; ++i)
+    {
+        JN_SET_ARRAY(arr, JN_RETURN_STRING(state, items[i]), i);
+    }
+    if (arr == NULL)
+    {
+        JN_ARRAY_DEFAULT(arr);
+    }
+    assert(arr != NULL);
+    // TODO
+    JnObject* obj = jn_obj_new(state, JN_ARRAY_TYPE);
+    obj->arr = arr;
+    return obj;
+}
+
+static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg)
+{
+    /*
+    Example:
+        "Dan".repl("a", "o");
+        Don
+    */
+    if (JN_ARGS_COUNT(arg) != 2)
+    {
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".repl() expected two args");
+    }
+    
+    char* old = JN_AS_CSTRING(JN_GET_ARGS(arg, 0));
+    char* new = JN_AS_CSTRING(JN_GET_ARGS(arg, 1));
+    char* obj_str = JN_AS_CSTRING(self);
+
+    char* new_str = strrpl(obj_str, old, new);
+    return JN_RETURN_STRING(state, new_str);
+}
+
+
+static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg)
+{
+    char* obj_str = JN_AS_CSTRING(self);
+    char* res = strstrp(obj_str);
+    return JN_RETURN_STRING(state, res);
+}
+
+// Native functions
 static JnObject* native_getattr(J_State* state, JnObject* args)
 {
     assert(false);
