@@ -486,6 +486,18 @@ static JnObject* native_isinstance(J_State* state, JnObject* arg)
     
 }
 
+static JnObject* native_defined(J_State* state, JnObject* args)
+{
+    if (JN_ARGS_COUNT(args) != 1)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "defined() takes one argument but got (%d).",JN_ARGS_COUNT(args));
+    
+    JnObject* obj = JN_GET_ARG(args);
+    if (!JN_IS_STRING(obj))
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Expected a string literal.");
+    char* var = JN_AS_CSTRING(obj);
+    return JN_RETURN_BOOL(state, (environ_get(state->vm->env, var) != NULL));
+}
+
 static JnObject* native_sleep(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
@@ -691,5 +703,6 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "printf", "C type of printf.", native_printf);
     Jn_register_fn(state, "assert", "Assert expression.", native_assert);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
+    Jn_register_fn(state, "defined", "Check if a variable exists in the current scope.", native_defined);
     // add other built-in functions
 }

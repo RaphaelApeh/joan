@@ -1,10 +1,15 @@
-let x = 1
+let x = 1;
+assert(defined("__APPLE__") && __APPLE__, "Platform is not apple.")
 {
     {
-        let x = 3
-        println x // 3
+        let y = 43;
+        x = 3;
+        printf("1: %d", x); // 3
+        printf("test: %b", defined("y")); // true
     }
-    x += 1
-    println x // 2
+    x += 3;
+    printf("2: %d", x);
+    printf("test 2: %b", defined("y")); // false
 }
-println x // 2
+printf("3: %d", x); // 2
+printf("test 3: %b", defined("y")); // false
