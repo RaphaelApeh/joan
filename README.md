@@ -6,4 +6,12 @@ fn main(){
 }
 ```
 ## Installation
-## TODO
+Build with CMake:
+```sh
+cd build
+# Windows
+build.bat
+# Linux or MacOs
+build.sh
+```
+<!-- TODO -->
