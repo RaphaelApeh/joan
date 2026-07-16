@@ -36,6 +36,8 @@ char* strrpl(const char* str, const char* old, const char* new);
 char** strsplt(const char* str, char c, int* size);
 char* strstrp(const char* str);
 char* str_esc(const char* str);
+int strpart(const char* str, char delim, char** left, char** right);
+
 // TODO
 bool strstrcmp(char** src, char* src2);
 

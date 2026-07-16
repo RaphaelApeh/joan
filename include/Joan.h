@@ -82,6 +82,7 @@ typedef enum{
     JN_ENUM_TYPE,
     JN_STRUCT_TYPE,
     JN_ARG_TYPE,
+    JN_UNKOWN_TYPE,
     JN_ERROR_TYPE,
 } JnTypeObject;
 

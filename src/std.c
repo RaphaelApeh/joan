@@ -55,6 +55,7 @@ static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg);
 static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg);
 static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg);
 static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg);
 
 
 static struct JnObjectMethod STRING_METHODS[] = {
@@ -64,6 +65,7 @@ static struct JnObjectMethod STRING_METHODS[] = {
     {"split", string_split},
     {"repl", string_repl},
     {"strip", string_strip},
+    {"part", string_part},
     {NULL, NULL}
 };
 
@@ -254,6 +256,9 @@ static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg)
     {
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".repl() expected two args");
     }
+
+    if (!JN_IS_STRING(JN_GET_ARGS(arg, 0)) || !JN_IS_STRING(JN_GET_ARGS(arg, 1)))
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".repl() expected both argument to be a string.");
     
     char* old = JN_AS_CSTRING(JN_GET_ARGS(arg, 0));
     char* new = JN_AS_CSTRING(JN_GET_ARGS(arg, 1));
@@ -266,9 +271,53 @@ static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg)
 
 static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg)
 {
+    if (JN_ARGS_COUNT(arg) != 0)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".strip() accept no arugment.");
     char* obj_str = JN_AS_CSTRING(self);
     char* res = strstrp(obj_str);
     return JN_RETURN_STRING(state, res);
+}
+
+static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg)
+{
+    /*
+    Example:
+        >>"key=value".part('=');
+        ("key", "value")
+        >>"key=value".part('?');
+        ("key-value", None)
+    */
+    char* str_obj = JN_AS_CSTRING(self);
+    if (JN_ARGS_COUNT(arg) != 1)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".part() expected one argument but got (%d).", JN_ARGS_COUNT(arg));
+    
+    JnObject* char_obj = JN_GET_ARG(arg);
+    if (!JN_IS_CHAR(char_obj))
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".part() expected a type 'char'.");
+    
+    char delim = JN_AS_CHAR(char_obj);
+
+    char* left, *right;
+    int ret = strpart(str_obj,delim, &left, &right);
+    if (ret != 0)
+        return JN_RETURN_NONE;
+
+    JnArrayObject* arr = NULL;
+    if (NULL != left)
+    {
+        JN_SET_ARRAY(arr, JN_RETURN_STRING(state, left), 0);
+    } else {
+        JN_SET_ARRAY(arr, JN_RETURN_NONE, 0);        
+    }
+    if (NULL != right)
+    {
+        JN_SET_ARRAY(arr, JN_RETURN_STRING(state, right), 1);
+    } else {
+        JN_SET_ARRAY(arr, JN_RETURN_NONE, 1);
+    }
+    JnObject* ret_obj = JN_OBJECT(state, JN_TUPLE_TYPE);
+    ret_obj->tuple = arr;
+    return ret_obj;
 }
 
 // Native functions

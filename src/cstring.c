@@ -170,3 +170,40 @@ bool strstrcmp(const char** src, const char* src2)
             return true;
     return false;
 }
+
+
+int strpart(const char* str, char delim, char** left, char** right)
+{
+    if (!str || !right || !left) return -1;
+    const char* delim_pos = strchr(str, delim);
+
+    if (!delim_pos)
+    {
+        *left = strdup(str);
+        *right = NULL;
+        return 0;
+    }
+    size_t left_len = delim_pos - str;
+    size_t right_len = strlen(delim_pos + 1);
+
+    *left = malloc(left_len + 1);
+    if (!*left) return -1;
+
+    strncpy(*left, str, left_len);
+    (*left)[left_len] = 0;
+    
+    if (right_len > 0)
+    {
+        *right = malloc(right_len + 1);
+        if (!*right)
+        {
+            free(*left);
+            *left = NULL;
+            return -1;
+        }
+        strcpy(*right, delim_pos + 1);
+    } else {
+        *right = NULL;
+    }
+    return 0;
+}

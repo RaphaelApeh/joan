@@ -69,6 +69,12 @@ void Jn_freeObject(JnObject* obj)
                 Jn_freeObject(obj->arr->items[i]);
             free(obj->arr);
             break;
+        case JN_TUPLE_TYPE:
+            {
+                for (int i = 0; i < obj->tuple->size; ++i)
+                    Jn_freeObject(obj->tuple->items[i]);
+                free(obj->tuple);
+            } break;
         case JN_HASHMAP_TYPE:
             for (int i = 0; i < obj->hashmap->size; ++i)
             {

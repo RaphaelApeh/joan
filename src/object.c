@@ -581,16 +581,16 @@ void print_JnObject(JnObject* obj)
     switch (JN_OBJ_TYPE(obj))
     {
         case JN_INT_TYPE:
-            fprintf(stderr, "%lld", JN_AS_INT(obj)); break;
+            fprintf(stdout, "%lld", JN_AS_INT(obj)); break;
         case JN_CHAR_TYPE:
-            fprintf(stderr, "%c", JN_AS_CHAR(obj)); break;
+            fprintf(stdout, "%c", JN_AS_CHAR(obj)); break;
         case JN_STRING_TYPE:
-            fprintf(stderr, "\"%s\"", (JN_AS_STRING(obj)->len != 0) ? JN_AS_CSTRING(obj) : "None");
+            fprintf(stdout, "\"%s\"", (JN_AS_STRING(obj)->len != 0) ? JN_AS_CSTRING(obj) : "None");
             break;
         case JN_BOOL_TYPE:
-            fprintf(stderr, (JN_AS_BOOL(obj)) ? "true": "false"); break;
+            fprintf(stdout, (JN_AS_BOOL(obj)) ? "true": "false"); break;
         case JN_FLOAT_TYPE:
-            fprintf(stderr, "%.15g", JN_AS_FLOAT(obj)); break;
+            fprintf(stdout, "%.15g", JN_AS_FLOAT(obj)); break;
         case JN_ARRAY_TYPE:
             print_array(obj);
             break;
@@ -601,36 +601,36 @@ void print_JnObject(JnObject* obj)
             print_hashmap(obj);
             break;
         case JN_MODULE_TYPE:
-            fprintf(stderr, "<Module '%s' at '%s'>", obj->module->name, obj->module->path);
+            fprintf(stdout, "<Module '%s' at '%s'>", obj->module->name, obj->module->path);
             break;
         case JN_NONE_TYPE:
-            fprintf(stderr, "None");
+            fprintf(stdout, "None");
             break;
         case JN_RANGE_TYPE:
-            fprintf(stderr, "<Range (%lld, %lld, %ld)>", obj->range.start, obj->range.stop, obj->range.step);
+            fprintf(stdout, "<Range (%lld, %lld, %ld)>", obj->range.start, obj->range.stop, obj->range.step);
             break;
         case JN_ENUM_TYPE:
-            fprintf(stderr, "<Enum>");
+            fprintf(stdout, "<Enum>");
             break;
         case JN_FUNCTION_TYPE:
             fprintf(stdout, "<function '%s' args=%d>",obj->fn->name, obj->fn->arity);
             break;
         case JN_ITER_TYPE:
-            fprintf(stderr, "<iter '");
+            fprintf(stdout, "<iter '");
             print_JnObject(obj->iter->obj);
-            fprintf(stderr, "' >");
+            fprintf(stdout, "' >");
             break;
         case JN_OBJECT_TYPE:
-            fprintf(stderr, "<%s>", obj->type_val.typename); break;
+            fprintf(stdout, "<%s>", obj->type_val.typename); break;
         case JN_METHOD_TYPE:
-            fprintf(stdout, "<method function for '"); print_JnObject(obj->method.obj); fprintf(stdout, "' at %p>", obj->method.fn);
+            fprintf(stdout, "<method function for "); print_JnObject(obj->method.obj); fprintf(stdout, " at %p>", obj->method.fn);
             break;
         case JN_STRUCT_TYPE:
             fprintf(stdout, "struct{%s}", (obj->struct_obj->name) ? obj->struct_obj->name : "<unsigned>"); break;
         case JN_INSTANCE_TYPE:
             fprintf(stdout, "<struct{%s} at '%p'>", obj->instance->obj->struct_obj->name, obj->instance->obj); break;
         case JN_NATIVE_TYPE:
-            fprintf(stderr, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
+            fprintf(stdout, "<function <%s> at %p>", obj->native_fn->fnName, obj->native_fn);
             break;
         default:
             fprintf(stderr, "<unsigned>");
