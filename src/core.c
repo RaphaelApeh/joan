@@ -127,10 +127,9 @@ JN_API int Jn_compile(J_State* state)
     {
         AST* stmt = parse_stmt(p);
         stmt = parse_stmt_check(p, stmt);
-        compile(stmt, state->vm->chuck);
         Jn_semantic_check(&sem, stmt);
-        if (sem.errors)
-            return -1;
+        if (sem.errors) return -1;
+        compile(stmt, state->vm->chuck);
     }
     write_chuck(state->vm->chuck, OP_END);
     scope_free(sem.scope);

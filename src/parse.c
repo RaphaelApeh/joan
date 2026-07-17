@@ -88,6 +88,7 @@ AST* parse_stmt_check(joan_parser_t* p, AST* stmt)
 {
     if (stmt->type == AST_COMMENT) // TODO
         return stmt;
+    if (stmt->type == AST_ERROR) return stmt;
     if (
         ( p->prev.type !=TOKEN_RBRACE && p->curr.type != TOKEN_EOF) && !match(p, TOKEN_SEMICOLON)
         && !p->has_newl
@@ -684,7 +685,7 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
             continue;
         }
 
-        if (match(p, TOKEN_AT) && check(p, TOKEN_IF))
+        if (check(p, TOKEN_IF))
         {
             return parse_inline_if(p, left);
         }
