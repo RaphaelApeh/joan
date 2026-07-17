@@ -57,6 +57,8 @@ static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg);
 static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg);
 static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg);
 
+// Static methods
+static JnObject* string_utf8(J_State* state, JnObject* cls);
 
 static struct JnObjectMethod STRING_METHODS[] = {
     {"ends", string_ends},
@@ -66,6 +68,12 @@ static struct JnObjectMethod STRING_METHODS[] = {
     {"repl", string_repl},
     {"strip", string_strip},
     {"part", string_part},
+    {NULL, NULL}
+};
+
+
+static JnStaticMethod STRING_STATIC_METHODS[] = {
+    {"from_utf8", string_utf8},
     {NULL, NULL}
 };
 
@@ -319,6 +327,17 @@ static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg)
     ret_obj->tuple = arr;
     return ret_obj;
 }
+
+static JnObject* string_utf8(J_State* state, JnObject* cls)
+{
+    if (!JN_IS_STRING(cls))
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, ":from_utf8() epected a string");
+    
+    char* str_obj = JN_AS_CSTRING(cls);
+    size_t len = strlen_utf8(str_obj);
+    // TODO
+}
+
 
 // Native functions
 static JnObject* native_getattr(J_State* state, JnObject* args)

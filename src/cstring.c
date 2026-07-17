@@ -48,14 +48,14 @@ char* str_esc(const char* str)
     {
         switch (*s)
         {
-            case '\\': *d++ = '\\'; *d++ = '\\'; break;
-            case '\n': *d++ = '\\'; *d++ = '\n'; break;
-            case '\r': *d++ = '\\'; *d++ = '\r'; break;
-            case '\t': *d++ = '\\'; *d++ = '\t'; break;
-            case '\b': *d++ = '\\'; *d++ = '\b'; break;
-            case '\f': *d++ = '\\'; *d++ = '\f'; break;
-            case '\v': *d++ = '\\'; *d++ = '\v'; break;
-            case '\0': *d++ = '\\'; *d++ = '\0'; break;
+            case '\\':  *d++ = '\\'; break;
+            case '\n':  *d++ = 'n'; break;
+            case '\r':  *d++ = 'r'; break;
+            case '\t':  *d++ = 't'; break;
+            case '\b':  *d++ = 'b'; break;
+            case '\f':  *d++ = 'f'; break;
+            case '\v':  *d++ = 'v'; break;
+            case '\0':  *d++ = '0'; break;
             default:
                 *d++ = *s; break;
         }

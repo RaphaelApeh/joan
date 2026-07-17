@@ -59,8 +59,11 @@ JnObject* jn_obj_int(J_State* state, long int_val)
 JnObject* jn_obj_string(J_State* state, char* str)
 {
     JnObject* obj =  jn_obj_new(state, JN_STRING_TYPE);
-    JnStringObject* strObj = malloc(sizeof(JnStringObject));
-    *strObj = JNSTR_OBJ(str);
+    JnStringObject* strObj = Jn_alloc(sizeof(JnStringObject));
+    JnStringObject S_Obj = JNSTR_OBJ(str);
+    strObj->chars = S_Obj.chars;
+    strObj->hash = S_Obj.hash;
+    strObj->len = S_Obj.len;
     obj->str = strObj;
     return obj;
 }
