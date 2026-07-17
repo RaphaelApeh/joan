@@ -301,8 +301,8 @@ typedef struct {
     char* mod_name;
 } Jn_CRegistry;
 
-JN_API JnObject* make_native(char* name, Jn_CFunction fn);
-JN_API Jn_CRegistry* register_module(char* name, J_State* state, Jn_CModule* module);
+JN_API JnObject* Jn_make_native(char* name, J_State* state, Jn_CFunction fn);
+JN_API void Jn_register_module(char* name, J_State* state, Jn_CModule* module);
 
 // Object Type
 typedef struct Chuck Chuck;
@@ -432,11 +432,10 @@ JN_API void Jn_repl(J_State* state);
 // Execute and run repl
 JN_API void Jn_run_iterative(J_State* state, const char* filename);
 
-
+// Main Allocator
 void* Jn_alloc(size_t size);
-// Helpers
-unsigned long djb2_hash(unsigned const char* str);
 
+// Object Argument helper
 JN_API JnObject* Jn_make_args(J_State* state, size_t capacity);
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
 
@@ -454,7 +453,6 @@ JN_API JnObject* Jn_get_variable(J_State* state, const char* name);
 JN_API bool Jn_has_variable(J_State* state, const char* name);
 
 // Compile & Run
-JN_API int Jn_parse(J_State*, const char*);
 JN_API int Jn_compile(J_State*);
 JN_API int Jn_exec(J_State*);
 
@@ -510,8 +508,6 @@ Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
 void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);
 void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value);
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index);
-void Jn_hashmap_from_string(Jn_Hashmap* map, char* str, JnObject* value);
-JnObject* Jn_hashmap_get_string(Jn_Hashmap* map, char* str);
 
 #ifdef __cplusplus
 }

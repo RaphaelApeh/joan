@@ -658,15 +658,15 @@ static JnObject* string_ctor(J_State* state, JnObject* args)
         return JN_RETURN_STRING(state, jn_obj_cstring(obj));
     case JN_STRING_TYPE:
         return obj;
-    JN_JN_INT_TYPE:
-        assert(false); // TJN_ODO
     }
+
+    return JN_RAISE_EXCPETION(state, SYS_ERROR, "String does not support this type.");
 }
 
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn)
 {
     assert(state != NULL && name != NULL);
-    JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
+    JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
     JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);
@@ -685,7 +685,7 @@ JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObj
 
 JN_API void Jn_define_fn(J_State* state, const char* name, Jn_CFunction fn)
 {
-    JnNativeObject* n_fn = JN_ALLOC(sizeof(JnNativeObject));
+    JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
     JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);
@@ -694,9 +694,21 @@ JN_API void Jn_define_fn(J_State* state, const char* name, Jn_CFunction fn)
 }
 
 
-JN_API void Jn_register_module(char* name, Jn_CModule* module)
+JN_API void Jn_register_module(char* name, J_State* state, Jn_CModule* module)
 {
     // TODO
+    assert(false && "Not yet Impl.");
+}
+
+JN_API JnObject* Jn_make_native(char* name, J_State* state, Jn_CFunction fn)
+{
+    assert(name && state && fn);
+    JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
+    n_fn->fn = fn;
+    n_fn->fnName = strdup(name);
+    JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);
+    obj->native_fn = n_fn;
+    return obj;
 }
 
 

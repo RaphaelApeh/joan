@@ -199,31 +199,17 @@ JN_API int Jn_execute_main(J_State* state, const char* filepath)
     return exit_code;
 }
 
-JN_API int Jn_from_string(J_State* state, const char* string)
+
+JN_API int Jn_exec_from_file(J_State* state, FILE* fptr) 
 {
-    joan_lexer_t l = {0};
-    JnVM vm = {0};
-    Chuck chuck = {0};
-    joan_parser_t p = {0};
-    chuck_init(&chuck);
-    Jnvm_init(&vm, &chuck);
-    vm.chuck = &chuck;
-    p.arena = state->arena;
-    J_init_lexer(&l, (char *)string);
-    jn_init_parser(state->parser, &l);
-    vm.global = state->globals;
-    vm.env = state->globals;
-    vm.chuck->env = vm.env;
-    while(p.curr.type != TOKEN_EOF)
-    {
-        AST* stmt = parse_stmt(&p);
-        compile(stmt, vm.chuck);
-        if (state->parser->curr.type == TOKEN_EOF)
-            break;
-    }
-    write_chuck(vm.chuck, OP_END);
-    int i = vm_run(state, &vm);
-    return i;   
+    // TODO
+    assert(false && "Not yet Implemented.");
+}
+
+JN_API int Jn_exec_string(J_State* state, const char* string)
+{
+    // TODO:
+    assert(false && "Not yet Implemented.");
 }
 
 JN_API int Jn_exec_REPL(J_State* state, const char* source)
