@@ -1,3 +1,13 @@
+__AUTHOR__ := "John Doe";
+
+if __AUTHOR__ {
+    printf("Hello, %s", __AUTHOR__);
+} elseif !__AUTHOR__ {
+    printf("NO Author");
+} else {
+    printf("Sorry..");
+}
+
 
 let name = "John" if false else "Doe";
 
@@ -6,3 +16,17 @@ if name == "John" {
 } else {
     printf("Hello, Doe");
 }
+
+fn fib(num)
+{
+    assert(typeof(num) == INTEGER, "fib() expected an 'int'.");
+    a := 0;
+    b := 1;
+    for ;a < num;{
+        printf("%d", a);
+        c := a + b;
+        a = b;
+        b = c;
+    }
+}
+fib(1_000_000);
