@@ -14,13 +14,14 @@ bool strends(const char* str, const char* suf)
 }
 
 
+
 char* str_esc(const char* str)
 {
     // TODO: add Python-type of string escape
     if (NULL == str) return NULL;
 
     size_t esc_len = 0;
-    char* s = (char *)str;
+    char* s = (unsigned char *)str;
     while (*s)
     {
         switch (*s)
@@ -35,29 +36,30 @@ char* str_esc(const char* str)
         case '\\':
             esc_len += 2; break;
         default:
-            esc_len += 1; break;
+            esc_len++; break;
         }
         s++;
     }
-    char* esc = malloc(esc_len + 1);
+    unsigned char* esc = malloc(esc_len + 1);
     if (NULL == esc) return NULL;
     char* d = esc;
-    s = (char *)str;
+    s = (unsigned char *)str;
 
     while (*s)
     {
         switch (*s)
         {
-            case '\\':  *d++ = '\\'; break;
-            case '\n':  *d++ = 'n'; break;
-            case '\r':  *d++ = 'r'; break;
-            case '\t':  *d++ = 't'; break;
-            case '\b':  *d++ = 'b'; break;
-            case '\f':  *d++ = 'f'; break;
-            case '\v':  *d++ = 'v'; break;
-            case '\0':  *d++ = '0'; break;
+            case '\\': *d++ = '\\'; *d++ = '\\'; break;
+            case '\n':  *d++ = '\\'; *d++ = 'n'; break;
+            case '\r':  *d++ = '\\'; *d++ = 'r'; break;
+            case '\t': *d++ = '\\'; *d++ = 't'; break;
+            case '\b':  *d++ = '\\'; *d++ = 'b'; break;
+            case '\f': *d++ = '\\';  *d++ = 'f'; break;
+            case '\v': *d++ = '\\'; *d++ = 'v'; break;
+            case '\0': *d++ = '\\'; *d++ = '0'; break; // Not sure.
             default:
-                *d++ = *s; break;
+                *d++ = *s; 
+                break;
         }
         s++;
     }

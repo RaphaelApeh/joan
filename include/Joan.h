@@ -61,6 +61,8 @@ extern "C" {
     #define JN_API
 #endif
 
+
+
 typedef enum{
     JN_NONE_TYPE = 0,
     JN_STRING_TYPE,

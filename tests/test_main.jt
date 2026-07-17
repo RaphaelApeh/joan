@@ -17,6 +17,7 @@ if name == "John" {
     printf("Hello, Doe");
 }
 
+
 fn fib(num)
 {
     assert(typeof(num) == INTEGER, "fib() expected an 'int'.");
