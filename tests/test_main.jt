@@ -8,7 +8,6 @@ if __AUTHOR__ {
     printf("Sorry..");
 }
 
-
 fn fib(num)
 {
     assert(typeof(num) == INTEGER, "fib() expected an 'int'.");

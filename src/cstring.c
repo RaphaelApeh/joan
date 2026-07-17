@@ -207,3 +207,13 @@ int strpart(const char* str, char delim, char** left, char** right)
     }
     return 0;
 }
+
+size_t strlen_utf8(const char* str)
+{
+    //https://stackoverflow.com/questions/32936646/getting-the-string-length-on-utf-8-in-c
+    size_t len = 0;
+    char c;
+    while ((c = *str++) != '\0')
+        len += (c & 0xC0) != 0x80;
+    return len;
+}

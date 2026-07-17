@@ -37,6 +37,7 @@ char** strsplt(const char* str, char c, int* size);
 char* strstrp(const char* str);
 char* str_esc(const char* str);
 int strpart(const char* str, char delim, char** left, char** right);
+size_t strlen_utf8(const char* str);
 
 // TODO
 bool strstrcmp(char** src, char* src2);
