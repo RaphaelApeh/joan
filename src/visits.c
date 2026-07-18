@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <Joan.h>
 #include "semantic.h"
 
@@ -135,7 +136,11 @@ static void visit_while(JnSemantic* sem, AST* node)
     sem->loop_depth--;
 }
 
-
+static void visit_lambda(JnSemantic* sem, AST* node)
+{
+    sem->fnc_depth++;
+    assert(false && "TODO");
+}
 
 void Jn_visit(JnSemantic* sem, AST* node)
 {

@@ -1,3 +1,13 @@
+let test = |None| => {
+    return "Yes";
+}
+fn main()
+{
+    return test;
+}
+
+printf("Program: %s\n", main()());
+
 __AUTHOR__ := "John Doe";
 
 if __AUTHOR__ {

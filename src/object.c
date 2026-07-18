@@ -400,6 +400,10 @@ JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_
     chuck_init(chuck);
     chuck->env = env;
     compile(expr, chuck);
+    if (expr->type == AST_BLOCK)
+    {
+        write_chuck_loc(chuck, OP_NONE, expr->line, expr->col);
+    }
     write_chuck_loc(chuck, OP_RETURN, expr->line, expr->col);
     JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
     fn->chuck = chuck;

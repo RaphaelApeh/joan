@@ -1,5 +1,7 @@
 -Add more examples
 -Fix for-loop continue stmt
 -Add import module
--Add a for-each function
--Fix parser
+-Fix a for-each
+-Add enum
+-Add type-check or something
+-Fix the parser or reimplement it.

@@ -94,7 +94,7 @@ AST* parse_stmt_check(joan_parser_t* p, AST* stmt)
         && !p->has_newl
     )
     {
-        return parse_error(p, "Expected a newline or a semicolon after a statement.");
+        return parse_error(p, "Expected semicolon after a statement."); // TODO
     }
     return stmt;
 }
@@ -783,9 +783,12 @@ static AST* parse_lambda(joan_parser_t* p)
     /*
     Inline function
     Example:
-        add :=  |a, b| => a + b
-        no_arg := |None| => something
-        add(32, 12)
+        add :=  |a, b| => a + b;
+        no_arg := |None| => something;
+        block := |a, b| => {
+            return "block statement";
+        }
+        add(32, 12);
     */
     advance_parser_c(p);
     int len = 0, cap = 20;
@@ -812,7 +815,14 @@ static AST* parse_lambda(joan_parser_t* p)
     } while(true);
     args[len] = NULL;
     match(p, TOKEN_DCOLON);
-    AST* expr = parse_expr(p);
+    AST* expr = NULL;
+    
+    if (check(p, TOKEN_LBRACE))
+    {
+        expr = parse_block(p);
+    } else {    
+        expr = parse_expr(p);
+    }
     AST* ast = ast_create(p, AST_LAMBDA);
     ast->lambda_node.count = len;
     ast->lambda_node.expr = expr;
