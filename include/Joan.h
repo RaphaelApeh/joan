@@ -47,9 +47,10 @@ extern "C" {
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
-#define JOAN_VERSION_PATCH 3
+#define JOAN_VERSION_PATCH 4
 
-#define JOAN_VERSION "0.7.3"
+#define JOAN_VERSION "0.7.4"
+#define JOAN_EXT "jt"
 
 #ifdef _WIN32
     #ifdef JN_BUILD_DLL
@@ -88,6 +89,7 @@ typedef enum{
     JN_ERROR_TYPE,
 } JnTypeObject;
 
+typedef struct J_State Joan;
 typedef struct AST AST;
 typedef struct GC GC;
 typedef struct InternEntry InternEntry;
@@ -101,6 +103,7 @@ typedef struct JN_Args JN_Args;
 typedef JnObject* (*Jn_CFunction)(J_State* state, JnObject* args);
 typedef JnObject* (*JN_CMethod) (J_State* state, JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
+typedef JnObject* (*JnForeignHandler)(J_State* state, const char* fn_name, int params, JnObject* args);
 typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_E Jn_environ_E;
 typedef struct Jn_environ Jn_environ;
@@ -271,6 +274,7 @@ typedef struct J_State
     InternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
     Jn_environ* globals;
+    JnForeignHandler foreign_handler;
     const char** symbols;
     J_Context cxt;
     size_t symbols_count, symbols_capacity;
@@ -435,12 +439,17 @@ JN_API void Jn_repl(J_State* state);
 JN_API void Jn_run_iterative(J_State* state, const char* filename);
 
 // Main Allocator
-void* Jn_alloc(size_t size);
+JN_API void* Jn_alloc(size_t size);
 
 // Object Argument helper
 JN_API JnObject* Jn_make_args(J_State* state, size_t capacity);
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
 
+// Set a custom foreign handler
+JN_API void Jn_add_handler(J_State* state, JnForeignHandler fn);
+
+// Defualt foreign handler
+JN_API void* Jn_defualt_handler(J_State* state, const char* fn_name, int params, JnObject* args);
 
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
 

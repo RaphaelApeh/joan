@@ -946,9 +946,6 @@ void compile(AST* node, Chuck* chuck)
                 break;
         }
         break;
-    case AST_DEFINE:
-        printf("Hello World\n");
-        break;
     case AST_IMPORT:
         printf("%s\n", node->import_node.lib);
         for (int i = 0; i < node->import_node.count; ++i)
@@ -1119,6 +1116,11 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, idx);
         break;
     case AST_FUNCTION:
+        if (!node->fn_node.is_defined)
+        {
+            printf("Function Promise.\n");
+            break;
+        }
         JnObject* fn_obj = jn_obj_function(
             node->state,
             node->fn_node.block,

@@ -170,6 +170,17 @@ AST* ast_call(joan_parser_t* p, AST* callee, AST** args, size_t count)
     return ast;
 }
 
+
+AST* ast_function(joan_parser_t* p, char* ident, AST* block, int count, char** params)
+{
+    AST* ast = ast_create(p, AST_FUNCTION);
+    ast->fn_node.block = block;
+    ast->fn_node.count = count;
+    ast->fn_node.params = params;
+    ast->fn_node.name = ident;
+    return ast;
+}
+
 AST* ast_error(joan_parser_t* p, const char* msg)
 {
     AST* ast = ast_create(p, AST_ERROR);

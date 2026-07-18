@@ -11,6 +11,7 @@
 
 static joan_token_t make_error(joan_lexer_t* l, char* msg, ...);
 
+
 static bool peek_advance(joan_lexer_t* l, char c)
 {
     if (peek(l) != c)
@@ -272,8 +273,6 @@ joan_token_t token_identifier(joan_lexer_t* l)
         t.type = TOKEN_AS;
     else if (strcmp(t.lexeme, "fn") == 0)
         t.type = TOKEN_FN;
-    else if (equal(t.lexeme, "c_define"))
-        t.type = TOKEN_DEFINE;
     else if (strcmp(t.lexeme, "in") == 0)
         t.type = TOKEN_IN;
     else if (strcmp(t.lexeme, "or") == 0)

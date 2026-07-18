@@ -42,6 +42,10 @@ typedef enum{
 
     OP_DUP,
 
+    OP_MATCH,
+
+    OP_FF,
+
     OP_DEFINE_GLOBAL,
     OP_GET_GLOBAL,
     OP_SET_GLOBAL,

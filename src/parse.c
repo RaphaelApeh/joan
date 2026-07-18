@@ -370,17 +370,20 @@ static AST* parse_fn(joan_parser_t* p)
         if (match(p, TOKEN_COMMA))
             continue;
     }
+    if (!check(p, TOKEN_LBRACE))
+    {
+        AST* ast = ast_function(p, ident, NULL, len, params);
+        ast->fn_node.is_defined = false;
+        return ast;
+    }
     if (check(p, TOKEN_LBRACE))
         block = parse_block(p);
     else
         return parse_error(p, "Invalid function body.");
-    AST* ast = ast_create(p, AST_FUNCTION);
-    ast->fn_node.block = block;
-    ast->fn_node.name = ident;
-    ast->fn_node.params = params;
-    ast->fn_node.count = len;
+    AST* ast = ast_function(p, ident, block, len, params);
     ast->fn_node.is_async = false;
     ast->fn_node.is_yield = false;
+    ast->fn_node.is_defined = true;
     return ast;
 }
 
@@ -861,28 +864,6 @@ static AST* parse_import(joan_parser_t* p)
     return ast;
 }
 
-
-static AST* parse_c_define(joan_parser_t* p)
-{
-    /*
-    EXAMPLE
-        #c_define len(obj)
-    */
-    advance_parser_c(p);
-    if (!check(p, TOKEN_IDENTIFIER))
-        return parse_error(p, "Expected an identifer (got %s).", GET_LEX(p));
-    char* ident = GET_LEX(p);
-    AST* callee = parse_value(p);
-    advance_parser_c(p);
-    AST* call_node = parse_call(p, callee);
-    if (call_node->type == AST_ERROR)
-        return call_node;
-    AST* ast = ast_create(p, AST_DEFINE);
-    ast->c_define_node.ident = ident;
-    ast->c_define_node.call_node = call_node;
-    return ast;
-}
-
 static AST* parse_struct(joan_parser_t* p)
 {
     /*
@@ -1080,8 +1061,6 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             if (check(p, TOKEN_LBRACE))
                 return parse_hashmap(p);
-            else if (check(p, TOKEN_DEFINE))
-                return parse_c_define(p);
             else if (check(p, TOKEN_FOR))
                 return parse_for_each(p);
             return parse_error(p, "Error invalid expression");

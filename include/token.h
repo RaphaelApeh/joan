@@ -87,7 +87,6 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_AND,
 
     TOKEN_FN,
-    TOKEN_DEFINE,
     TOKEN_IMPORT,
     TOKEN_ENUM,
     TOKEN_CONST,

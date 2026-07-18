@@ -175,6 +175,7 @@ typedef struct AST{
             // param_t* params;
             char** params;
             int count;
+            bool is_defined;
             bool is_yield;
             bool is_async;
         } fn_node;
@@ -285,6 +286,10 @@ AST* ast_assign(
     bool is_const,
     AST* value
 );
+
+
+// Function
+AST* ast_function(joan_parser_t* p, char* ident, AST* block, int count, char** params);
 
 //IF STATEMENT
 AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* else_node);
