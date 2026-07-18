@@ -633,12 +633,6 @@ static AST* parse_index(joan_parser_t* p, AST* arr)
     ast->index.value = NULL;
     if (!match(p, TOKEN_RBRACKET))
         return parse_error(p, "Expected an closing ']'");
-    if (match(p, TOKEN_EQUAL))
-    {
-        ast->index.value = parse_expr(p);
-        ast->index.is_set = true;
-        return ast;
-    }
     return ast;
 }
 
@@ -702,9 +696,7 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
         if (check(p, TOKEN_LBRACKET))
         {
             left = parse_index(p, left);
-            if (left->type == AST_ARRAY_INDEX && left->index.is_set)
-                return left; // arr[0] = 2 return
-            continue; // arr[0] continue -> e.g arr[0](arg1, arg2) arr[0].method
+            continue;
         }
         break;
     }
@@ -746,6 +738,7 @@ static AST* parse_hashmap(joan_parser_t* p)
             break;
         return parse_error(p, "expected a closing '}'.");
     }
+    match(p, TOKEN_SEMICOLON); // TODO
     ast->hmp_node.keys = keys;
     ast->hmp_node.values = values;
     ast->hmp_node.count = len;

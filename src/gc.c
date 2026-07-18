@@ -108,6 +108,12 @@ void Jn_freeObject(JnObject* obj)
             // free(obj->instance->obj);
             free(obj->instance);
             break;
+        // TODo
+        // case JN_ARG_TYPE:
+        //     free(obj->arg.args);
+        //     break;
+        default:
+            break;
         }
     free(obj);
     obj = NULL;

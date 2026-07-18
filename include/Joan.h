@@ -473,6 +473,7 @@ JN_API void Jn_load_Cfunctions(J_State* state);
 JN_API void Jn_load_repl_functions(J_State* state);
 // Call user-define functions
 JN_API JnObject* Jn_call_fn(J_State*, char* fn_name, JnObject* args);
+// State Context
 JN_API J_Context* Jn_get_context(J_State*);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(J_State*);
@@ -519,6 +520,7 @@ Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
 void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);
 void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value);
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index);
+bool Jnhashmap_remove(Jn_Hashmap* map, JnObject* key);
 
 #ifdef __cplusplus
 }

@@ -78,9 +78,12 @@ static JnStaticMethod STRING_STATIC_METHODS[] = {
 };
 
 
+static JnObject* hashmap_remove(Joan* state, JnObject* self, JnObject* args);
+
 static struct JnObjectMethod HASHMAP_METHODS[] = {
     {"push", push_method},
     {"from_index", hashmap_from_idx},
+    {"remove", hashmap_remove},
     {NULL, NULL}
 };
 
@@ -185,6 +188,11 @@ static JnObject* hashmap_from_idx(J_State* state, JnObject* self, JnObject* args
     return obj;
 }
 
+static JnObject* hashmap_remove(Joan* state, JnObject* self, JnObject* args)
+{
+    assert(false);
+    bool Jnhashmap_remove(Jn_Hashmap* map, JnObject* key);
+}
 // String Methods
 
 static JnObject* string_ends(J_State* state, JnObject* self, JnObject* args)
@@ -279,6 +287,11 @@ static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg)
 
 static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg)
 {
+    /*
+    Example:
+        "   hello World   ".strip()
+        "Hello World"
+    */
     if (JN_ARGS_COUNT(arg) != 0)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, ".strip() accept no arugment.");
     char* obj_str = JN_AS_CSTRING(self);
@@ -346,12 +359,12 @@ static JnObject* native_getattr(J_State* state, JnObject* args)
 }
 
 
-static JnObject* native_snprintf(J_State* state, JnObject* args)
+static JnObject* native_format(J_State* state, JnObject* args)
 {
     /*
     Example:
         name := "John";
-        greeting := snprintf("Hello, %s", name);
+        greeting := format("Hello, %s", name);
         printf("GREETING : %s", greeting);
     */
     assert(false);
@@ -363,8 +376,8 @@ static JnObject* native_snprintf(J_State* state, JnObject* args)
         return NULL;
     char* str = JN_AS_CSTRING(JN_GET_ARG(args));
     JnObject* obj;
-    char* string = malloc(sizeof(char *) * 100);
-    int cap = 100;
+    char* string = malloc(sizeof(char) * 100);
+    int len = 0, cap = 100;
     int arg_count = 1;
     while (*str)
     {
@@ -372,7 +385,7 @@ static JnObject* native_snprintf(J_State* state, JnObject* args)
         {
             if (arg_count >= count)
             {
-                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "snprintf() got too many arguments (%d).", count);
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "format() got too many arguments (%d).", count);
             }
             str++;
             switch (*str)
@@ -380,51 +393,14 @@ static JnObject* native_snprintf(J_State* state, JnObject* args)
             case 's':
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_STRING(obj))
-                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%s expect type string.");
-                printf("%s", JN_AS_CSTRING(obj));
+                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "format() %%s expect type string.");
                 break;
-            case 'i':
-            case 'd':
-                obj = JN_GET_ARGS(args, arg_count);
-                if (!JN_IS_INT(obj))
-                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%d expect type int.");
-                printf("%d", JN_AS_INT(obj));
-                break;
-            case 'f':
-                obj = JN_GET_ARGS(args, arg_count);
-                if (!JN_IS_FLOAT(obj))
-                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%f expect type float.");
-                printf("%15.g", JN_AS_FLOAT(obj));
-                break;            
-            case 'c':
-                obj = JN_GET_ARGS(args, arg_count);
-                if (!JN_IS_CHAR(obj) && !JN_IS_INT(obj))
-                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%c expect type char.");
-                if (JN_IS_CHAR(obj))
-                    printf("%c", JN_AS_CHAR(obj));
-                else
-                    printf("%c", JN_AS_INT(obj));
-                break;
-            case 'b':
-                obj = JN_GET_ARGS(args, arg_count);
-                printf("%s", JN_TO_BOOL(obj) ? "true" : "false");
-                break;
-            case 'v':
-                obj = JN_GET_ARGS(args, arg_count);
-                print_JnObject(obj);
-                break;
-            case 'p':
-                printf("%p", obj); break;
             case '%':
                 putc('%', stdout);
                 break;
             default:
                 printf("Invalid format specifier '%c'.", *str);
             }
-            ++str;
-            ++arg_count;
-        } else {
-            putc(*str++, stdout);
         }
     }
     return JN_RETURN_NONE;

@@ -653,36 +653,6 @@ int vm_run(J_State* state, JnVM* vm)
                         return die(state,vm, "Expected an iterable but got '%s'.", "TODO");
                 }
                 break;
-            case OP_SET_INDEX:
-                value = pop(vm); array = pop(vm); pos = pop(vm);
-                if (JN_IS_ARRAY(array) && !JN_IS_INT(pos) && !JN_IS_RANGE(pos))
-                    return die(state,vm, "Expected type 'int' or 'range' but got 'TODO'.");
-                index = pos->int_val;
-                switch (array->type)
-                {
-                    case JN_ARRAY_TYPE:
-                        if (index < 0)
-                        {
-                            index += array->arr->size;
-                        }
-                        if (index >= array->arr->size)
-                            return die(state,vm, "Got an invalid index; expected max '%d' but got '%d'.", array->arr->size, index);
-                        array->arr->items[index] = value;
-                        break;
-                    case JN_STRING_TYPE:
-                        if (index >= array->str->len)
-                                return die(state,vm, "Got an invalid index; expected max '%d' but got '%d'.", array->str->len, index);
-                        if (!JN_IS_CHAR(value))
-                            return die(state,vm, "string index expect a char type.");
-                        array->str->chars[index] = JN_AS_CHAR(value);
-                        break;
-                    case JN_HASHMAP_TYPE:
-                        JN_HASMAP_PUT(array->hashmap, pos, value);
-                        break;
-                    default:
-                        return die(state,vm, "type does not support index setting.");
-                 }
-                break;
             case OP_SCOPE_ENTER:
                 local = Jn_environ_init(vm->env);
                 vm->env = local;
@@ -1373,12 +1343,6 @@ void compile(AST* node, Chuck* chuck)
     case AST_ARRAY_INDEX:
         compile(node->index.pos, chuck);
         compile(node->index.array, chuck);
-        if (node->index.is_set)
-        {
-            compile(node->index.value, chuck);
-            WRITE_CHUCK(chuck, OP_SET_INDEX);
-            break;
-        } 
         WRITE_CHUCK(chuck, OP_INDEX);
         break;
     default:

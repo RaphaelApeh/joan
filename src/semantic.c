@@ -22,6 +22,7 @@ void Jn_semantic_init(J_State* state, JnSemantic* sem)
 void Jn_semantic_check(JnSemantic* sem, AST* node)
 {
     Jn_visit(sem, node);
+    putc('\n', stdout);
     if (sem->errors)
     {
         fprintf(stdout, "(%d) semantic error(s).\n", sem->errors);
@@ -35,6 +36,8 @@ void Jn_semantic_check(JnSemantic* sem, AST* node)
 
 void error(JnSemantic* sem, AST* node, const char* msg, ...)
 {
+    print_source_lines(sem->state->cxt.source.source, node->line, node->col, 2);
+    putc('\n', stdout);
     sem->errors++;
     sem->state->error.error_msg = msg;
     sem->state->error.line = node->line;
@@ -46,6 +49,7 @@ void error(JnSemantic* sem, AST* node, const char* msg, ...)
 void warning(JnSemantic* sem, AST* node, const char* msg, ...)
 {
     sem->warnings++;
+    print_source_lines(sem->state->cxt.source.source, node->line, node->col, 2);
     fprintf(
         stderr, 
         "%s:%d:%d Warning: %s\n", 

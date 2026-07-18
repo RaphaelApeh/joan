@@ -90,3 +90,26 @@ JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)
     return map->buckets[index].value;
 }
 
+
+bool Jnhashmap_remove(Jn_Hashmap* map, JnObject* key)
+{
+    assert(map && key);
+    uint64_t hash = Jn_object_hash(key);
+
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        Jn_HashEntry* entry = &map->buckets[i];
+        if (entry->hash == hash)
+        {
+            
+            for (size_t j = i; j < map->size; ++j)
+                map->buckets[j - 1] = map->buckets[j];
+            
+            map->size--;
+            map->buckets[map->size] = (Jn_HashEntry){0};
+            
+            return true;
+        }
+    }
+    return false;
+}
