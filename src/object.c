@@ -588,7 +588,7 @@ void print_JnObject(JnObject* obj)
     switch (JN_OBJ_TYPE(obj))
     {
         case JN_INT_TYPE:
-            fprintf(stdout, "%lld", JN_AS_INT(obj)); break;
+            fprintf(stdout, "%ld", JN_AS_INT(obj)); break;
         case JN_CHAR_TYPE:
             fprintf(stdout, "%c", JN_AS_CHAR(obj)); break;
         case JN_STRING_TYPE:
@@ -614,7 +614,7 @@ void print_JnObject(JnObject* obj)
             fprintf(stdout, "None");
             break;
         case JN_RANGE_TYPE:
-            fprintf(stdout, "<Range (%lld, %lld, %ld)>", obj->range.start, obj->range.stop, obj->range.step);
+            fprintf(stdout, "<Range (%lld, %lld, %d)>", obj->range.start, obj->range.stop, obj->range.step);
             break;
         case JN_ENUM_TYPE:
             fprintf(stdout, "<Enum>");

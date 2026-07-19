@@ -367,43 +367,95 @@ static JnObject* native_format(J_State* state, JnObject* args)
         greeting := format("Hello, %s", name);
         printf("GREETING : %s", greeting);
     */
-    assert(false);
     int count = JN_ARGS_COUNT(args);
     if (count < 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Expected a least one argument but (got %d).", count);
     
-    if (!JN_IS_STRING(JN_GET_ARG(args)))
-        return NULL;
-    char* str = JN_AS_CSTRING(JN_GET_ARG(args));
+    JnObject* fmt_obj = JN_GET_ARG(args);
+    if (!JN_IS_STRING(fmt_obj))
+        return JN_RAISE_EXCPETION(
+            state, 
+            TYPE_ERROR, 
+            "First argument must be a string."
+        );
+    char* str = JN_AS_CSTRING(fmt_obj);
     JnObject* obj;
-    char* string = malloc(sizeof(char) * 100);
+    char* buff = malloc(sizeof(char) * 100);
+    if (!buff) return JN_RETURN_NONE;
     int len = 0, cap = 100;
     int arg_count = 1;
+
+    #define _APPEND_CHAR(ch) do{            \
+        if (len + 1 >= cap) {               \
+            cap *= 2;                       \
+            buff = realloc(buff, cap);      \
+        }                                   \
+        buff[len++] = (ch);                 \
+    }while (false)
+
+    #define _APPEND_STR(str)   do{          \
+        const char* __s = (str);            \
+        while (*__s)                        \
+            _APPEND_CHAR(*__s++);           \
+    } while (false)
+
     while (*str)
     {
+        if (*str != '%')
+        {
+            _APPEND_CHAR(*str++);
+            continue;
+        }
+        str++;
+        if (*str == '\0')   break;
+
         if (*str == '%')
         {
-            if (arg_count >= count)
-            {
-                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "format() got too many arguments (%d).", count);
-            }
+            _APPEND_CHAR('%');
             str++;
-            switch (*str)
-            {
+            continue;
+        }
+
+        if (arg_count >= count)
+        {
+            free(buff);
+            return JN_RAISE_EXCPETION(state, TYPE_ERROR, "format() got too many arguments (%d).", count);
+        }
+        obj = JN_GET_ARGS(args, arg_count++);
+        char tmp[128];
+        switch (*str)
+        {
             case 's':
-                obj = JN_GET_ARGS(args, arg_count);
+            {
                 if (!JN_IS_STRING(obj))
-                    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "format() %%s expect type string.");
-                break;
+                {
+                    free(buff);
+                    return JN_RAISE_EXCPETION(
+                        state,
+                        TYPE_ERROR,
+                        "%%s expects a string."
+                    );
+                }
+                _APPEND_STR(JN_AS_CSTRING(obj));
+            } break;
+            case 'i':
+            case 'd':
+            case 'f':
             case '%':
-                putc('%', stdout);
+                //TODO:
                 break;
             default:
-                printf("Invalid format specifier '%c'.", *str);
+            {
+                free(buff);
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Unkown format specifier");
             }
-        }
+        }    
+        str++;    
     }
-    return JN_RETURN_NONE;
+    buff[len] = '\0';
+    JnObject* res = jn_obj_string(state, buff);
+    free(buff);
+    return res;
 }
 
 static JnObject* native_printf(J_State* state, JnObject* args)
@@ -440,7 +492,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_INT(obj))
                     return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%d expect type int.");
-                printf("%d", JN_AS_INT(obj));
+                printf("%ld", JN_AS_INT(obj));
                 break;
             case 'f':
                 obj = JN_GET_ARGS(args, arg_count);
@@ -913,5 +965,6 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "assert", "Assert expression.", native_assert);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     Jn_register_fn(state, "defined", "Check if a variable exists in the current scope.", native_defined);
+    Jn_register_fn(state, "format", "String format specifier.", native_format);
     // add other built-in functions
 }
