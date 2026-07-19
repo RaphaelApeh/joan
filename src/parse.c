@@ -135,6 +135,7 @@ precedence get_prec(J_TokenType type)
     {
     case TOKEN_EQEQ:
     case TOKEN_IS:
+    case TOKEN_IS_NOT:
     case TOKEN_NEQ:
         return PREC_EQ;
     
@@ -1181,11 +1182,36 @@ AST* parse_prec(joan_parser_t* p, precedence prec)
     while (true)
     {
         left = parse_postfix(p, left);
-        precedence next_pr = get_prec(p->curr.type);
+        precedence next_pr;
+        J_TokenType op;
+        bool comp = false;
+        if (p->curr.type == TOKEN_IN && p->next.type == TOKEN_NOT)
+            return parse_error(p, "Invalid operator order: did you mean 'not in'?.");
+        if (p->curr.type == TOKEN_NOT && p->next.type == TOKEN_IS)
+            return parse_error(p, "Invalid operator order: did you mean 'is not'?.");
+        if (p->curr.type == TOKEN_IS && p->next.type == TOKEN_NOT)
+        {
+            op = TOKEN_IS_NOT;
+            next_pr = PREC_EQ;
+            comp = true;
+        } else if (p->curr.type == TOKEN_NOT && p->next.type == TOKEN_IN)
+        {
+            op = TOKEN_NOT_IN;
+            next_pr = PREC_COMP;
+            comp = true;
+        } else {
+            op = p->curr.type;
+            next_pr = get_prec(op);
+        }
         if (prec >= next_pr)
             break;
-        J_TokenType op = p->curr.type;
-        advance_parser_c(p);
+        if (comp)
+        {
+            advance_parser_c(p);
+            advance_parser_c(p);
+        } else {
+            advance_parser_c(p);
+        }
         AST* right = parse_prec(p, op == TOKEN_POW ? next_pr - 1 : next_pr);
         left = ast_binary(p, left, op, right);
     }

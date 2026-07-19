@@ -22,7 +22,6 @@ void Jn_semantic_init(J_State* state, JnSemantic* sem)
 void Jn_semantic_check(JnSemantic* sem, AST* node)
 {
     Jn_visit(sem, node);
-    putc('\n', stdout);
     if (sem->errors)
     {
         fprintf(stdout, "(%d) semantic error(s).\n", sem->errors);

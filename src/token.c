@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
 #include "token.h"
 #include "lexer.h"
 
@@ -11,6 +12,38 @@
 
 static joan_token_t make_error(joan_lexer_t* l, char* msg, ...);
 
+#define KEYWORD_S struct {const char* keyword; J_TokenType token; }
+
+KEYWORD_S Keywords[] = {
+    // Keywords
+    {"if", TOKEN_IF},
+    {"elseif", TOKEN_ELSEIF},
+    {"else", TOKEN_ELSE},
+    {"fn", TOKEN_FN},
+    {"struct", TOKEN_STRUCT},
+    {"break", TOKEN_BREAK},
+    {"continue", TOKEN_CONTINUE},
+    {"return", TOKEN_RETURN},
+    {"is", TOKEN_IS},
+    {"in", TOKEN_IN},
+    {"and", TOKEN_AND},
+    {"or", TOKEN_OR},
+    {"not", TOKEN_NOT},
+    {"const", TOKEN_CONST}, // Deprecated: remove soon.
+    {"let", TOKEN_LET}, // Deprecated: remove soon
+    {"while", TOKEN_WHILE},
+    {"for", TOKEN_FOR},
+    {"loop", TOKEN_LOOP}, // Deprecated: remove soon
+    {"then", TOKEN_THEN},
+    {"println", TOKEN_PRINTLN}, // Deprecated: remove soon.
+    {"class", TOKEN_CLASS},
+    {"match", TOKEN_MATCH},
+
+    // Type keywords
+    {"None", TOKEN_NONE},
+    {"true", TOKEN_TRUE},
+    {"false", TOKEN_FALSE},
+};
 
 static bool peek_advance(joan_lexer_t* l, char c)
 {
@@ -35,7 +68,7 @@ static char* rm_num_sep(const char* s)
     return out;
 }
 
-static bool equal(char* src, char* src2)
+static bool equal(const char* src, const char* src2)
 {
     return strcmp(src, src2) == 0;
 }
@@ -235,68 +268,18 @@ static joan_token_t token_char(joan_lexer_t* l)
 
 joan_token_t token_identifier(joan_lexer_t* l)
 {
-    joan_token_t tmp;
     while (isalnum(peek(l)) || peek(l) == '_') 
         advance(l);
     joan_token_t t = make_token(l, TOKEN_IDENTIFIER);
-    if (strcmp(t.lexeme, "if") == 0)
-        t.type = TOKEN_IF;
-    else if (strcmp(t.lexeme, "None") == 0)
-        t.type = TOKEN_NONE;
-    else if (
-        strcmp(t.lexeme, "true") == 0
-    )
-        t.type = TOKEN_TRUE;
-    else if (strcmp(t.lexeme, "false") == 0)
-        t.type = TOKEN_FALSE;
-    else if (strcmp(t.lexeme, "for") == 0)
-        t.type = TOKEN_FOR;
-    else if (strcmp(t.lexeme, "loop") == 0)
-        t.type  = TOKEN_LOOP;
-    else if (strcmp(t.lexeme, "elseif") == 0)
-        t.type = TOKEN_ELSEIF;
-    else if (strcmp(t.lexeme, "else") == 0)
-        t.type = TOKEN_ELSE;
-    else if (strcmp(t.lexeme, "then") == 0)
-        t.type = TOKEN_THEN;
-    else if (strcmp(t.lexeme, "let") == 0)
-        t.type = TOKEN_LET;
-    else if(strcmp(t.lexeme, "not_in") == 0)
-        t.type = TOKEN_NOT_IN;
-    else if (strcmp(t.lexeme, "not") == 0)
-        t.type = TOKEN_NOT;
-    else if (equal(t.lexeme, "import"))
-        t.type = TOKEN_IMPORT;    
-    else if (strcmp(t.lexeme, "enum") == 0)
-        t.type = TOKEN_ENUM;
-    else if (strcmp(t.lexeme, "as") == 0)
-        t.type = TOKEN_AS;
-    else if (strcmp(t.lexeme, "fn") == 0)
-        t.type = TOKEN_FN;
-    else if (strcmp(t.lexeme, "in") == 0)
-        t.type = TOKEN_IN;
-    else if (strcmp(t.lexeme, "or") == 0)
-        t.type = TOKEN_OR;
-    else if (strcmp(t.lexeme, "and") == 0)
-        t.type = TOKEN_AND;
-    else if (strcmp(t.lexeme, "is") == 0)
-        t.type = TOKEN_IS;
-    else if (strcmp(t.lexeme, "while") == 0)
-        t.type = TOKEN_WHILE;
-    else if (strcmp(t.lexeme, "return") == 0)
-        t.type = TOKEN_RETURN;
-    else if (strcmp(t.lexeme, "break") == 0)
-        t.type = TOKEN_BREAK;
-    else if (strcmp(t.lexeme, "continue") == 0)
-        t.type = TOKEN_CONTINUE;
-    else if (strcmp(t.lexeme, "const") == 0)
-        t.type = TOKEN_CONST;
-    else if (strcmp(t.lexeme, "struct") == 0)
-        t.type = TOKEN_STRUCT;
-    else if (strcmp(t.lexeme, "match") == 0)
-        t.type = TOKEN_MATCH;
-    else if (strcmp(t.lexeme, "println") == 0)
-        t.type = TOKEN_PRINTLN;
+
+    for (int i = 0; i < (int)(sizeof(Keywords) / sizeof(Keywords[0])); ++i)
+    {
+        if (equal(t.lexeme, Keywords[i].keyword))
+        {
+            t.type = Keywords[i].token;
+            break;
+        }
+    }
     return t;
 }
 

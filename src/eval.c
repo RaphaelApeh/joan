@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+
 #include "eval.h"
 #include "helper.h"
 
@@ -32,35 +33,6 @@ static uint64_t hash_object(JnObject* obj)
         default:
             return 0;
     }
-}
-
-static char* format_string(char* fmt, JnObject* obj)
-{
-    int len = 0;
-    int capacity = 256;
-    char* str = malloc(sizeof(capacity));
-    while(*fmt)
-    {
-        char tmp = *(fmt + 1);
-        if (*fmt == '{' && tmp == '}')
-        {
-            fmt += 2;
-            char* s = JN_OBJECT_CSTRING(obj);
-            assert(s != NULL);
-            int n = strlen(s);
-            while (len + n + 1 >= capacity)
-            {
-                capacity *= 2;
-                str = realloc(str, n);
-            }
-            memcpy(str + len, s, n);
-            len += n;
-            free(s);
-        }
-        else str[len++] = *fmt++;
-    }
-    str[len] = '\0';
-    return str;
 }
 
 JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
@@ -165,12 +137,6 @@ JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
                 goto end;
         }
     }
-    if (JN_IS_STRING(lhs) && op == EVAL_LSHIFT)
-    {
-        // TODO: add support for multiple objects.
-        char* s = format_string(lhs->str->chars, rhs);
-        return JN_RETURN_STRING(state, s);
-    }
     if (JN_IS_CHAR(lhs) && JN_IS_STRING(rhs))
     {
         switch (op)
@@ -184,7 +150,7 @@ JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
         case EVAL_NOT_IN:
             str = memchr(JN_AS_STRING(rhs)->chars, JN_AS_CHAR(lhs), JN_AS_STRING(rhs)->len);
             is_true = str == NULL;
-            return JN_RETURN_BOOL(state, !is_true);        
+            return JN_RETURN_BOOL(state, is_true);        
         default:
             return JN_RAISE_EXCPETION(state, TYPE_ERROR, "char does not support this operator for string.");
         }
