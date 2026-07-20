@@ -40,17 +40,20 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_AT,
     TOKEN_RANGE,
     TOKEN_DCOLON,
+    TOKEN_TILDE,
+    TOKEN_ELLIPSIS,
 
     TOKEN_APLUS, // +=
     TOKEN_AMINUS, // -=
-    TOKEN_ASTAR, // *=
+    TOKEN_AMUL, // *=
     TOKEN_ARSHIFT, // >>=
     TOKEN_ALSHIFT, // <<=
     TOKEN_APERCENTAGE, // %=
     TOKEN_AXOR, // ^=
     TOKEN_ASLASH, // /=
     TOKEN_ABITAND, // &=
-    TOKEN_ABITOR, // |= TODO: name change
+    TOKEN_ABITOR, // |=
+    TOKEN_APOW, // **=
 
     TOKEN_EQUAL,
     TOKEN_EQEQ,

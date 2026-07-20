@@ -399,7 +399,7 @@ int vm_run(J_State* state, JnVM* vm)
                     case TOKEN_EQUAL:
                         jn_obj_reassign(o, a);
                         break;
-                    case TOKEN_ASTAR:
+                    case TOKEN_AMUL:
                         b = eval_binary(state, o, a, EVAL_MUL);
                         if (NULL == b)
                             break;

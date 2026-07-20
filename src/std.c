@@ -518,6 +518,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
                 print_JnObject(obj);
                 break;
             case 'p':
+                obj = JN_GET_ARGS(args, arg_count);
                 printf("%p", obj); break;
             case '%':
                 putc('%', stdout);

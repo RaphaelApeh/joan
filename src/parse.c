@@ -49,7 +49,7 @@ static bool is_assign_token(J_TokenType type)
     {
         case TOKEN_APLUS:
         case TOKEN_AMINUS:
-        case TOKEN_ASTAR: // TODO: TOKEN_AMUL
+        case TOKEN_AMUL:
         case TOKEN_EQUAL:
         case TOKEN_ASLASH:
         case TOKEN_APERCENTAGE:

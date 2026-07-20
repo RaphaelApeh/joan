@@ -348,9 +348,10 @@ joan_token_t next_token(joan_lexer_t* l)
     )
     return number_token(l);
     if (isalnum(c) || c == '_') return token_identifier(l);
+    // TODO: redefine token.
     switch (c)
     {
-        case '\n': // Don't need it but i will keep it.
+        case '\n':
             return make_token(l, TOKEN_NEWLINE);
         case '(':
             return make_token(l, TOKEN_LPARN);
@@ -387,6 +388,8 @@ joan_token_t next_token(joan_lexer_t* l)
             if (peek(l) == '.')
             {
                 advance(l);
+                if (peek_advance(l, '.'))
+                    return make_token(l, TOKEN_ELLIPSIS);
                 return make_token(l, TOKEN_RANGE);
             }
             return make_token(l, TOKEN_DOT);
@@ -409,9 +412,13 @@ joan_token_t next_token(joan_lexer_t* l)
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOKEN_ASTAR);
+                return make_token(l, TOKEN_AMUL);
             } else if (peek_advance(l, '*'))
+            {
+                if (peek_advance(l, '='))
+                    return make_token(l, TOKEN_APOW);
                 return make_token(l, TOKEN_POW);
+            }
             return make_token(l, TOKEN_MUL);
         case '=':
             if (peek(l) == '='){
@@ -501,6 +508,8 @@ joan_token_t next_token(joan_lexer_t* l)
             return make_token(l, TOKEN_BITOR);
         case '#':
             return make_token(l, TOKEN_HASH);
+        case '~':
+            return make_token(l, TOKEN_TILDE);
         default:
             return make_error(l, "Invalid token '%c'.", c);
     }
