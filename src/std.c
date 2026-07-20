@@ -147,8 +147,9 @@ static JnObject* push_method(J_State* state, JnObject* self, JnObject* args)
         case JN_STRING_TYPE:
             if (!JN_IS_STRING(obj))
                 return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string:push() expected a string.");
-            char* buff = strcat(JN_AS_CSTRING(self), JN_AS_CSTRING(obj));
-            *(self->str) = JNSTR_OBJ(buff); // But it works in my machine.
+            assert(false && "TODO");
+            // char* buff = strcat(JN_AS_CSTRING(self), JN_AS_CSTRING(obj));
+            // *(self->str) = JNSTR_OBJ(buff); // But it works in my machine.
            break;
         case JN_HASHMAP_TYPE:
             if (JN_OBJ_TYPE(obj) != JN_HASHMAP_TYPE)
@@ -367,6 +368,7 @@ static JnObject* native_format(J_State* state, JnObject* args)
         greeting := format("Hello, %s", name);
         printf("GREETING : %s", greeting);
     */
+    char* fmt, *typ_str;
     int count = JN_ARGS_COUNT(args);
     if (count < 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Expected a least one argument but (got %d).", count);
@@ -440,14 +442,51 @@ static JnObject* native_format(J_State* state, JnObject* args)
             } break;
             case 'i':
             case 'd':
+            {
+                if (!JN_IS_INT(obj))
+                {
+                    fmt = "%d";
+                    typ_str = "an integer";
+                    goto err;
+                }
+                snprintf(tmp, sizeof(tmp), "%lld", (long long)JN_AS_INT(obj));
+                _APPEND_STR(tmp);
+            } break;
             case 'f':
-            case '%':
-                //TODO:
+            {
+                if (!JN_IS_FLOAT(obj))
+                {
+                    fmt = "%f"; typ_str = "a float";
+                    goto err;
+                }
+                snprintf(tmp, sizeof(tmp), "%g", JN_AS_FLOAT(obj));
+                _APPEND_STR(tmp);
+            } break;
+            case 'c':
+            {
+                if (!JN_IS_CHAR(obj))
+                {
+                    fmt = "%c"; typ_str = "a character";
+                    goto err;
+                }
+                _APPEND_CHAR(JN_AS_CHAR(obj));
+            } break;
+            case 'b':
+            {
+                char* expr = (JN_TO_BOOL(obj)) ? "true" : "false";
+                _APPEND_STR(expr);
+            } break;
+            case 'v':
+            {
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "format() does not support %%v, only printf() does.");
+            }
+            case '%': // Just in case.
+                _APPEND_CHAR('%');
                 break;
             default:
             {
                 free(buff);
-                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Unkown format specifier");
+                return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Unkown format specifier '%%%c'.", *str);
             }
         }    
         str++;    
@@ -456,6 +495,10 @@ static JnObject* native_format(J_State* state, JnObject* args)
     JnObject* res = jn_obj_string(state, buff);
     free(buff);
     return res;
+    // clean-up
+    err:
+        free(buff);
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "%s expected %s.", fmt, typ_str);
 }
 
 static JnObject* native_printf(J_State* state, JnObject* args)
@@ -507,7 +550,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
                 if (JN_IS_CHAR(obj))
                     printf("%c", JN_AS_CHAR(obj));
                 else
-                    printf("%c", JN_AS_INT(obj));
+                    printf("%c", (char)JN_AS_INT(obj));
                 break;
             case 'b':
                 obj = JN_GET_ARGS(args, arg_count);
@@ -617,6 +660,9 @@ static JnObject* native_len(J_State* state, JnObject* args)
         case JN_HASHMAP_TYPE:
             len = (int)(JN_AS_HASHMAP(len_obj)->size);
             return JN_RETURN_INT(state, len);
+        default:
+            return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
+
     }
     return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
 }
@@ -784,12 +830,14 @@ static JnObject* string_ctor(J_State* state, JnObject* args)
     JnObject* obj = JN_GET_ARG(args);
     switch (JN_OBJ_TYPE(obj))
     {
-    case JN_INT_TYPE:
-    case JN_FLOAT_TYPE:
-    case JN_BOOL_TYPE:
-        return JN_RETURN_STRING(state, jn_obj_cstring(obj));
-    case JN_STRING_TYPE:
-        return obj;
+        case JN_INT_TYPE:
+        case JN_FLOAT_TYPE:
+        case JN_BOOL_TYPE:
+            return JN_RETURN_STRING(state, jn_obj_cstring(obj));
+        case JN_STRING_TYPE:
+            return obj;
+        default:
+            return JN_RAISE_EXCPETION(state, SYS_ERROR, "String does not support this type.");
     }
 
     return JN_RAISE_EXCPETION(state, SYS_ERROR, "String does not support this type.");
@@ -925,14 +973,13 @@ JN_API void Jn_load_repl_functions(J_State* state)
 
 JN_API void Jn_load_Cfunctions(J_State* state)
 {
-    bool win, apple, linux = false;
-    #ifdef _WIN32
-    win = true;
-    #elif defined(__APPLE__) && defined(__MACH__)
-    apple = true;
-    #elif defined(__linux__)
-    linux = true;
-    #endif
+#ifdef _WIN32
+    Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_TRUE(state));
+#elif defined(__APPLE__) && defined(__MACH__)
+    Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_TRUE(state));
+#elif defined(__linux__)
+    Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_TRUE(state));
+#endif
     char* filename = state->cxt.source.filename ? (char *)state->cxt.source.filename : "main";
 
     // types
@@ -943,9 +990,6 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT(state, "char", JN_CHAR_TYPE, native_tochar));
 
     // DEFAULT
-    Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_BOOL(state, win));
-    Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_BOOL(state, apple));
-    Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_BOOL(state, linux));
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, filename));
     Jn_register(state, "ARRAY", "Array type.", JN_RETURN_INT(state, JN_ARRAY_TYPE));
     Jn_register(state, "FLOAT", "Float type.", JN_RETURN_INT(state, JN_FLOAT_TYPE));

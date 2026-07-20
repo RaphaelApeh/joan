@@ -592,7 +592,7 @@ void print_JnObject(JnObject* obj)
         case JN_CHAR_TYPE:
             fprintf(stdout, "%c", JN_AS_CHAR(obj)); break;
         case JN_STRING_TYPE:
-            fprintf(stdout, "\"%s\"", (JN_AS_STRING(obj)->len != 0) ? JN_AS_CSTRING(obj) : "None");
+            fprintf(stdout, "\"%.*s\"", (int)JN_AS_STRING(obj)->len, (JN_AS_STRING(obj)->len != 0) ? JN_AS_CSTRING(obj) : "None");
             break;
         case JN_BOOL_TYPE:
             fprintf(stdout, (JN_AS_BOOL(obj)) ? "true": "false"); break;

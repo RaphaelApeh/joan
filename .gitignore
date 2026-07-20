@@ -1,4 +1,5 @@
 .lib/
+bin/
 *.exe
 # cmake dir
 CMakeFiles
@@ -6,3 +7,19 @@ CMakeFiles
 *dll
 *.a
 *.o
+*.so
+*.bin
+# Python stuff
+.venv/
+venv/
+*venv/
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+# CMake stuff
+CMakeCache.txt
+cmake_install.cmake
+build/Makefile

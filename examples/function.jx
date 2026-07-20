@@ -1,9 +1,22 @@
 // functions
-static let x = 1
+assert (false, "Not Yet Implement '~'");
 
-typeof(name) == JN_ARRAY_TYPE
-
-static fn main(x : string, y : float, xy: int=43) {
-    println x
-    return; // return nothing or None
+fn next_multof(value, fac)
+{
+    assert(typeof(value) == INTEGER);
+    assert(typeof(value) == typeof(fac));
+    if (fac == 1) then
+        return value;
+    assert(fac % 2 == 0);
+    return (value + fac - 1) & ~(fac - 1);
 }
+
+// TODO
+// fn main(...args)
+// {
+//     #for arg in args {
+//         printf("Arg = %v", arg);
+//     }
+// }
+
+// main("hello", "World");
