@@ -14,14 +14,14 @@
 #define DEFAULT_LAMBDA_NAME "<lambda>"
 typedef struct JnObject JnObject;
 
-typedef struct InternEntry {
+typedef struct JnInternEntry {
     JnObject* obj;
-    struct InternEntry* next;
-} InternEntry;
+    struct JnInternEntry* next;
+} JnInternEntry;
 
 int64_t range_len(JnRange* r);
 int64_t range_at(JnRange* r, int64_t idx);
-JnObject* jn_intern_obj(JnObject* obj);
+JnObject* jn_intern_obj(J_State* state, JnObject* obj);
 void jn_obj_reassign(JnObject* dest, JnObject* src);
 JnObject* bind_argument(J_State*, JnObject* obj, char** fields, JnObject** values, long count);
 

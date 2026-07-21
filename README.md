@@ -1,5 +1,6 @@
 # Joan
-
+> [Note]
+> Currently in development.
 ```rs
 fn main(){
     printf("Hello, World");

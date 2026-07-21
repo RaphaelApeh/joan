@@ -196,7 +196,7 @@ int vm_run(J_State* state, JnVM* vm)
         {
             case OP_CONSTANT:
                 o = READ_CONST();
-                PUSH(vm, jn_intern_obj(o));
+                PUSH(vm, o);
                 break;
             case OP_TRUE:
             {
@@ -208,7 +208,7 @@ int vm_run(J_State* state, JnVM* vm)
             } break;
             case OP_ADD:
                 a = pop(vm); b = pop(vm);
-                o = jn_intern_obj(eval_binary(state, b, a, EVAL_ADD));
+                o = eval_binary(state, b, a, EVAL_ADD);
                 PUSH(vm, o);
                 break;
             case OP_SUB:
@@ -484,14 +484,14 @@ int vm_run(J_State* state, JnVM* vm)
                 break;
             case OP_AND:
                 b = pop(vm); a = pop(vm);
-                a = jn_intern_obj(eval_binary(state, a, b, EVAL_AND));
+                a = eval_binary(state, a, b, EVAL_AND);
                 if (NULL == a)
                     return die(state,vm, "Invalid binary opration.");
                 PUSH(vm, a);
                 break;
             case OP_OR:
                 b = pop(vm); a = pop(vm);
-                a = jn_intern_obj(eval_binary(state, a, b, EVAL_OR));
+                a = eval_binary(state, a, b, EVAL_OR);
                 if (NULL == a)
                     return die(state,vm, "Invalid binary opration.");
                 PUSH(vm, a);
@@ -555,7 +555,7 @@ int vm_run(J_State* state, JnVM* vm)
                     return vm_error(state, vm, err_obj);
                 }
                 assert(ent->value != NULL);
-                PUSH(vm, jn_intern_obj(ent->value));
+                PUSH(vm, ent->value);
                 break;
             case OP_PRINTLN:
                 JnObject* out = pop(vm);

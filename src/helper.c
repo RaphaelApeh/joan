@@ -95,7 +95,7 @@ static int cmp_match(const void* a, const void* b)
 
 unsigned long djb2_hash(unsigned const char* str)
 {
-    int c;
+    unsigned char c;
     unsigned long hash = 5281;
     while (c = *str++)
         hash = ((hash << 5) + hash) + c;
@@ -112,23 +112,6 @@ unsigned long fnv_hash(const void* key, uint32_t h)
         h *= 16777619;
     }
     return h;
-}
-
-bool isnumber(JnObject* obj)
-{
-    if (NULL == obj) return false;
-    if (obj->type == JN_INT_TYPE || obj->type == JN_FLOAT_TYPE || _JN_CHECK_TYPE(obj, JN_CHAR_TYPE))
-        return true;
-    return false;
-}
-
-double tonumber(JnObject* obj)
-{
-    if (obj->type == JN_INT_TYPE)
-        return (double)obj->int_val;
-    if (obj->type == JN_CHAR_TYPE)
-        return (double)JN_AS_CHAR(obj);
-    return obj->float_val;
 }
 
 void runtime_error(char* msg, ...)

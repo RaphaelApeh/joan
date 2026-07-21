@@ -24,8 +24,6 @@
 #define LONG_HEX_NUM3 0x9e3779b97f4e7c15ULL
 JnObject NoneObj = {0};
 
-static InternEntry* intern_pool[JN_INTER_SIZE];
-
 static inline uint64_t hash_mix(uint64_t x)
 {
     x ^=  x >> 30;
@@ -47,6 +45,7 @@ JnObject* jn_obj_new(J_State* state, JnTypeObject type)
     JnObject* obj = gc_alloc(state, sizeof(JnObject), type);
     assert(obj != NULL);
     return obj;
+    // return jn_intern_obj(state, obj);
 }
 
 JnObject* jn_obj_int(J_State* state, long int_val)
@@ -360,7 +359,7 @@ uint64_t Jn_object_hash(JnObject* obj)
         }
         case JN_NATIVE_TYPE:
         {
-            return hash_mix(djb2_hash(obj->native_fn->fnName));
+            return hash_mix((uint64_t)(uintptr_t)obj->native_fn);
         }
         case JN_OBJECT_TYPE:
             return hash_mix(djb2_hash(obj->type_val.typename));
@@ -369,13 +368,13 @@ uint64_t Jn_object_hash(JnObject* obj)
     }
 }
 
-JnObject* jn_intern_obj(JnObject* obj)
+JnObject* jn_intern_obj(J_State* state, JnObject* obj)
 {
-    if (JN_IS_ARRAY(obj) || JN_IS_HASHMAP(obj) || JN_IS_STRUCT(obj))
+    if (JN_IS_ARRAY(obj) || JN_IS_NATIVE(obj) || JN_IS_HASHMAP(obj) || JN_IS_STRUCT(obj))
         return obj;
     uint64_t hash = Jn_object_hash(obj);
     size_t idx = hash % JN_INTER_SIZE;
-    InternEntry* entry = intern_pool[idx];
+    JnInternEntry* entry = state->intern_pool[idx];
     
     while(entry)
     {
@@ -386,10 +385,10 @@ JnObject* jn_intern_obj(JnObject* obj)
         entry = entry->next;
     }
 
-    InternEntry* new_entry = malloc(sizeof(InternEntry));
+    JnInternEntry* new_entry = malloc(sizeof(JnInternEntry));
     new_entry->obj = obj;
-    new_entry->next = intern_pool[idx];
-    intern_pool[idx] = new_entry;
+    new_entry->next = state->intern_pool[idx];
+    state->intern_pool[idx] = new_entry;
     return obj;
 }
 

@@ -82,9 +82,6 @@ struct J_DArray_Obj {
 unsigned long fnv_hash(const void* key, uint32_t h);
 unsigned long djb2_hash(unsigned const char* str);
 
-bool isnumber(JnObject* obj);
-double tonumber(JnObject* obj);
-
 void print_source_lines(char* source, int line, int column, int context);
 void print_source_line(char* source, int line, int column);
 bool file_exists(const char* filename);

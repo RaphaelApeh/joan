@@ -86,6 +86,7 @@ JN_API void Jn_program_init(J_State* state)
     state->vm = malloc(sizeof(JnVM));
     state->gc = malloc(sizeof(GC));
     memset(&state->error, 0, sizeof(Jn_Error));
+    // memset(state->intern_pool, 0, sizeof(JnInternEntry));
     state->symbols_count = 0;
     state->symbols_capacity = 56;
     state->symbols = malloc(sizeof(char *) * 56);

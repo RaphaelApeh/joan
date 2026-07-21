@@ -36,6 +36,11 @@ void mark_object(JnObject* obj)
                 mark_object(obj->arr->items[i]);
             obj->marked = true;
             break;
+        case JN_TUPLE_TYPE:
+            for (int i = 0; i < obj->tuple->size; ++i)
+                mark_object(obj->tuple->items[i]);
+            obj->marked = true;
+            break;
         case JN_HASHMAP_TYPE:
             for (long i = 0; i < obj->hashmap->size; ++i)
             {
@@ -43,6 +48,8 @@ void mark_object(JnObject* obj)
                 mark_object(obj->hashmap->buckets[i].value);
             }
             obj->marked = true;
+            break;
+        default:
             break;
     }
 }
