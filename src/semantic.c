@@ -52,7 +52,7 @@ void warning(JnSemantic* sem, AST* node, const char* msg, ...)
     fprintf(
         stderr, 
         "%s:%d:%d Warning: %s\n", 
-        node->filename ? node->filename : "<main>", 
+        node->filename, 
         node->line, 
         node->col, 
         msg

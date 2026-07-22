@@ -832,7 +832,6 @@ void compile(AST* node, Chuck* chuck)
         }
         break;
     case AST_TUPLE:
-        printf("Elements count %d\n", node->tuple.count);
         for (size_t i = 0; i < node->tuple.count; ++i)
             compile(node->tuple.elements[i], chuck);
         WRITE_CHUCK(chuck, OP_TUPLE);

@@ -33,7 +33,7 @@ char* read_file(const char* filename)
 void usage(void)
 {
     fprintf(stderr, 
-    "Usage: joan [options] [file]\n"
+    "Usage: joan [file] [..options]\n"
     "Options: \n"
     "-v --version:      output joan version.\n"
     "-f --file:         execute script file.\n"
@@ -44,7 +44,7 @@ void usage(void)
     "Examples: \n"
     "\t$ joan\n"
     "\t$ joan ./main.jt\n"
-    "\t$ joan -c \"printf(\"Hello World\")\"\n"
+    "\t$ joan -c \"printf(\"Hello World\");\"\n"
     "\t$ joan -i ./main.jt\n"
     "\t$ joan --file main.jt.\n"
     );
@@ -85,6 +85,8 @@ int main(int argc, char** argv)
         {
             goto execute;
         }
+        default:
+            usage(); return -1;
     }
     return 0;
     repl:

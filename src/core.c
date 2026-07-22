@@ -154,10 +154,10 @@ JN_API int Jn_exec_program(J_State* state, const char* source)
     if (source == NULL) return -1;
     assert(state->running && "program is not initialize.");
     joan_lexer_t l;
-    if (!l.filename)
-        l.filename = strdup("main"); // repl
     state->parser->arena = state->arena;
     J_init_lexer(&l, (char *)source);
+    if (!l.filename)
+        l.filename = strdup("main"); // repl
     jn_init_parser(state->parser, &l);
     state->vm->global = state->globals;
     state->vm->env = state->globals;

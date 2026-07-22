@@ -237,7 +237,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 #define JN_AS_HM(obj) obj->hashmap
 #define JN_ITER_INIT(state, obj) jn_obj_iter(state, obj)
-#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX ERROR" : (type) ==   ASSERT_ERROR ? "ASSERTION ERROR" : (type) == TYPE_ERROR ? "TYPE ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT IMPLEMENT ERROR" : (type) == MATH_ERROR ? "MATH_ERROR" : "UNDEFINE ERROR")
+#define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX ERROR" : (type) ==   ASSERT_ERROR ? "ASSERTION ERROR" : (type) == TYPE_ERROR ? "TYPE ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT IMPLEMENT ERROR" : (type) == MATH_ERROR ? "MATH ERROR" : "UNDEFINE ERROR")
 // State
 
 struct JN_Args
@@ -416,6 +416,7 @@ typedef struct JnObject{
         JnModule* module;
         JnStruct* struct_obj;
         JnInstance* instance;
+        void* ptr_val;
         struct {
             JN_CMethod fn;
             JnObject* obj;

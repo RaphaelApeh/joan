@@ -3,7 +3,6 @@
 #include <stdlib.h>
 
 #include <Joan.h>
-
 #include "repl.h"
 
 #define OPTPARSE_IMPLEMENTATION
@@ -11,11 +10,7 @@
 
 enum { INCOMPLETE, OK};
 
-typedef struct {
-    int braces, parens, brackets;
-} repl_state;
-
-static repl_state repl_s = {0};
+static struct { int braces, parens, brackets;} repl_s = {0};
 
 #define MAX_REPL_BUFF 1 << 10
 static char buffer[MAX_REPL_BUFF] = {0};

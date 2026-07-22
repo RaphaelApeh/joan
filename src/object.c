@@ -178,7 +178,7 @@ char* jn_obj_cstring(JnObject* obj)
     switch (JN_OBJ_TYPE(obj))
     {
     case JN_INT_TYPE:
-        snprintf(buffer, 256, "%ld", JN_AS_INT(obj));
+        snprintf(buffer, 256, "%lld", JN_AS_INT(obj));
         break;
     case JN_FLOAT_TYPE:
         snprintf(buffer, 256, "%15g", JN_AS_FLOAT(obj));
@@ -290,6 +290,8 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
             _SET_TYPE(JN_INSTANCE_TYPE);
             dest->instance = src->instance;
             break;
+        default:
+            assert(false && "TODO");
     }
     #undef _SET_TYPE
 }
@@ -587,7 +589,7 @@ void print_JnObject(JnObject* obj)
     switch (JN_OBJ_TYPE(obj))
     {
         case JN_INT_TYPE:
-            fprintf(stdout, "%ld", JN_AS_INT(obj)); break;
+            fprintf(stdout, "%lld", JN_AS_INT(obj)); break;
         case JN_CHAR_TYPE:
             fprintf(stdout, "%c", JN_AS_CHAR(obj)); break;
         case JN_STRING_TYPE:

@@ -154,16 +154,9 @@ static JnObject* eval_int(J_State* state, JnObject* lhs, JnObject* rhs, int op)
                 return eval_bin_int(lhs, rhs, -);
             return eval_bin(lhs, rhs, -);
         case EVAL_DIV:
-            if (JN_IS_INT(lhs))
-            {
-                if (JN_IS_INT(rhs))
-                {
-                    if (JN_IS_INT(rhs) == 0)
-                    return JN_RAISE_EXCPETION(state, MATH_ERROR, "Division by zero.");
-                }
-                return eval_bin_int(lhs, rhs, /);
-            }
-            return eval_bin(lhs, rhs, /);
+            if (JN_IS_INT(rhs) && JN_AS_INT(rhs) == 0)
+                return JN_RAISE_EXCPETION(state, MATH_ERROR, "Division by zero.");
+            return eval_bin_int(lhs, rhs, /);
         case EVAL_LT:
             return eval_bin_bool(lhs, rhs, <);
         case EVAL_LTE:

@@ -535,7 +535,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
                 obj = JN_GET_ARGS(args, arg_count);
                 if (!JN_IS_INT(obj))
                     return JN_RAISE_EXCPETION(state, TYPE_ERROR, "printf() %%d expect type int.");
-                printf("%ld", JN_AS_INT(obj));
+                printf("%lld", JN_AS_INT(obj));
                 break;
             case 'f':
                 obj = JN_GET_ARGS(args, arg_count);
@@ -779,7 +779,7 @@ static JnObject* native_isinstance(J_State* state, JnObject* arg)
     // Example:
     // isinstance("Hello", string) // true
     // isinstance("World", bool) // false
-    
+    return NULL;
 }
 
 static JnObject* native_defined(J_State* state, JnObject* args)

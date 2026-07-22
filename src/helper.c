@@ -97,7 +97,7 @@ unsigned long djb2_hash(unsigned const char* str)
 {
     unsigned char c;
     unsigned long hash = 5281;
-    while (c = *str++)
+    while ((c = *str++))
         hash = ((hash << 5) + hash) + c;
     return hash;
 }
