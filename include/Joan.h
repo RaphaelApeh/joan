@@ -140,6 +140,11 @@ typedef struct Jn_environ Jn_environ;
 #define JN_OBJECT_CSTRING(obj) Jn_object_cstring(obj)
 #define JN_RETURN_STRUCT(state, name, fields) jn_obj_struct(state, (name), fields)
 #define JN_RETURN_INSTANCE(obj, fields) jn_obj_instance((obj), (fields))
+#define JN_NEW_STRING(state, str) JN_RETURN_STRING(state, str)
+#define JN_NEW_INT(state, i) JN_RETURN_INT(state, i)
+#define JN_NEW_CHAR(state, c) JN_RETURN_CHAR(state, c)
+#define JN_NEW_FLOAT(state, f) JN_RETURN_FLOAT(state, f)
+#define JN_NEW_BOOL(state, b) JN_RETURN_BOOL(state, b)
 #define JN_OBJECT_RANGE(state, start, stop, step) jn_obj_range(state, start, stop, step)
 #define JN_OBJECT_VALUE(obj) // TODO 
 #define JN_AS_CHAR(obj) (obj)->j_char
