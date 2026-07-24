@@ -1135,6 +1135,12 @@ AST* parse_value(joan_parser_t* p)
             ast->unary.op = TOKEN_MINUS;
             ast->unary.right = parse_value(p);
             return ast;
+        case TOKEN_TILDE:
+            advance_parser_c(p);
+            ast = ast_create(p, AST_UNARY);
+            ast->unary.op = TOKEN_TILDE;
+            ast->unary.right = parse_value(p);
+            return ast;
         case TOKEN_NOT:
             advance_parser_c(p);
             ast = ast_create(p, AST_UNARY);

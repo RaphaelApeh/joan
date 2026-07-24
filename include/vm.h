@@ -58,7 +58,7 @@ typedef struct JnVM{
     CallFrame frames[_FRAME_MAX];
     int frame_count;
 
-    //GC gc;
+    //Jn_GC gc;
 } JnVM;
 
 typedef struct {

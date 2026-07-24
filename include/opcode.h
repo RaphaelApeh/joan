@@ -38,6 +38,8 @@ typedef enum{
     
     OP_NEGATE,
 
+    OP_TILDE,
+
     OP_POP,
 
     OP_DUP,

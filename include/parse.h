@@ -5,7 +5,7 @@
 #include "token.h"
 #include "env.h"
 
-typedef struct Arena Arena;
+typedef struct Jn_Arena Jn_Arena;
 typedef struct AST AST;
 typedef struct joan_lexer_t joan_lexer_t;
 
@@ -42,7 +42,7 @@ typedef enum{
 typedef struct joan_parser_t{
     J_State* state;
     joan_lexer_t* l;
-    Arena* arena;
+    Jn_Arena* arena;
     joan_token_t prev;
     joan_token_t curr;
     joan_token_t next;

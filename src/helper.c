@@ -124,7 +124,7 @@ void runtime_error(char* msg, ...)
 } 
 
 
-case_t* init_case(Arena* arena)
+case_t* init_case(Jn_Arena* arena)
 {
     case_t* caseObj = arena_alloc(arena, sizeof(case_t));
     caseObj->count = 0;

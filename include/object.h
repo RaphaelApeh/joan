@@ -19,6 +19,8 @@ typedef struct JnInternEntry {
     struct JnInternEntry* next;
 } JnInternEntry;
 
+JnObject* jn_obj_function(J_State*, AST* block, Jn_environ* env, char** params, int arity, char* name);
+JnObject* jn_obj_lambda(J_State*, AST* expr, char** params, int arity, Jn_environ* env);
 int64_t range_len(JnRange* r);
 int64_t range_at(JnRange* r, int64_t idx);
 JnObject* jn_intern_obj(J_State* state, JnObject* obj);

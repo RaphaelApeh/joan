@@ -6,7 +6,7 @@
 
 void* gc_alloc(J_State* state, size_t size, JnTypeObject type)
 {
-    GC* gc = state->gc;
+    Jn_GC* gc = state->gc;
     JnObject* obj = malloc(size);
     assert(obj != NULL);
     memset(obj, 0, size);

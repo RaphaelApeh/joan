@@ -29,27 +29,27 @@ SOFTWARE.
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct ArenaBlock ArenaBlock;
+typedef struct Jn_ArenaBlock Jn_ArenaBlock;
 
-typedef struct ArenaBlock
+typedef struct Jn_ArenaBlock
 {
     uint8_t* mem;
     size_t used;
     size_t size;
-    ArenaBlock* next;
-} ArenaBlock;
+    Jn_ArenaBlock* next;
+} Jn_ArenaBlock;
 
-typedef struct Arena
+typedef struct Jn_Arena
 {
-    ArenaBlock* head;
+    Jn_ArenaBlock* head;
     void* last_ptr;
     size_t last_size;
-} Arena;
+} Jn_Arena;
 
-void arena_init(Arena* arena);
-void* arena_alloc(Arena* arena, size_t size);
+void arena_init(Jn_Arena* arena);
+void* arena_alloc(Jn_Arena* arena, size_t size);
 // TODO
-void* arena_realloc(Arena* arena, void* ptr, size_t old_size, size_t new_size);
-void arena_free(Arena* arena);
+void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size);
+void arena_free(Jn_Arena* arena);
 
 #endif

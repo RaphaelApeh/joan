@@ -87,7 +87,7 @@ void print_source_line(char* source, int line, int column);
 bool file_exists(const char* filename);
 void runtime_error(char* msg, ...);
 void call_add_pos(AST* call, AST* arg);
-case_t* init_case(Arena* arena);
+case_t* init_case(Jn_Arena* arena);
 void push_case(case_t* caseObj, AST* sub, AST* block);
 
 elseif* elseif_init(void);

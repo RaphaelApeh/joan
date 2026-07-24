@@ -84,7 +84,7 @@ void set_symbols(J_State* state, const char* str)
 JN_API void Jn_program_init(J_State* state)
 {
     state->vm = malloc(sizeof(JnVM));
-    state->gc = malloc(sizeof(GC));
+    state->gc = malloc(sizeof(Jn_GC));
     memset(&state->error, 0, sizeof(Jn_Error));
     // memset(state->intern_pool, 0, sizeof(JnInternEntry));
     state->symbols_count = 0;
@@ -92,7 +92,7 @@ JN_API void Jn_program_init(J_State* state)
     state->symbols = malloc(sizeof(char *) * 56);
     assert(state->vm != NULL);
     assert(state->gc != NULL);
-    state->arena = malloc(sizeof(Arena));
+    state->arena = malloc(sizeof(Jn_Arena));
     assert(state->arena);
     arena_init(state->arena);
     state->vm->chuck = malloc(sizeof(struct Chuck));
@@ -107,7 +107,7 @@ JN_API void Jn_program_init(J_State* state)
     state->gc->objects = NULL;
     assert(state->running && "Something went wrong");
     assert(state->globals && "Global not set...");
-    assert(state->arena && "Arena not set...");
+    assert(state->arena && "Jn_Arena not set...");
     state->vm->chuck->env = state->globals;
     state->vm->global = state->globals;
     state->parser->state = state;
@@ -162,7 +162,7 @@ JN_API int Jn_exec_program(J_State* state, const char* source)
     state->vm->global = state->globals;
     state->vm->env = state->globals;
     state->vm->chuck->env = state->vm->env;
-    assert(state->parser->arena && "Arena not set ...");
+    assert(state->parser->arena && "Jn_Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");
     int exit_code = Jn_compile(state);

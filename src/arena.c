@@ -31,9 +31,9 @@ SOFTWARE.
 
 #define ARENA_BSIZE 1024
 
-static ArenaBlock* arena_block_alloc(size_t size)
+static Jn_ArenaBlock* arena_block_alloc(size_t size)
 {
-    ArenaBlock* block = malloc(sizeof(ArenaBlock));
+    Jn_ArenaBlock* block = malloc(sizeof(Jn_ArenaBlock));
     block->used = 0;
     block->size = size;
     block->mem = malloc(size);
@@ -41,21 +41,21 @@ static ArenaBlock* arena_block_alloc(size_t size)
     return block;
 }
 
-void arena_init(Arena* arena)
+void arena_init(Jn_Arena* arena)
 {
     arena->head = arena_block_alloc(ARENA_BSIZE);
     return;
 }
 
-void* arena_alloc(Arena* arena, size_t size)
+void* arena_alloc(Jn_Arena* arena, size_t size)
 {
     assert(arena != NULL);
     size = (size + 7) & ~7;
-    ArenaBlock* block = arena->head;
+    Jn_ArenaBlock* block = arena->head;
     if (block->used + size > block->size)
     {
         size_t new_s = size > ARENA_BSIZE ? size : ARENA_BSIZE;
-        ArenaBlock* new_b = arena_block_alloc(new_s);
+        Jn_ArenaBlock* new_b = arena_block_alloc(new_s);
         new_b->next = block;
         arena->head = new_b;
         block = new_b;
@@ -68,7 +68,7 @@ void* arena_alloc(Arena* arena, size_t size)
 }
 
 // TODO: arena_realloc fix bug
-void* arena_realloc(Arena* arena, void* ptr, size_t old_size, size_t new_size)
+void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size)
 {
     assert(old_size < new_size);
     old_size = (old_size + 7) & -7;
@@ -78,7 +78,7 @@ void* arena_realloc(Arena* arena, void* ptr, size_t old_size, size_t new_size)
     // TODO
     if (ptr == arena->last_ptr)
     {
-        ArenaBlock* block = arena->head;
+        Jn_ArenaBlock* block = arena->head;
         size_t start = (char *)ptr - (char *)block->mem;
         if (start + new_size <= block->size)
         {
@@ -92,13 +92,13 @@ void* arena_realloc(Arena* arena, void* ptr, size_t old_size, size_t new_size)
     memcpy(new_ptr, ptr, copy);
     return ptr;
 }
-void arena_free(Arena* arena)
+void arena_free(Jn_Arena* arena)
 {
     assert(arena != NULL);
-    ArenaBlock* block = arena->head;
+    Jn_ArenaBlock* block = arena->head;
     while (block)
     {
-        ArenaBlock* next = block->next;
+        Jn_ArenaBlock* next = block->next;
         free(block->mem);
         free(block);
         block = next;

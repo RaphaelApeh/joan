@@ -181,6 +181,8 @@ int vm_run(J_State* state, JnVM* vm)
     #define READ_BYTE() (*vm->ip++)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
     #define READ_IDENT() (vm->chuck->idents[READ_BYTE()])
+    #define POP() pop(vm)
+    #define DIE(msg, ...) die(state, vm, msg, ##__VA_ARGS__)
     int count;
     JnObject* tmp;
     JnObject* o = NULL;
@@ -500,6 +502,14 @@ int vm_run(J_State* state, JnVM* vm)
                 o = pop(vm);
                 PUSH(vm, jn_obj_bool(state, !is_truthy(o)));
                 break;
+            case OP_TILDE:
+            {
+                o = POP();
+                if (!JN_IS_INT(o))
+                    return DIE("Expected an integer value");
+                JN_AS_INT(o) = ~JN_AS_INT(o);
+                PUSH(vm, o);
+            } break;
             case OP_MEMBER:
                 char* field = READ_IDENT(); o = pop(vm);
                 Jn_environ_E* entt = NULL;
@@ -749,7 +759,10 @@ int vm_run(J_State* state, JnVM* vm)
                         arg = JN_OBJECT_ARG(state, args, NULL, len);
                         a = JN_CALL_NATIVE(state, o, arg);
                         if (a == NULL)
+                        {
+                            PUSH(vm, JN_RETURN_NONE);
                             break;
+                        }
                         PUSH(vm, a);
                         break;
                     }
@@ -909,6 +922,9 @@ void compile(AST* node, Chuck* chuck)
                 break;
             case TOKEN_NOT:
                 write_chuck_loc(chuck, OP_NOT, line, column);
+                break;
+            case TOKEN_TILDE:
+                WRITE_CHUCK(chuck, OP_TILDE);
                 break;
             default:
                 write_chuck_loc(chuck, OP_ERROR, line, column);

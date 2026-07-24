@@ -365,6 +365,25 @@ uint64_t Jn_object_hash(JnObject* obj)
         }
         case JN_OBJECT_TYPE:
             return hash_mix(djb2_hash(obj->type_val.typename));
+        case JN_ARRAY_TYPE:
+        {
+            h = hash_mix(obj->arr->size);
+            for (size_t i = 0; i < obj->arr->size; ++i)
+            {
+                h = hash_combine(h, Jn_object_hash(obj->arr->items[i]));
+            }
+            return h;
+        } break;
+        case JN_HASHMAP_TYPE:
+        {
+            h = hash_mix(obj->hashmap->size);
+            for (size_t i = 0; i < obj->hashmap->size; ++i)
+            {
+                h = hash_combine(h, Jn_object_hash(obj->hashmap->buckets[i].key));
+                h = hash_combine(h, Jn_object_hash(obj->hashmap->buckets[i].value));
+            }
+            return h;
+        }
         default:
             return hash_mix((uintptr_t)obj);
     }

@@ -37,7 +37,7 @@ extern "C" {
 #include  <stdio.h>
 #endif
 
-#ifndef _GCC_WRAP_STDINT_H
+#ifndef _Jn_GCC_WRAP_STDINT_H
 #include <stdint.h>
 #endif
 
@@ -90,11 +90,10 @@ typedef enum{
 } JnTypeObject;
 
 typedef struct J_State Joan;
-typedef struct AST AST;
-typedef struct GC GC;
+typedef struct Jn_GC Jn_GC;
 typedef struct JnInternEntry JnInternEntry;
 typedef struct joan_parser_t joan_parser_t;
-typedef struct Arena Arena;
+typedef struct Jn_Arena Jn_Arena;
 typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
 typedef struct J_State J_State;
@@ -272,8 +271,8 @@ typedef struct {
 typedef struct J_State
 {
     JnVM* vm;
-    GC* gc;
-    Arena* arena;
+    Jn_GC* gc;
+    Jn_Arena* arena;
     joan_parser_t* parser;
     Jn_Error error;
     JnInternEntry* intern_pool[JN_INTER_SIZE];
@@ -506,8 +505,6 @@ JnObject* jn_obj_range(J_State*, int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(J_State*, double o_float);
 JnObject* jn_obj_iter(J_State*, JnObject* iter);
 JnObject* jn_obj_type(J_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
-JnObject* jn_obj_function(J_State*, AST* block, Jn_environ* env, char** params, int arity, char* name);
-JnObject* jn_obj_lambda(J_State*, AST* expr, char** params, int arity, Jn_environ* env);
 JnObject* jn_obj_module(J_State*, char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(J_State*, char* name, char** fields);
 JnObject* jn_obj_arg(J_State*, JnObject** args, char** arg_names, size_t count);
