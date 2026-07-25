@@ -19,6 +19,7 @@ build/
 dist/
 wheels/
 *.egg-info
+template/
 # CMake stuff
 CMakeCache.txt
 cmake_install.cmake
