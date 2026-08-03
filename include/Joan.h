@@ -45,6 +45,11 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
+#ifdef _WIN32
+#define JN_WINDOWS
+#include <windows.h>
+#endif
+
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
 #define JOAN_VERSION_PATCH 4
@@ -510,6 +515,7 @@ JnObject* jn_obj_struct(J_State*, char* name, char** fields);
 JnObject* jn_obj_arg(J_State*, JnObject** args, char** arg_names, size_t count);
 JnObject* jn_obj_method(J_State*, JnObject* obj, JN_CMethod method);
 JnObject* jn_obj_instance(J_State*, JnObject* obj, Jn_environ* fields);
+bool jn_obj_equals(JnObject* obj, JnObject* other);
 uint64_t Jn_object_hash(JnObject* obj);
 char* jn_obj_to_string(JnObject* obj);
 char* jn_obj_cstring(JnObject* obj);
@@ -517,6 +523,12 @@ JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(J_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
+// Array functions
+void jn_arr_pop(JnObject* arr_obj, JnObject** value);
+void jn_arr_insert(JnObject* arr_obj, JnObject* value);
+void jn_arr_clear(JnObject* arr_obj);
+JnObject* jn_arr_remove(JnObject* arr_obj, int index);
+JnObject* jn_arr_get(JnObject* arr_obj, int index);
 
 //Hashmap Functions
 Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);

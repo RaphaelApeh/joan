@@ -413,6 +413,14 @@ JnObject* jn_intern_obj(J_State* state, JnObject* obj)
     return obj;
 }
 
+bool jn_obj_equals(JnObject* obj, JnObject* other)
+{
+    assert(obj && other);
+    return (
+        obj->type == other->type && 
+        Jn_object_hash(obj) == Jn_object_hash(other)
+    );
+}
 
 JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_environ* env)
 {
