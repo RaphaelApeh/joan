@@ -53,13 +53,42 @@ J_Source read_source_file(const char* filename)
 
 
 // Main allocation function
-void* Jn_alloc(size_t size)
+JN_API void* Jn_alloc(size_t size)
 {
     void* m = malloc(size);
     assert(m != NULL);
     memset(m, 0, size);
     return m;
 }
+
+JN_API void* Jn_realloc(void* ptr, size_t size)
+{
+    if (NULL != ptr && size == 0)
+    {
+        free(ptr);
+        return NULL;
+    }
+    assert(NULL != ptr);
+    void* re_ptr = realloc(ptr, size);
+    assert(re_ptr != NULL);
+    return re_ptr;
+}
+
+JN_API void* Jn_alloc_dup(void* ptr, size_t size)
+{
+    void* new_ptr = malloc(size);
+    memmove(new_ptr, ptr, size);
+    return new_ptr;
+}
+
+JN_API void Jn_free(void* ptr)
+{
+    if (NULL == ptr) return;
+    free(ptr);
+}
+
+JN_API void Jn_mem_zero(void* ptr, size_t size) { return memset(ptr, 0, size); }
+
 
 JN_API J_Context* Jn_get_context(J_State* state) { return &state->cxt; }
 

@@ -699,3 +699,13 @@ bool is_truthy(JnObject* obj)
         return false;
     }
 }
+
+void jn_arr_pop(JnObject* arr_obj, JnObject** value)
+{
+    assert(arr_obj != NULL);
+}
+
+void jn_arr_insert(JnObject* arr_obj, JnObject* value);
+void jn_arr_clear(JnObject* arr_obj);
+JnObject* jn_arr_remove(JnObject* arr_obj, int index);
+JnObject* jn_arr_get(JnObject* arr_obj, int index);

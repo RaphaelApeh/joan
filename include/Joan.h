@@ -117,6 +117,11 @@ typedef struct Jn_environ Jn_environ;
 // max JnObject object store
 #define JN_MAX_OBJECT 0xff << 10
 
+#define JN_LOG(msg, ...) do {                       \
+    fprintf(stderr, "MESSAGE: ");                   \
+    fprintf(stderr, msg, __VA_ARG__);                \
+} while (false)
+
 #define JN_ARGS_COUNT(obj) ((obj)->arg.count)
 #define JN_GET_ARG(obj) ((obj)->arg.args[0])
 #define JN_ARG_EXPECT_TYPE(obj, t) do { \
@@ -450,6 +455,10 @@ JN_API void Jn_run_iterative(J_State* state, const char* filename);
 
 // Main Allocator
 JN_API void* Jn_alloc(size_t size);
+JN_API void* Jn_realloc(void* ptr, size_t size);
+JN_API void* Jn_alloc_dup(void* ptr, size_t size);
+JN_API void Jn_free(void* ptr);
+JN_API void Jn_mem_zero(void* ptr, size_t size);
 
 // Object Argument helper
 JN_API JnObject* Jn_make_args(J_State* state, size_t capacity);
