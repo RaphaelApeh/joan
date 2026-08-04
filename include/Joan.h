@@ -162,6 +162,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_INT(obj) (obj)->int_val
 #define JN_AS_FLOAT(obj) (obj)->float_val
 #define JN_AS_ARRAY(obj) (obj)->arr
+#define JN_AS_TUPLE(obj) (obj)->tuple
 #define JN_AS_ITER(obj) (obj)->iter
 #define JN_AS_BOOL(obj) (obj)->bool_val
 #define JN_AS_RANGE(obj) (&((obj)->range))
@@ -242,6 +243,20 @@ typedef struct Jn_environ Jn_environ;
     (arr)->items[(i)] = (obj);                                 \
     (arr)->size++;                                         \
 } while(false)
+
+#define Jn__iter_foreach(var, iter)     \
+    for (JnObject** __iter = iter->items, ** __end = __iter + iter->size,, * ##var = *__iter; \
+        __iter < __end && ((##var = *__iter), 1); ++__iter)
+
+// WARNING: Only works with Arrays and Tuples
+#define Jn_foreach(var, obj)    \
+    Jn__iter_foreach(##var, JN_IS_ARRAY(obj) ? JN_AS_ARRAY(obj) : JN_AS_TUPLE(obj))
+
+#define Jn_append(obj, ...)                                 \
+    jn_arr_append_many(obj, ((JnObject* []){__VA_ARGS__}),  \
+        (sizeof(JnObject* []){__VA_ARGS__}) / (sizeof(JnObject *)))
+
+#define Jn_append_none(obj) jn_arr_append(obj, JN_RETURN_NONE)
 
 #define JN_GET_ARRAY(arr, idx) jn_obj_array_get(arr, idx)
 #define JN_AS_HM(obj) obj->hashmap
@@ -408,7 +423,7 @@ typedef long long JnIntObject;
 typedef double JnFloatObject;
 typedef bool JnBoolObject;
 typedef char JnCharObject;
-
+typedef  JnArrayObject JnTupleObject;
 // Object
 
 typedef struct JnObject{
@@ -416,7 +431,7 @@ typedef struct JnObject{
     {
         JnStringObject* str;
         JnArrayObject* arr;
-        JnArrayObject* tuple;
+        JnTupleObject* tuple;
         JnFunctionObject* fn;
         JnIterObject* iter;
         Jn_Hashmap* hashmap;
@@ -528,16 +543,20 @@ bool jn_obj_equals(JnObject* obj, JnObject* other);
 uint64_t Jn_object_hash(JnObject* obj);
 char* jn_obj_to_string(JnObject* obj);
 char* jn_obj_cstring(JnObject* obj);
+int jn_obj_count(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(J_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool is_truthy(JnObject* obj);
 // Array functions
 void jn_arr_pop(JnObject* arr_obj, JnObject** value);
-void jn_arr_insert(JnObject* arr_obj, JnObject* value);
+void jn_arr_copy(JnObject* dest, JnObject* src);
+void jn_arr_append(JnObject* arr_obj, JnObject* value);
 void jn_arr_clear(JnObject* arr_obj);
 JnObject* jn_arr_remove(JnObject* arr_obj, int index);
 JnObject* jn_arr_get(JnObject* arr_obj, int index);
+void jn_arr_append_many(JnObject* arr_obj, JnObject** argv, size_t argc);
+
 
 //Hashmap Functions
 Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);

@@ -700,12 +700,91 @@ bool is_truthy(JnObject* obj)
     }
 }
 
+int jn_obj_count(JnObject* obj)
+{
+    if (!JN_IS_ITERABLE(obj)) return -1;
+    switch (JN_OBJ_TYPE(obj))
+    {
+    case JN_ARRAY_TYPE:
+        return (int)JN_AS_ARRAY(obj)->size;
+    case JN_HASHMAP_TYPE:
+        return (int)JN_AS_HASHMAP(obj)->size;
+    case JN_STRING_TYPE:
+        return (int)JN_AS_STRING(obj)->len;
+    case JN_RANGE_TYPE:
+        return (int)range_len(JN_AS_RANGE(obj));
+    case JN_TUPLE_TYPE:
+        return (int)JN_AS_TUPLE(obj)->size;
+    default:
+        return -1;
+    }
+}
 void jn_arr_pop(JnObject* arr_obj, JnObject** value)
 {
     assert(arr_obj != NULL);
+    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    memcpy(*value, iter->items[iter->size - 1], sizeof(JnObject));
+    Jn_mem_zero(iter->items[iter->size - 1], sizeof(JnObject));
+    iter->size--;
 }
 
-void jn_arr_insert(JnObject* arr_obj, JnObject* value);
-void jn_arr_clear(JnObject* arr_obj);
-JnObject* jn_arr_remove(JnObject* arr_obj, int index);
-JnObject* jn_arr_get(JnObject* arr_obj, int index);
+void jn_arr_copy(JnObject* dest, JnObject* src)
+{
+    JnArrayObject* iter = JN_IS_ARRAY(dest) ? JN_AS_ARRAY(dest) : JN_AS_TUPLE(dest);
+    JnArrayObject* src_iter = JN_IS_ARRAY(src) ? JN_AS_ARRAY(src) : JN_AS_TUPLE(src);
+    jn_arr_grow(src, iter->size);
+    memcpy(iter->items, src_iter->items, src_iter->size * sizeof(JnObject *));
+}
+
+int jn_arr_grow(JnObject* arr_obj, size_t new_size)
+{
+    if (NULL == arr_obj) return -1;
+    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    if (iter->size + new_size >= iter->capacity)
+    {
+        while (iter->size + new_size > iter->capacity)
+            iter->capacity *= 2;
+        iter->items = Jn_realloc(iter->items, sizeof(JnObject *) * iter->capacity);
+        return 1;
+    }
+    return 0;
+}
+
+void jn_arr_append(JnObject* arr_obj, JnObject* value)
+{
+    if (jn_arr_grow(arr_obj, 0) == -1) return;
+    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    iter->items[iter->size++] = value;
+    memmove(iter->items + iter->size, value, sizeof(JnObject));
+    iter->size++;
+}
+
+void jn_arr_append_many(JnObject* arr_obj, JnObject** argv, size_t argc)
+{
+    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    if (jn_arr_grow(arr_obj, argc) == -1) return;
+    memmove(iter->items + iter->size, argv, sizeof(JnObject *) * argc);
+    iter->size += argc;
+}
+
+void jn_arr_clear(JnObject* arr_obj)
+{
+    Jn_mem_zero(JN_AS_ARRAY(arr_obj)->items, sizeof(JnObject *) * jn_obj_count(arr_obj));
+    JN_AS_ARRAY(arr_obj)->size = 0;
+}
+
+JnObject* jn_arr_remove(JnObject* arr_obj, int index)
+{
+
+}
+
+JnObject* jn_arr_get(JnObject* arr_obj, int index)
+{
+    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    if (index < 0)
+    {
+        index += iter->size;
+    }
+    assert(index < iter->size);
+    return iter->items[index];
+}
