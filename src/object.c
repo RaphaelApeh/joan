@@ -540,6 +540,8 @@ JnObject* jn_obj_array_get(JnArrayObject* arr, int idx)
     return arr->items[idx];
 }
 
+JnObject* jn_obj_copy(JnObject* src){ return Jn_alloc_dup(src, sizeof(JnObject));}
+
 static void print_array(JnObject* obj)
 {
     assert(obj != NULL);

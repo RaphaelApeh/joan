@@ -527,6 +527,7 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
 JnObject* jn_obj_new(J_State*, JnTypeObject type);
 JnObject* jn_obj_int(J_State*, long o_int);
 JnObject* jn_obj_string(J_State*, char* str);
+JnObject* jn_obj_copy(JnObject* src);
 JnObject* jn_obj_char(J_State*, char c);
 JnObject* jn_obj_none(void);
 JnObject* jn_obj_bool(J_State*, bool o_bool);
