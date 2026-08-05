@@ -85,17 +85,17 @@ JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
     switch (op)
     {
     case EVAL_IS:
-        if (!is_truthy(lhs) && rhs->type == JN_NONE_TYPE)
+        if (!jn_obj_truthy(lhs) && rhs->type == JN_NONE_TYPE)
             is_true = true;
         else if (lhs == rhs)
             is_true = true;
         return JN_RETURN_BOOL(state, is_true);
     case EVAL_AND:
-        if (is_truthy(lhs) && is_truthy(rhs))
+        if (jn_obj_truthy(lhs) && jn_obj_truthy(rhs))
             is_true = true;
         return JN_RETURN_BOOL(state, is_true);
     case EVAL_OR:
-        if (is_truthy(lhs) || is_truthy(rhs))
+        if (jn_obj_truthy(lhs) || jn_obj_truthy(rhs))
             is_true = true;
         return JN_RETURN_BOOL(state, is_true);
     default:

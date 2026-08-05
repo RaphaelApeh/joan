@@ -558,7 +558,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
                 break;
             case 'v':
                 obj = JN_GET_ARGS(args, arg_count);
-                print_JnObject(obj);
+                jn_obj_print(obj);
                 break;
             case 'p':
                 obj = JN_GET_ARGS(args, arg_count);
@@ -697,7 +697,7 @@ static JnObject* native_put(J_State* state, JnObject* args)
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "put() require only one argument but got %d.", count);
-    print_JnObject(JN_GET_ARG(args));
+    jn_obj_print(JN_GET_ARG(args));
     return JN_RETURN_NONE;
 }
 
@@ -973,11 +973,11 @@ JN_API void Jn_load_repl_functions(J_State* state)
 
 JN_API void Jn_load_Cfunctions(J_State* state)
 {
-#ifdef _WIN32
+#ifdef JN_WINDOWS
     Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_TRUE(state));
-#elif defined(__APPLE__) && defined(__MACH__)
+#elif JN_APPLE
     Jn_register(state, "__APPLE__", "Check if it is a Mac system.", JN_RETURN_TRUE(state));
-#elif defined(__linux__)
+#elif JN_LINUX
     Jn_register(state, "__LINUX__", "Check if it is a Linux system.", JN_RETURN_TRUE(state));
 #endif
     char* filename = state->cxt.source.filename ? (char *)state->cxt.source.filename : "main";

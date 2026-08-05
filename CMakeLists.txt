@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # file(GLOB SOURCES "src/*.c")
 
 
-add_compile_options(-O2 -Wall -Wno-unused-function -Wno-unused-variable)
+add_compile_options(-O2 -Wall -Wno-unused-function -Wno-pointer-sign -Wno-unused-variable)
 # find_package(OpenGL REQUIRED)
 
 add_executable(joan ${SOURCES})

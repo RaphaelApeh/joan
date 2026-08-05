@@ -24,7 +24,7 @@
 #define LONG_HEX_NUM3 0x9e3779b97f4e7c15ULL
 JnObject NoneObj = {0};
 
-static inline uint64_t hash_mix(uint64_t x)
+JN_INLINE uint64_t hash_mix(uint64_t x)
 {
     x ^=  x >> 30;
     x *= LONG_HEX_NUM;
@@ -34,7 +34,7 @@ static inline uint64_t hash_mix(uint64_t x)
     return x;
 }
 
-static inline uint64_t hash_combine(uint64_t a, uint64_t b)
+JN_INLINE uint64_t hash_combine(uint64_t a, uint64_t b)
 {
     return hash_mix(a ^ (b + LONG_HEX_NUM3 + 
             (a << 6) + (a >> 2)));
@@ -45,7 +45,7 @@ JnObject* jn_obj_new(J_State* state, JnTypeObject type)
     JnObject* obj = gc_alloc(state, sizeof(JnObject), type);
     assert(obj != NULL);
     return obj;
-    // return jn_intern_obj(state, obj);
+    // return jn_obj_intern(state, obj);
 }
 
 JnObject* jn_obj_int(J_State* state, long int_val)
@@ -389,7 +389,7 @@ uint64_t Jn_object_hash(JnObject* obj)
     }
 }
 
-JnObject* jn_intern_obj(J_State* state, JnObject* obj)
+JnObject* jn_obj_intern(J_State* state, JnObject* obj)
 {
     if (JN_IS_ARRAY(obj) || JN_IS_NATIVE(obj) || JN_IS_HASHMAP(obj) || JN_IS_STRUCT(obj))
         return obj;
@@ -548,7 +548,7 @@ static void print_array(JnObject* obj)
     fprintf(stderr, "[");
     for (size_t i = 0; i < obj->arr->size; i++)
     {
-        print_JnObject(obj->arr->items[i]);
+        jn_obj_print(obj->arr->items[i]);
         if (i < obj->arr->size - 1)
             fprintf(stderr, ", ");
     }
@@ -562,7 +562,7 @@ static void print_tuple(JnObject* obj)
     for (size_t i = 0; i < obj->tuple->size; ++i)
     {
         if (i > 0) printf(", ");
-        print_JnObject(obj->tuple->items[i]);
+        jn_obj_print(obj->tuple->items[i]);
     }
     if (obj->tuple->size == 1)
         putchar(',');
@@ -575,9 +575,9 @@ static void print_hashmap(JnObject* obj)
     for (int i = 0; i < obj->hashmap->size; ++i)
     {
         Jn_HashEntry* hm = &obj->hashmap->buckets[i];
-        print_JnObject(hm->key);
+        jn_obj_print(hm->key);
         printf(": ");
-        print_JnObject(hm->value);
+        jn_obj_print(hm->value);
         if (i < obj->hashmap->size - 1)
             fprintf(stdout, ", ");
     }
@@ -612,7 +612,7 @@ char* Jn_object_cstring(JnObject* obj)
         return strdup(buffer);
 }
 
-void print_JnObject(JnObject* obj)
+void jn_obj_print(JnObject* obj)
 {
     if (NULL == obj) return;
     switch (JN_OBJ_TYPE(obj))
@@ -654,13 +654,13 @@ void print_JnObject(JnObject* obj)
             break;
         case JN_ITER_TYPE:
             fprintf(stdout, "<iter '");
-            print_JnObject(obj->iter->obj);
+            jn_obj_print(obj->iter->obj);
             fprintf(stdout, "' >");
             break;
         case JN_OBJECT_TYPE:
             fprintf(stdout, "<%s>", obj->type_val.typename); break;
         case JN_METHOD_TYPE:
-            fprintf(stdout, "<method function for "); print_JnObject(obj->method.obj); fprintf(stdout, " at %p>", obj->method.fn);
+            fprintf(stdout, "<method function for "); jn_obj_print(obj->method.obj); fprintf(stdout, " at %p>", obj->method.fn);
             break;
         case JN_STRUCT_TYPE:
             fprintf(stdout, "struct{%s}", (obj->struct_obj->name) ? obj->struct_obj->name : "<unsigned>"); break;
@@ -675,7 +675,7 @@ void print_JnObject(JnObject* obj)
     }
 }
 
-bool is_truthy(JnObject* obj)
+bool jn_obj_truthy(JnObject* obj)
 {
     if (!obj) return false;
     switch (obj->type)
@@ -744,6 +744,7 @@ int jn_arr_grow(JnObject* arr_obj, size_t new_size)
     JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     if (iter->size + new_size >= iter->capacity)
     {
+        if (iter->capacity == 0) iter->capacity = JN_INITIAL_CAPACITY;
         while (iter->size + new_size > iter->capacity)
             iter->capacity *= 2;
         iter->items = Jn_realloc(iter->items, sizeof(JnObject *) * iter->capacity);

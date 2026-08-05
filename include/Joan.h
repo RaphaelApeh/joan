@@ -47,8 +47,32 @@ extern "C" {
 
 #ifdef _WIN32
 #define JN_WINDOWS
+#include <direct.h>
 #include <windows.h>
+#endif // _WIN32
+
+#ifdef _MSC_VER
+#define JN_MSVC
+#endif // MSC_VER
+
+#if defined(__APPLE__) && defined(__MACH__)
+#define JN_APPLE
 #endif
+
+#ifdef __linux__
+#define JN_LINUX
+#endif
+
+#if defined(JN_LINUX) || defined(JN_APPLE) || defined(__unix__)
+#include <unistd.h>
+#endif
+
+#ifdef JN_MSVC
+#define JN_INLINE static __forceinline
+#else
+#define JN_INLINE static inline
+#endif
+
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
@@ -67,7 +91,7 @@ extern "C" {
     #define JN_API
 #endif
 
-
+#define JN_INITIAL_CAPACITY 0xff
 
 typedef enum{
     JN_NONE_TYPE = 0,
@@ -117,9 +141,14 @@ typedef struct Jn_environ Jn_environ;
 // max JnObject object store
 #define JN_MAX_OBJECT 0xff << 10
 
-#define JN_LOG(msg, ...) do {                       \
-    fprintf(stderr, "MESSAGE: ");                   \
-    fprintf(stderr, msg, __VA_ARG__);                \
+#define jn_obj_println(obj) do{                     \
+    jn_obj_print(obj);                               \
+    putchar('\n');                                    \
+} while (false)
+
+#define JN_LOG(msg, ...) do {                           \
+    fprintf(stderr, "[MESSAGE]: ");                     \
+    fprintf(stderr, msg, __VA_ARG__);                   \
 } while (false)
 
 #define JN_ARGS_COUNT(obj) ((obj)->arg.count)
@@ -172,7 +201,7 @@ typedef struct Jn_environ Jn_environ;
 #define _JN_CHECK_TYPE(obj, t) ((obj)->type == (t))
 #define JN_IS_NONE(obj) _JN_CHECK_TYPE(obj, JN_NONE_TYPE)
 #define JN_IS_BOOL(obj) _JN_CHECK_TYPE(obj, JN_BOOL_TYPE)
-#define JN_TO_BOOL(obj) is_truthy(obj)
+#define JN_TO_BOOL(obj) jn_obj_truthy(obj)
 #define JN_IS_INT(obj) _JN_CHECK_TYPE(obj, JN_INT_TYPE)
 #define JN_IS_STRING(obj) _JN_CHECK_TYPE(obj, JN_STRING_TYPE)
 #define JN_IS_FLOAT(obj) _JN_CHECK_TYPE(obj, JN_FLOAT_TYPE)
@@ -535,6 +564,7 @@ JnObject* jn_obj_range(J_State*, int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(J_State*, double o_float);
 JnObject* jn_obj_iter(J_State*, JnObject* iter);
 JnObject* jn_obj_type(J_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
+JnObject* jn_obj_intern(J_State* state, JnObject* obj);
 JnObject* jn_obj_module(J_State*, char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(J_State*, char* name, char** fields);
 JnObject* jn_obj_arg(J_State*, JnObject** args, char** arg_names, size_t count);
@@ -548,7 +578,8 @@ int jn_obj_count(JnObject* obj);
 JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
 JnObject* jn_obj_error(J_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
-bool is_truthy(JnObject* obj);
+bool jn_obj_truthy(JnObject* obj);
+void jn_obj_print(JnObject* obj);
 // Array functions
 void jn_arr_pop(JnObject* arr_obj, JnObject** value);
 void jn_arr_copy(JnObject* dest, JnObject* src);
@@ -556,6 +587,8 @@ void jn_arr_append(JnObject* arr_obj, JnObject* value);
 void jn_arr_clear(JnObject* arr_obj);
 JnObject* jn_arr_remove(JnObject* arr_obj, int index);
 JnObject* jn_arr_get(JnObject* arr_obj, int index);
+// Returns -1 if function failed, returns 1 if increment capacity defualt 0
+int jn_arr_grow(JnObject* arr_obj, size_t new_size);
 void jn_arr_append_many(JnObject* arr_obj, JnObject** argv, size_t argc);
 
 

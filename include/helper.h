@@ -4,12 +4,8 @@
 #include <stdint.h>
 #include "arena.h"
 
-#ifdef _WIN32
-    #include <direct.h>
-
+#if defined(JN_WINDOWS)
     #define getcwd _getcwd
-#else
-    #include <unistd.h>
 #endif
 
 typedef struct AST AST;

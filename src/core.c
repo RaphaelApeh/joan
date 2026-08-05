@@ -57,20 +57,18 @@ JN_API void* Jn_alloc(size_t size)
 {
     void* m = malloc(size);
     assert(m != NULL);
-    memset(m, 0, size);
     return m;
 }
 
 JN_API void* Jn_realloc(void* ptr, size_t size)
 {
-    if (NULL != ptr && size == 0)
+    if (NULL == ptr) return NULL;
+    if (size == 0)
     {
         free(ptr);
         return NULL;
     }
-    assert(NULL != ptr);
     void* re_ptr = realloc(ptr, size);
-    assert(re_ptr != NULL);
     return re_ptr;
 }
 
@@ -87,7 +85,11 @@ JN_API void Jn_free(void* ptr)
     free(ptr);
 }
 
-JN_API void Jn_mem_zero(void* ptr, size_t size) { return memset(ptr, 0, size); }
+JN_API void Jn_mem_zero(void* ptr, size_t size) 
+{
+    if (NULL == ptr || size == 0) return; 
+    memset(ptr, 0, size);
+}
 
 
 JN_API J_Context* Jn_get_context(J_State* state) { return &state->cxt; }
@@ -255,7 +257,7 @@ JN_API int Jn_exec_REPL(J_State* state, const char* source)
     {
         JnObject* obj = (JnObject *)state->vm->sp[-1];
         if (obj == NULL) return 0;
-        print_JnObject(obj);
+        jn_obj_print(obj);
         putchar('\n');
         state->vm->sp[-1] = NULL;
     }

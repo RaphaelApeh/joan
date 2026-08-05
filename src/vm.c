@@ -500,7 +500,7 @@ int vm_run(J_State* state, JnVM* vm)
                 break;
             case OP_NOT:
                 o = pop(vm);
-                PUSH(vm, jn_obj_bool(state, !is_truthy(o)));
+                PUSH(vm, jn_obj_bool(state, !jn_obj_truthy(o)));
                 break;
             case OP_TILDE:
             {
@@ -569,7 +569,7 @@ int vm_run(J_State* state, JnVM* vm)
                 break;
             case OP_PRINTLN:
                 JnObject* out = pop(vm);
-                print_JnObject(out);
+                jn_obj_print(out);
                 putchar('\n');
                 break;
             case OP_PLUS_PLUS:
@@ -686,7 +686,7 @@ int vm_run(J_State* state, JnVM* vm)
                 offset |= READ_BYTE();
                 o = vm_peek(vm, 0);
                 assert(o != NULL);
-                if (!is_truthy(o))
+                if (!jn_obj_truthy(o))
                     vm->ip += offset;
                 break;
             case OP_LOOP:
