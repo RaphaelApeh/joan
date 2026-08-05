@@ -113,7 +113,7 @@ static int parse_buffer(char* str)
     return OK;
 }
 
-#if __WIN32
+#ifdef JN_WINDOWS
 #define _CFMT "CTL-Z"
 #else
 #define _CFMT "CTL-D"
@@ -142,16 +142,18 @@ JN_API void Jn_repl(J_State* state)
 {
     char line[256];
     fprintf(stderr, 
-        "Welcome to Joan v" JOAN_VERSION "\n"
+        "Welcome to Joan v" JOAN_VERSION " (%s, built at %s %s)\n"
         "\"" _CFMT "\" to exit shell.\n"
-        "\"!help\" for help info.\n"
+        "\"!help\" for help info.\n",
+        JOAN_BRANCH,
+        __TIME__, __DATE__
     );
     for (;;)
     {
         fprintf(stderr, buffer_count == 0 ? ">>> " : "... ");
         if (!fgets(line, sizeof(line), stdin))
         {
-            printf("Exiting....\n");
+            printf("Exiting....\n\n");
             break;
         }
         strcat(buffer, line);

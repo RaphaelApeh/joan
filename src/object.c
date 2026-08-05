@@ -778,7 +778,16 @@ void jn_arr_clear(JnObject* arr_obj)
 
 JnObject* jn_arr_remove(JnObject* arr_obj, int index)
 {
-
+    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    if (index < 0)
+    {
+        index += iter->size;
+    }
+    if (index < 0 || index >= iter->size)   return NULL;
+    JnObject* rm_obj = iter->items[index];
+    memmove(&iter->items[index], &iter->items[index + 1], (iter->size - index - 1) * sizeof(JnObject *));
+    iter->size--;
+    return rm_obj;
 }
 
 JnObject* jn_arr_get(JnObject* arr_obj, int index)
@@ -788,6 +797,6 @@ JnObject* jn_arr_get(JnObject* arr_obj, int index)
     {
         index += iter->size;
     }
-    assert(index < iter->size);
+    if (index < 0 || index >= iter->size) return NULL;
     return iter->items[index];
 }

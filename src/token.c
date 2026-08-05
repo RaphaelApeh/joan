@@ -144,6 +144,12 @@ joan_token_t number_token(joan_lexer_t* l)
         }
         if (l->curr[-1] == '_') return make_error(l, "Float cannot end with '_'.");
     }
+    if (!is_float && (peek(l) == 'f' || peek(l) == 'F'))
+    {
+        return make_error(l, "Wrong use of 'f' suffix, does nothing actually.");
+    } else {
+        advance(l);
+    }
     if (peek(l) == 'e' || peek(l) == 'E')
     {
         is_float = true;

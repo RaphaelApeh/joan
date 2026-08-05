@@ -80,6 +80,7 @@ extern "C" {
 
 #define JOAN_VERSION "0.7.4"
 #define JOAN_EXT "jt"
+#define JOAN_BRANCH "main"
 
 #ifdef _WIN32
     #ifdef JN_BUILD_DLL
