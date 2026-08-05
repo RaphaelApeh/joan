@@ -54,7 +54,7 @@ void jn_init_parser(joan_parser_t* p, joan_lexer_t* l);
 void advance_parser(joan_parser_t* p);
 
 void advance_parser_c(joan_parser_t* p);
-AST* parse_value(joan_parser_t* p);
+AST* parse_primary(joan_parser_t* p);
 // Main function for the parser.
 AST* parse_stmt(joan_parser_t* p);
 AST* parse_stmt_check(joan_parser_t* p, AST* stmt);

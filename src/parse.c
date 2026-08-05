@@ -18,11 +18,12 @@
 
 #define SKIP(p, t, msg, ...) do {\
     if (!check(p, t))          \
-        return parse_error(p, msg);\
+        return parse_error(p, msg, ##__VA_ARGS__);\
     match(p, t);                    \
 } while(false)
 
-
+// lower case
+#define skip SKIP
 
 int check(joan_parser_t* p, J_TokenType type)
 {
@@ -34,6 +35,22 @@ static bool match(joan_parser_t* p, J_TokenType type)
     if (p->curr.type != type) return false;
     advance_parser_c(p);
     return true;
+}
+
+static bool expect(joan_parser_t* p, J_TokenType token, const char* msg, ...)
+{
+    if (check(p, token)) return true;
+    char buffer[256];
+    va_list arg; va_start(arg, msg);
+    vsnprintf(buffer, sizeof(buffer), msg, arg);
+    va_end(arg);
+    return false;
+}
+
+static void consume(joan_parser_t* p, J_TokenType token)
+{
+    if (!check(p, token)) return;
+    advance_parser_c(p);
 }
 
 static char* get_lexeme(joan_parser_t* p)
@@ -183,7 +200,7 @@ precedence get_prec(J_TokenType type)
 
 AST* parse_block(joan_parser_t* p)
 {
-    advance_parser_c(p);
+    consume(p, TOKEN_LBRACE);
     AST* block = new_block(p);
     while (!check(p, TOKEN_RBRACE) && !check(p, TOKEN_EOF))
     {
@@ -220,7 +237,7 @@ AST* parse_error(joan_parser_t* p, const char* msg, ...)
 
 static AST* parse_loop(joan_parser_t* p)
 {
-    advance_parser_c(p); // loop
+    consume(p, TOKEN_LOOP);
     AST* ast = ast_create(p, AST_LOOP);
     if (check(p, TOKEN_LBRACE))
         ast->loop_stmt.block = parse_block(p);
@@ -232,7 +249,7 @@ static AST* parse_loop(joan_parser_t* p)
 
 static AST* parse_range(joan_parser_t* p, AST* node)
 {
-    advance_parser_c(p); // ..
+    consume(p, TOKEN_RANGE);
     int op = 0; // None
     if (match(p, TOKEN_EQUAL))
         op = TOKEN_EQUAL;
@@ -253,7 +270,7 @@ static AST* parse_range(joan_parser_t* p, AST* node)
 
 static AST* parse_while(joan_parser_t* p)
 {
-    advance_parser_c(p); // while
+    consume(p, TOKEN_WHILE);
     AST* cond = parse_expr(p);
     AST* block = NULL;
     if (check(p, TOKEN_LBRACE))
@@ -270,7 +287,7 @@ static AST* parse_while(joan_parser_t* p)
 
 static AST* parse_if(joan_parser_t* p)
 {
-    advance_parser_c(p); // if token
+    consume(p, TOKEN_IF);
     AST* cond = parse_expr(p);
     AST* block = NULL;
     if (check(p, TOKEN_LBRACE))
@@ -315,7 +332,7 @@ static AST* parse_if(joan_parser_t* p)
 
 static AST* parse_match(joan_parser_t* p)
 {
-    advance_parser_c(p); // match
+    consume(p, TOKEN_MATCH);
     AST* stmt = parse_expr(p);
     AST* else_stmt = NULL;
     if (!match(p, TOKEN_LBRACE))
@@ -352,7 +369,7 @@ static AST* parse_match(joan_parser_t* p)
 
 static AST* parse_fn(joan_parser_t* p)
 {
-    advance_parser_c(p); // fn
+    consume(p, TOKEN_FN);
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected an identifier.");
     char* ident = GET_LEX(p);
@@ -406,7 +423,7 @@ static AST* parse_assign(joan_parser_t* p)
     
     if (match(p, TOKEN_COLON))
     {
-        type = parse_value(p);
+        type = parse_primary(p);
     }
     
     if (!match(p, TOKEN_EQUAL))
@@ -661,14 +678,7 @@ static bool allow_instance(joan_parser_t* p, AST* node)
 static AST* parse_postfix(joan_parser_t* p, AST* left)
 {
     if (check(p, TOKEN_PLUS_PLUS))
-    {
-        AST* ast;
-        advance_parser_c(p);
-        ast = ast_create(p, AST_UNARY);
-        ast->unary.op = TOKEN_PLUS_PLUS;
-        ast->unary.right = left;
-        return ast;
-    }
+        return parse_unary(p, TOKEN_PLUS_PLUS);
     while (true)
     {
         if (match(p, TOKEN_LPARN))
@@ -880,7 +890,8 @@ static AST* parse_struct(joan_parser_t* p)
         }
     PS: both do the same thing. No types
     */
-    advance_parser_c(p); // struct
+
+    consume(p, TOKEN_STRUCT);
     char** fields = arena_alloc(p->arena, sizeof(char *) * 10);
     int len = 0, cap = 10;
     SKIP(p, TOKEN_LBRACE, "To initalize a struct you need '{'.");
@@ -1004,7 +1015,7 @@ static AST* parse_multi_var(joan_parser_t* p, AST* first)
 
 static AST* parse_tuple(joan_parser_t* p)
 {
-    advance_parser_c(p);
+    consume(p, TOKEN_LPARN);
     AST* node = ast_create(p, AST_TUPLE);
     size_t len = 0, cap = 100;
     if (match(p, TOKEN_RPARN))
@@ -1038,7 +1049,44 @@ static AST* parse_tuple(joan_parser_t* p)
     return node;
 }
 
-AST* parse_value(joan_parser_t* p)
+
+static AST* parse_unary(joan_parser_t* p, J_TokenType op)
+{
+    consume(p, op);
+    AST* ast = ast_create(p, AST_UNARY);
+    ast->unary.op = op;
+    ast->unary.right = parse_expr(p); 
+    return ast;
+}
+
+static AST* parse_string(joan_parser_t* p)
+{
+    size_t len = strlen(GET_LEX(p)), cap = len + 1;
+    char* buff = malloc(sizeof(char) * cap);
+    memcpy(buff, GET_LEX(p), cap);
+    advance_parser_c(p);
+
+    while (check(p, TOKEN_STRING))
+    {
+        char* next = GET_LEX(p);
+        size_t next_len = strlen(next);
+        if (len + next_len + 1 > cap)
+        {
+            cap = (len + next_len + 1) * 2;
+            buff = realloc(buff, cap);
+        }
+        memcpy(buff + len, next, next_len + 1);
+        len += next_len;
+        advance_parser_c(p);
+    }
+    AST* ast = ast_literal(p,  jn_obj_string(p->state, buff));
+    free(buff);
+    return ast;   
+}
+
+static AST* parse_lit(joan_parser_t* p);
+
+AST* parse_primary(joan_parser_t* p)
 {
     joan_token_t t = p->curr;
     AST* ast = NULL;
@@ -1069,27 +1117,7 @@ AST* parse_value(joan_parser_t* p)
                 return parse_for_each(p);
             return parse_error(p, "Error invalid expression");
         case TOKEN_STRING:
-            size_t len = strlen(t.lexeme), cap = len + 1;
-            char* buff = malloc(sizeof(char) * cap);
-            memcpy(buff, t.lexeme, cap);
-            advance_parser_c(p);
-
-            while (check(p, TOKEN_STRING))
-            {
-                char* next = GET_LEX(p);
-                size_t next_len = strlen(next);
-                if (len + next_len + 1 > cap)
-                {
-                    cap = (len + next_len + 1) * 2;
-                    buff = realloc(buff, cap);
-                }
-                memcpy(buff + len, next, next_len + 1);
-                len += next_len;
-                advance_parser_c(p);
-            }
-            ast = ast_literal(p,  jn_obj_string(p->state, buff));
-            free(buff);
-            return ast;
+            return parse_string(p);
         case TOKEN_CHAR:
             char c = t.c;
             ast = ast_literal(
@@ -1099,11 +1127,7 @@ AST* parse_value(joan_parser_t* p)
             advance_parser_c(p);
             return ast;
         case TOKEN_PLUS_PLUS:
-            advance_parser_c(p);
-            ast = ast_create(p, AST_UNARY);
-            ast->unary.op = TOKEN_PLUS_PLUS;
-            ast->unary.right = parse_value(p);
-            return ast;
+            return parse_unary(p, TOKEN_PLUS_PLUS);
         case TOKEN_RETURN:
             ast = ast_create(p, AST_RETURN);
             advance_parser_c(p);
@@ -1118,7 +1142,6 @@ AST* parse_value(joan_parser_t* p)
         case TOKEN_IDENTIFIER:
             ast = ast_identifier(p, t.lexeme);
             advance_parser_c(p);
-            // if (check(p, TOKEN_COMMA)) return parse_multi_var(p, ast);
             return ast;
         case TOKEN_CONTINUE:
             advance_parser_c(p);
@@ -1128,25 +1151,13 @@ AST* parse_value(joan_parser_t* p)
             return ast_break(p);
         case TOKEN_NEWLINE:
             advance_parser_c(p);
-            return parse_value(p);
+            return parse_primary(p);
         case TOKEN_MINUS:
-            advance_parser_c(p);
-            ast = ast_create(p, AST_UNARY);
-            ast->unary.op = TOKEN_MINUS;
-            ast->unary.right = parse_value(p);
-            return ast;
+            return parse_unary(p, TOKEN_MINUS);
         case TOKEN_TILDE:
-            advance_parser_c(p);
-            ast = ast_create(p, AST_UNARY);
-            ast->unary.op = TOKEN_TILDE;
-            ast->unary.right = parse_value(p);
-            return ast;
+            return parse_unary(p, TOKEN_TILDE);
         case TOKEN_NOT:
-            advance_parser_c(p);
-            ast = ast_create(p, AST_UNARY);
-            ast->unary.op = TOKEN_NOT;
-            ast->unary.right = parse_expr(p);
-            return ast;
+            return parse_unary(p, TOKEN_NOT);
         case TOKEN_TRUE:
             ast = ast_literal(p,  jn_obj_bool(p->state, true));
             advance_parser_c(p);
@@ -1184,7 +1195,7 @@ AST* parse_value(joan_parser_t* p)
 
 AST* parse_prec(joan_parser_t* p, precedence prec)
 {
-    AST* left = parse_value(p);
+    AST* left = parse_primary(p);
     while (true)
     {
         left = parse_postfix(p, left);
