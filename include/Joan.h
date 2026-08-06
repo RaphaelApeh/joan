@@ -142,6 +142,16 @@ typedef struct Jn_environ Jn_environ;
 // max JnObject object store
 #define JN_MAX_OBJECT 0xff << 10
 
+#ifndef JN_STACK_MAX
+#define JN_STACK_MAX 0xff << 4
+#endif
+
+#ifndef JN_FRAME_MAX
+#define JN_FRAME_MAX 256
+#endif
+
+#define JN_LOOP_MAX 0xff
+
 #define jn_obj_println(obj) do{                     \
     jn_obj_print(obj);                               \
     putchar('\n');                                    \
@@ -292,6 +302,16 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_HM(obj) obj->hashmap
 #define JN_ITER_INIT(state, obj) jn_obj_iter(state, obj)
 #define JN_ERROR_PRINT(type) ((type) == IMPORT_ERROR ? "IMPORT ERROR": (type) == SYS_ERROR ? "SYSTEM_ERROR" : (type) == SYNTAX_ERROR ? "SYNTAX ERROR" : (type) ==   ASSERT_ERROR ? "ASSERTION ERROR" : (type) == TYPE_ERROR ? "TYPE ERROR" : (type) == NOT_IMPLEMENT_ERROR ? "NOT IMPLEMENT ERROR" : (type) == MATH_ERROR ? "MATH ERROR" : "UNDEFINE ERROR")
+
+typedef enum 
+{
+    JN_INTERPRET_OK = 1 << 1,
+    JN_INTERPRET_YEILD = 1 << 2,
+    JN_INTERPRET_RUNTIME_ERROR = 1 << 4,
+    JN_INTERPRET_ERROR = 1 << 6,
+} JnVMInterpretResult;
+
+
 // State
 
 struct JN_Args
@@ -516,6 +536,9 @@ JN_API void Jn_add_handler(J_State* state, JnForeignHandler fn);
 JN_API void* Jn_defualt_handler(J_State* state, const char* fn_name, int params, JnObject* args);
 
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
+
+
+JN_API void Jn_color_printf(int color, const char* msg, ...);
 
 // Register native function
 JN_API void Jn_define_fn(J_State* state, const char*, Jn_CFunction);

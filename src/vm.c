@@ -125,7 +125,7 @@ static int vm_error(J_State* state, JnVM* vm, JnObject* obj)
         }
     }
     print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
-    return INTERPRET_ERROR;
+    return JN_INTERPRET_ERROR;
 }
 
 static int die(J_State* state, JnVM* vm, const char* msg, ...)
@@ -143,7 +143,7 @@ static int die(J_State* state, JnVM* vm, const char* msg, ...)
     printf("\n\n");
     va_end(arg);
     print_source_lines(ctx->source.source, ctx->cur_line, ctx->column, 2);
-    return INTERPRET_RUNTIME_ERROR;
+    return JN_INTERPRET_RUNTIME_ERROR;
 }
 
 static void push(JnVM* vm, JnObject* object)
@@ -168,8 +168,8 @@ static JnObject* call_function(J_State* state, JnVM* vm, JnObject* obj, JnObject
     {
         environ_insert(child.env, fn->params[i], args[i]);
     }
-    InterpretResult r = vm_run(state, &child);
-    if (r == INTERPRET_OK)
+    JnVMInterpretResult r = vm_run(state, &child);
+    if (r == JN_INTERPRET_OK)
         return pop(&child);
     return JN_RAISE_EXCPETION(state, SYS_ERROR, "Extra error to annoy you. Good luck debugging :).");
 }
@@ -795,13 +795,13 @@ int vm_run(J_State* state, JnVM* vm)
                 ident = READ_IDENT();
                 return vm_error(state, vm, JN_RAISE_EXCPETION(state, SYNTAX_ERROR, ident));
             case OP_END:
-                return INTERPRET_OK;
+                return JN_INTERPRET_OK;
             case OP_RETURN:
                 o = pop(vm);
                 PUSH(vm, o);
-                return INTERPRET_OK;
+                return JN_INTERPRET_OK;
             case OP_ERROR:
-                return INTERPRET_RUNTIME_ERROR;
+                return JN_INTERPRET_RUNTIME_ERROR;
             default:
                 return die(state,vm, "System error.");
         }

@@ -5,10 +5,6 @@
 #include "env.h"
 #include "parse.h"
 
-#define _STACK_MAX 1024
-#define _LOOP_MAX 256
-#define _FRAME_MAX 64
-
 typedef struct Chuck Chuck;
 typedef struct AST AST;
 
@@ -31,13 +27,6 @@ typedef struct Chuck{
 } Chuck;
 
 
-typedef enum 
-{
-    INTERPRET_OK,
-    INTERPRET_RUNTIME_ERROR,
-    INTERPRET_ERROR,
-} InterpretResult;
-
 typedef struct {
     JnObject** slots;
     JnFunctionObject* fn;
@@ -49,13 +38,13 @@ typedef struct JnVM{
     Chuck* chuck;
     uint8_t* ip;
 
-    JnObject* stack[_STACK_MAX];
+    JnObject* stack[JN_STACK_MAX];
     JnObject** sp;
 
     Jn_environ* global;
     Jn_environ* env;
 
-    CallFrame frames[_FRAME_MAX];
+    CallFrame frames[JN_FRAME_MAX];
     int frame_count;
 
     //Jn_GC gc;
@@ -64,13 +53,13 @@ typedef struct JnVM{
 typedef struct {
     int loop_offset;
     
-    int breaks[_LOOP_MAX];
+    int breaks[JN_LOOP_MAX];
     int break_count;
 
-    int continues[_LOOP_MAX];
+    int continues[JN_LOOP_MAX];
     int continue_count;
 
-    int returns[_LOOP_MAX];
+    int returns[JN_LOOP_MAX];
     int return_count;
 } LoopContext;
 

@@ -1084,7 +1084,10 @@ static AST* parse_string(joan_parser_t* p)
     return ast;   
 }
 
-static AST* parse_lit(joan_parser_t* p);
+static AST* parse_lit(joan_parser_t* p)
+{
+    
+}
 
 AST* parse_primary(joan_parser_t* p)
 {

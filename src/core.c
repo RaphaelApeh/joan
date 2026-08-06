@@ -323,8 +323,8 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     }
     write_chuck(&chuck, OP_END);
     cxt->source = old;
-    InterpretResult i = vm_run(state, &vm);
-    if (i != INTERPRET_OK)
+    JnVMInterpretResult i = vm_run(state, &vm);
+    if (i != JN_INTERPRET_OK)
         return JN_RAISE_EXCPETION(state, SYS_ERROR, "extra error message.");
     JnObject* obj = jn_obj_module(state, path, filename, env);
     module_register[module_count++] = (struct Module_Reg){obj, filename};

@@ -88,6 +88,7 @@ typedef enum {  TOKEN_EOF, TOKEN_NEWLINE,
     TOKEN_NOT,
     TOKEN_NOT_IN,
     TOKEN_AND,
+    TOKEN_ARROW, // ->
 
     TOKEN_FN,
     TOKEN_IMPORT,
