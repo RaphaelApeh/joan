@@ -260,3 +260,14 @@ int fuzzy_match(const char* word, char** list_words, int size, struct FuzzMatch*
         found = MAX_MATCHES;
     return found;
 }
+
+static set__color(int color)
+{
+
+}
+
+JN_API void Jn_color_printf(int color, const char* msg, ...)
+{
+#if defined(JN_WINDOWS)
+#endif
+}

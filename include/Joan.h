@@ -73,6 +73,13 @@ extern "C" {
 #define JN_INLINE static inline
 #endif
 
+#ifdef JN_WINDOWS
+typedef HANDLE JnHandle;
+#define JN_INVALID_HANDLE_VALUE INVALID_HANDLE_VALUE
+#else
+typedef int JnHandle;
+#define JN_INVALID_HANDLE_VALUE (-1)
+#endif
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
