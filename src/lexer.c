@@ -47,10 +47,20 @@ char peek_next(joan_lexer_t* l)
     return l->curr[1];
 }
 
-void J_init_lexer(joan_lexer_t* l, char* source)
+bool peek_advance(joan_lexer_t* l, char c)
+{
+    if (peek(l) != c)
+        return false;
+    advance(l);
+    return true;
+}
+
+
+void J_init_lexer(joan_lexer_t* l, char* source, const char* filename)
 {
     l->start = source;
     l->curr = source;
     l->line = 1;
     l->column = 1;
+    l->filename = filename;
 }

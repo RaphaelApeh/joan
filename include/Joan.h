@@ -143,7 +143,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_MAX_OBJECT 0xff << 10
 
 #ifndef JN_STACK_MAX
-#define JN_STACK_MAX 0xff << 4
+#define JN_STACK_MAX 1024
 #endif
 
 #ifndef JN_FRAME_MAX
@@ -305,10 +305,10 @@ typedef struct Jn_environ Jn_environ;
 
 typedef enum 
 {
-    JN_INTERPRET_OK = 1 << 1,
-    JN_INTERPRET_YEILD = 1 << 2,
-    JN_INTERPRET_RUNTIME_ERROR = 1 << 4,
-    JN_INTERPRET_ERROR = 1 << 6,
+    JN_INTERPRET_OK,
+    JN_INTERPRET_YEILD,
+    JN_INTERPRET_RUNTIME_ERROR,
+    JN_INTERPRET_ERROR,
 } JnVMInterpretResult;
 
 

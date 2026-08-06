@@ -25,6 +25,9 @@
 // lower case
 #define skip SKIP
 
+
+static AST* parse_unary(joan_parser_t* p, J_TokenType op);
+
 int check(joan_parser_t* p, J_TokenType type)
 {
     return _check(p, type, false);
@@ -33,7 +36,7 @@ int check(joan_parser_t* p, J_TokenType type)
 static bool match(joan_parser_t* p, J_TokenType type)
 {
     if (p->curr.type != type) return false;
-    advance_parser_c(p);
+    next_parser(p);
     return true;
 }
 
@@ -47,16 +50,26 @@ static bool expect(joan_parser_t* p, J_TokenType token, const char* msg, ...)
     return false;
 }
 
-static void consume(joan_parser_t* p, J_TokenType token)
+JN_INLINE joan_token_t peek_parser(joan_parser_t* p)
+{
+    return p->next;
+}
+
+JN_INLINE joan_token_t previous(joan_parser_t* p)
+{
+    return p->prev;
+}
+
+JN_INLINE void consume(joan_parser_t* p, J_TokenType token)
 {
     if (!check(p, token)) return;
-    advance_parser_c(p);
+    next_parser(p);
 }
 
 static char* get_lexeme(joan_parser_t* p)
 {
     char* lex = GET_LEX(p);
-    advance_parser_c(p);
+    next_parser(p);
     return lex;
 }
 
@@ -119,31 +132,32 @@ AST* parse_stmt_check(joan_parser_t* p, AST* stmt)
 
 void advance_parser(joan_parser_t* p)
 {
+    p->prev =  p->curr;
     p->curr = p->next;
     p->next = next_token(p->l);
 }
 
-int check_next(joan_parser_t* p, J_TokenType type)
+JN_INLINE bool check_next(joan_parser_t* p, J_TokenType type)
 {
-    return _check(p, type, true);
+    return peek_parser(p).type == type;
 }
 
-
+static char* consume_ident(joan_parser_t* p);
+static char* consume_string(joan_parser_t* p);
 void jn_init_parser(joan_parser_t* p, joan_lexer_t* l)
 {
     assert(p != NULL && l != NULL);
     p->l = l;
-    p->next = clean_token(l);
-    // p->curr = p->next;
-    advance_parser_c(p);
+    p->next = next_token(l);
+    next_parser(p);
 }
 
 void J_parse_file(joan_parser_t* p, char* restrict filecontent)
 {
     joan_lexer_t l;
-    J_init_lexer(&l, filecontent);
+    J_init_lexer(&l, filecontent, "main");
     p->l = &l;
-    p->next = clean_token(&l);
+    p->next = next_token(&l);
 }
 
 precedence get_prec(J_TokenType type)
@@ -211,7 +225,7 @@ AST* parse_block(joan_parser_t* p)
 }
 
 
-void advance_parser_c(joan_parser_t* p)
+joan_token_t next_parser(joan_parser_t* p)
 {
     p->prev = p->curr;
     p->curr = p->next;
@@ -221,6 +235,7 @@ void advance_parser_c(joan_parser_t* p)
         if (p->next.type == TOKEN_NEWLINE)
             p->has_newl = true;
     }  while(p->next.type == TOKEN_NEWLINE);
+    return p->prev;
 }
 
 AST* parse_error(joan_parser_t* p, const char* msg, ...)
@@ -231,7 +246,7 @@ AST* parse_error(joan_parser_t* p, const char* msg, ...)
     vsnprintf(buffer, sizeof(buffer), msg, args);
     va_end(args);
     AST* err = ast_error(p, strdup(buffer));
-    advance_parser_c(p);
+    next_parser(p);
     return err;
 }
 
@@ -373,7 +388,7 @@ static AST* parse_fn(joan_parser_t* p)
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected an identifier.");
     char* ident = GET_LEX(p);
-    advance_parser_c(p); // ident
+    next_parser(p); // ident
     char** params = malloc(sizeof(char *) * 100);
     int len = 0;
     AST* block = NULL;
@@ -384,7 +399,7 @@ static AST* parse_fn(joan_parser_t* p)
         if (!check(p, TOKEN_IDENTIFIER))
             return parse_error(p, "Expected an identifer.");
         params[len++] = GET_LEX(p);
-        advance_parser_c(p);
+        next_parser(p);
         if (match(p, TOKEN_COMMA))
             continue;
     }
@@ -417,7 +432,7 @@ static AST* parse_assign(joan_parser_t* p)
     if (check(p, TOKEN_IDENTIFIER))
     {
         ident = p->curr.lexeme;
-        advance_parser_c(p);
+        next_parser(p);
     }else
         return parse_error(p, "Expected an identifier.");
     
@@ -438,7 +453,7 @@ static AST* parse_reassign(joan_parser_t* p, AST* node)
 {
     J_TokenType op = p->curr.type;
     AST* ast = ast_create(p, AST_REASSIGN);
-    advance_parser_c(p); // += reassign operator
+    next_parser(p); // += reassign operator
     //x += 4;
     ast->reassign.expr = node;
     ast->reassign.op = op;
@@ -488,7 +503,7 @@ static AST* parse_for_each(joan_parser_t* p)
             printf("Hello World")
         }
     */
-    advance_parser_c(p); // for
+    next_parser(p); // for
 
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected an identifier.");
@@ -530,7 +545,7 @@ static AST* parse_for(joan_parser_t* p)
     for i := 0; i < 10; i += 1 {} or then
     */
 
-    advance_parser_c(p); // for
+    next_parser(p); // for
     AST* init = NULL, *cond = NULL, *incr = NULL;
     AST* block = NULL;
     if (check(p, TOKEN_LPARN))
@@ -573,7 +588,7 @@ static AST* parse_member(joan_parser_t* p, AST* obj)
 {
     // obj.field or obj.field()
     J_TokenType tok = p->curr.type;
-    advance_parser_c(p);
+    next_parser(p);
 
     if (check(p, TOKEN_LBRACE))
         return parse_instance(p, obj);
@@ -582,7 +597,7 @@ static AST* parse_member(joan_parser_t* p, AST* obj)
         return parse_error(p, "Expected identifier but got (%s).", GET_LEX(p));
     
     AST* field = ast_identifier(p, GET_LEX(p)); //parse_expr(p);
-    advance_parser_c(p);
+    next_parser(p);
     AST* ast = ast_create(p, AST_MEMBER);
     ast->member.callie = obj;
     ast->member.field = field;
@@ -593,12 +608,12 @@ static AST* parse_member(joan_parser_t* p, AST* obj)
 
 static AST* parse_enum(joan_parser_t* p)
 {
-    advance_parser_c(p); // enum
+    next_parser(p); // enum
     if (!check(p, TOKEN_IDENTIFIER))
         return parse_error(p, "Expected an identifier but got '%s'.", GET_LEX(p));
     
     char* ident = GET_LEX(p);
-    advance_parser_c(p);
+    next_parser(p);
     match(p, TOKEN_DCOLON);
     if (!match(p, TOKEN_LBRACE))
         return parse_error(p, "Expected an '{' but got '%s'.", GET_LEX(p));
@@ -616,7 +631,7 @@ static AST* parse_enum(joan_parser_t* p)
             fields = realloc(fields, sizeof(char *) * capacity);
         }
         fields[len++] = GET_LEX(p);
-        advance_parser_c(p);
+        next_parser(p);
         if (match(p, TOKEN_COMMA))
             continue;
     }
@@ -629,7 +644,7 @@ static AST* parse_enum(joan_parser_t* p)
 }
 static AST* parse_inline_if(joan_parser_t* p, AST* node)
 {
-    advance_parser_c(p); // if
+    next_parser(p); // if
     AST* cond = parse_expr(p);
     if (!match(p, TOKEN_ELSE))
         return parse_error(p, "Expected an 'else' clause.");
@@ -643,7 +658,7 @@ static AST* parse_inline_if(joan_parser_t* p, AST* node)
 
 static AST* parse_index(joan_parser_t* p, AST* arr)
 {
-    advance_parser_c(p); //[
+    next_parser(p); //[
     AST* ast = ast_create(p, AST_ARRAY_INDEX);
     ast->index.array = arr;
     ast->index.pos = parse_expr(p);
@@ -670,7 +685,7 @@ static bool allow_instance(joan_parser_t* p, AST* node)
     }
     if (ret && check(p, TOKEN_DOT))
     {
-        advance_parser_c(p);
+        next_parser(p);
     }
     return ret;
 }
@@ -718,9 +733,7 @@ static AST* parse_postfix(joan_parser_t* p, AST* left)
 
 static AST* parse_hashmap(joan_parser_t* p)
 {
-    // TODO
-    if (!match(p, TOKEN_LBRACE)) // {
-        return parse_error(p, "Expected an opening '{'");
+    skip(p, TOKEN_LBRACE, "Expected an opening '{'");
     AST** keys = arena_alloc(p->arena, sizeof(AST *) * 30);
     AST** values = arena_alloc(p->arena, sizeof(AST *) * 30);
     size_t len= 0, cap = 30;    
@@ -755,26 +768,28 @@ static AST* parse_hashmap(joan_parser_t* p)
     ast->hmp_node.count = len;
     return ast;
 }
+
+
 AST* parse_array(joan_parser_t* p)
 {
-    advance_parser_c(p); // [
+    consume(p, TOKEN_LBRACKET);
     AST* arr = ast_array(p);
     while (true)
     {
         if (check(p, TOKEN_RBRACKET))
         {
-            advance_parser_c(p);
+            next_parser(p);
             break;
         }
         ast_array_add(arr, parse_expr(p));
         if (check(p, TOKEN_COMMA))
         {
-            advance_parser_c(p);
+            next_parser(p);
             continue;
         }
         if (check(p, TOKEN_RBRACKET))
         {
-            advance_parser_c(p);
+            next_parser(p);
             break;
         }
         return parse_error(p, "Expected a closing bracket '['.");
@@ -794,7 +809,7 @@ static AST* parse_lambda(joan_parser_t* p)
         }
         add(32, 12);
     */
-    advance_parser_c(p);
+    next_parser(p);
     int len = 0, cap = 20;
     char** args = malloc(sizeof(char *) * cap);
     do {
@@ -803,7 +818,7 @@ static AST* parse_lambda(joan_parser_t* p)
         {
             if (!check(p, TOKEN_BITOR))
                 return parse_error(p, "Expected a closing '|'.");
-            advance_parser_c(p);
+            next_parser(p);
             break;
         }
         if (!check(p, TOKEN_IDENTIFIER)) return parse_error(p, "lambda expect an identifer but got %s.", GET_LEX(p));
@@ -813,7 +828,7 @@ static AST* parse_lambda(joan_parser_t* p)
             args = realloc(args, sizeof(char *) * cap);
         }
         args[len++] = GET_LEX(p);
-        advance_parser_c(p);
+        next_parser(p);
         if (match(p, TOKEN_COMMA)) continue;
         if (match(p, TOKEN_BITOR)) break;
     } while(true);
@@ -842,7 +857,7 @@ static AST* parse_import(joan_parser_t* p)
         OR
         import "conf"{version} // import only version
     */
-    advance_parser_c(p);
+    next_parser(p);
     char* import_path;
     char** fields = arena_alloc(p->arena, sizeof(char *) * 100);
     int len = 0, cap = 100;
@@ -974,7 +989,7 @@ static AST* parse_multi_var(joan_parser_t* p, AST* first)
     a // 1
     b // 2
     */
-    advance_parser_c(p);
+    next_parser(p);
 
     char** idents = arena_alloc(p->arena, sizeof(char *) * 100);
     int len = 0, cap = 100;
@@ -992,7 +1007,7 @@ static AST* parse_multi_var(joan_parser_t* p, AST* first)
             idents = arena_realloc(p->arena, idents, sizeof(idents), sizeof(AST *) * cap);
         }
         idents[len++] =  GET_LEX(p);
-        advance_parser_c(p);
+        next_parser(p);
         
         if (match(p, TOKEN_COMMA))
             continue;
@@ -1002,7 +1017,7 @@ static AST* parse_multi_var(joan_parser_t* p, AST* first)
         return parse_error(p, "Got an invalid token.");
     }
     int op = GET_TOK(p).type;
-    advance_parser_c(p);
+    next_parser(p);
     AST* expr = parse_expr(p);
     // TODO: a, b := [1, 2]
     AST* ast = ast_create(p, AST_MULTI_VAR);
@@ -1064,7 +1079,7 @@ static AST* parse_string(joan_parser_t* p)
     size_t len = strlen(GET_LEX(p)), cap = len + 1;
     char* buff = malloc(sizeof(char) * cap);
     memcpy(buff, GET_LEX(p), cap);
-    advance_parser_c(p);
+    next_parser(p);
 
     while (check(p, TOKEN_STRING))
     {
@@ -1077,16 +1092,17 @@ static AST* parse_string(joan_parser_t* p)
         }
         memcpy(buff + len, next, next_len + 1);
         len += next_len;
-        advance_parser_c(p);
+        next_parser(p);
     }
     AST* ast = ast_literal(p,  jn_obj_string(p->state, buff));
     free(buff);
     return ast;   
 }
 
-static AST* parse_lit(joan_parser_t* p)
+static AST* parse_literal(joan_parser_t* p, JnObject* obj)
 {
-    
+    next_parser(p);
+    return ast_literal(p, obj);
 }
 
 AST* parse_primary(joan_parser_t* p)
@@ -1098,22 +1114,21 @@ AST* parse_primary(joan_parser_t* p)
     {
         case TOKEN_INT:
             long i = t.i;
-             JnObject* v =  jn_obj_int(p->state, i);
-            advance_parser_c(p);
-            return ast_literal(p, v);
+            printf("Hello World %ld\n", i);
+            JnObject* v =  jn_obj_int(p->state, i);
+            return parse_literal(p, v);
         case TOKEN_LPARN:
             return parse_tuple(p);
         case TOKEN_COMMENT:
-            advance_parser_c(p);
+            next_parser(p);
             ast = ast_create(p, AST_COMMENT);
             ast->comment = strdup(t.lexeme);
             return ast;
         case TOKEN_FLOAT:
             double d = t.d;
-            advance_parser_c(p);
-            return ast_literal(p,  jn_obj_float(p->state, d));
+            return parse_literal(p, jn_obj_float(p->state, d));
         case TOKEN_HASH:
-            advance_parser_c(p);
+            next_parser(p);
             if (check(p, TOKEN_LBRACE))
                 return parse_hashmap(p);
             else if (check(p, TOKEN_FOR))
@@ -1123,17 +1138,12 @@ AST* parse_primary(joan_parser_t* p)
             return parse_string(p);
         case TOKEN_CHAR:
             char c = t.c;
-            ast = ast_literal(
-                p,
-                JN_RETURN_CHAR(p->state, c) 
-            );
-            advance_parser_c(p);
-            return ast;
+            return parse_literal(p, JN_RETURN_CHAR(p->state, c));
         case TOKEN_PLUS_PLUS:
             return parse_unary(p, TOKEN_PLUS_PLUS);
         case TOKEN_RETURN:
             ast = ast_create(p, AST_RETURN);
-            advance_parser_c(p);
+            next_parser(p);
             if (is_stmt_end(p) || p->has_newl)
             {
                 match(p, TOKEN_SEMICOLON);
@@ -1144,16 +1154,16 @@ AST* parse_primary(joan_parser_t* p)
             return ast;
         case TOKEN_IDENTIFIER:
             ast = ast_identifier(p, t.lexeme);
-            advance_parser_c(p);
+            next_parser(p);
             return ast;
         case TOKEN_CONTINUE:
-            advance_parser_c(p);
+            next_parser(p);
             return ast_continue(p);
         case TOKEN_BREAK:
-            advance_parser_c(p);
+            next_parser(p);
             return ast_break(p);
         case TOKEN_NEWLINE:
-            advance_parser_c(p);
+            next_parser(p);
             return parse_primary(p);
         case TOKEN_MINUS:
             return parse_unary(p, TOKEN_MINUS);
@@ -1162,17 +1172,11 @@ AST* parse_primary(joan_parser_t* p)
         case TOKEN_NOT:
             return parse_unary(p, TOKEN_NOT);
         case TOKEN_TRUE:
-            ast = ast_literal(p,  jn_obj_bool(p->state, true));
-            advance_parser_c(p);
-            return ast;
+            return parse_literal(p, JN_RETURN_TRUE(p->state));
         case TOKEN_NONE:
-            ast = ast_literal(p,  jn_obj_none());
-            advance_parser_c(p);
-            return ast;
+            return parse_literal(p, JN_RETURN_NONE);
         case TOKEN_FALSE:
-            ast = ast_literal(p,  jn_obj_bool(p->state, false));
-            advance_parser_c(p);
-            return ast;
+            return parse_literal(p, JN_RETURN_FALSE(p->state));
         case TOKEN_LBRACKET:
             return parse_array(p);
         case TOKEN_BITOR:
@@ -1180,7 +1184,7 @@ AST* parse_primary(joan_parser_t* p)
         case TOKEN_IMPORT:
             return parse_import(p);
         case TOKEN_PRINTLN: {
-            advance_parser_c(p);
+            next_parser(p);
             AST* out = NULL;
             if (!check(p, TOKEN_NEWLINE))
                 out = parse_expr(p);
@@ -1227,10 +1231,10 @@ AST* parse_prec(joan_parser_t* p, precedence prec)
             break;
         if (comp)
         {
-            advance_parser_c(p);
-            advance_parser_c(p);
+            next_parser(p);
+            next_parser(p);
         } else {
-            advance_parser_c(p);
+            next_parser(p);
         }
         AST* right = parse_prec(p, op == TOKEN_POW ? next_pr - 1 : next_pr);
         left = ast_binary(p, left, op, right);

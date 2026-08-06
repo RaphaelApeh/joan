@@ -45,13 +45,6 @@ KEYWORD_S Keywords[] = {
     {"false", TOKEN_FALSE},
 };
 
-static bool peek_advance(joan_lexer_t* l, char c)
-{
-    if (peek(l) != c)
-        return false;
-    advance(l);
-    return true;
-}
 
 static char* rm_num_sep(const char* s)
 {
@@ -414,7 +407,7 @@ joan_token_t next_token(joan_lexer_t* l)
                 return make_token(l, TOKEN_AMINUS);
             }
 
-            if (peek_advance(l) == '>')
+            if (peek_advance(l, '>'))
                 return make_token(l, TOKEN_ARROW);
             return make_token(l, TOKEN_MINUS);
         case '*':

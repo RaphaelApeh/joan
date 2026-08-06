@@ -158,6 +158,8 @@ JN_API int Jn_compile(J_State* state)
     while(p->curr.type != TOKEN_EOF)
     {
         AST* stmt = parse_stmt(p);
+        // TODO: add error
+        if (NULL == stmt) return -1;
         stmt = parse_stmt_check(p, stmt);
         Jn_semantic_check(&sem, stmt);
         if (sem.errors) return -1;
@@ -186,9 +188,7 @@ JN_API int Jn_exec_program(J_State* state, const char* source)
     assert(state->running && "program is not initialize.");
     joan_lexer_t l;
     state->parser->arena = state->arena;
-    J_init_lexer(&l, (char *)source);
-    if (!l.filename)
-        l.filename = strdup("main"); // repl
+    J_init_lexer(&l, (char *)source, "main");
     jn_init_parser(state->parser, &l);
     state->vm->global = state->globals;
     state->vm->env = state->globals;
@@ -304,7 +304,7 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     joan_lexer_t l;
     joan_parser_t p = {0};
     p.arena = state->arena;
-    J_init_lexer(&l, src.source);
+    J_init_lexer(&l, src.source, path);
     jn_init_parser(&p, &l);
     Jn_environ* env = Jn_environ_init(NULL);
     JnVM vm = {0};

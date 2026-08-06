@@ -47,13 +47,14 @@ typedef struct joan_parser_t{
     joan_token_t curr;
     joan_token_t next;
     bool has_newl;
+    int errors;
 } joan_parser_t;
 
 
 void jn_init_parser(joan_parser_t* p, joan_lexer_t* l);
 void advance_parser(joan_parser_t* p);
 
-void advance_parser_c(joan_parser_t* p);
+joan_token_t next_parser(joan_parser_t* p);
 AST* parse_primary(joan_parser_t* p);
 // Main function for the parser.
 AST* parse_stmt(joan_parser_t* p);
