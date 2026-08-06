@@ -158,8 +158,6 @@ JN_API int Jn_compile(J_State* state)
     while(p->curr.type != TOKEN_EOF)
     {
         AST* stmt = parse_stmt(p);
-        // TODO: add error
-        if (NULL == stmt) return -1;
         stmt = parse_stmt_check(p, stmt);
         Jn_semantic_check(&sem, stmt);
         if (sem.errors) return -1;

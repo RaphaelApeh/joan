@@ -142,8 +142,32 @@ JN_INLINE bool check_next(joan_parser_t* p, J_TokenType type)
     return peek_parser(p).type == type;
 }
 
-static char* consume_ident(joan_parser_t* p);
-static char* consume_string(joan_parser_t* p);
+JN_INLINE char* consume_token(joan_parser_t* p, J_TokenType token)
+{
+    if (!check(p, token)) return NULL;
+    return get_lexeme(p);
+}
+
+static char* consume_ident(joan_parser_t* p)
+{
+    return consume_token(p, TOKEN_IDENTIFIER);
+}
+
+static char* consume_string(joan_parser_t* p)
+{
+    return consume_token(p, TOKEN_STRING);
+}
+
+static AST* parse_body(joan_parser_t* p)
+{
+    if (check(p, TOKEN_LBRACE))
+        return parse_block(p);
+    else if (match(p, TOKEN_THEN))
+    {
+        return parse_expr(p);
+    }
+    return parse_error(p, "No expression block found.");
+}
 
 void jn_init_parser(joan_parser_t* p, joan_lexer_t* l)
 {
@@ -594,16 +618,15 @@ static AST* parse_member(joan_parser_t* p, AST* obj)
     if (check(p, TOKEN_LBRACE))
         return parse_instance(p, obj);
 
-    if (!check(p, TOKEN_IDENTIFIER))
+    char* ident = consume_ident(p);
+    if (NULL == ident)
         return parse_error(p, "Expected identifier but got (%s).", GET_LEX(p));
-    
-    AST* field = ast_identifier(p, GET_LEX(p)); //parse_expr(p);
-    next_parser(p);
+    AST* field = ast_identifier(p, ident);
     AST* ast = ast_create(p, AST_MEMBER);
     ast->member.callie = obj;
     ast->member.field = field;
     ast->member.tok = tok;
-    ast->member.setter = NULL; // TODO
+    ast->member.setter = NULL;
     return ast;
 }
 
@@ -777,22 +800,13 @@ AST* parse_array(joan_parser_t* p)
     AST* arr = ast_array(p);
     while (true)
     {
-        if (check(p, TOKEN_RBRACKET))
-        {
-            next_parser(p);
+        if (match(p, TOKEN_RBRACKET))
             break;
-        }
         ast_array_add(arr, parse_expr(p));
-        if (check(p, TOKEN_COMMA))
-        {
-            next_parser(p);
+        if (match(p, TOKEN_COMMA))
             continue;
-        }
-        if (check(p, TOKEN_RBRACKET))
-        {
-            next_parser(p);
+        if (match(p, TOKEN_RBRACKET))
             break;
-        }
         return parse_error(p, "Expected a closing bracket '['.");
     }
     return arr;
@@ -810,7 +824,7 @@ static AST* parse_lambda(joan_parser_t* p)
         }
         add(32, 12);
     */
-    next_parser(p);
+    consume(p, TOKEN_BITOR);
     int len = 0, cap = 20;
     char** args = malloc(sizeof(char *) * cap);
     do {
