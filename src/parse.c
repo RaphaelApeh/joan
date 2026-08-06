@@ -144,6 +144,7 @@ JN_INLINE bool check_next(joan_parser_t* p, J_TokenType type)
 
 static char* consume_ident(joan_parser_t* p);
 static char* consume_string(joan_parser_t* p);
+
 void jn_init_parser(joan_parser_t* p, joan_lexer_t* l)
 {
     assert(p != NULL && l != NULL);
