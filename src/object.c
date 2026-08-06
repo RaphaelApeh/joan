@@ -415,7 +415,7 @@ JnObject* jn_obj_intern(J_State* state, JnObject* obj)
 
 bool jn_obj_equals(JnObject* obj, JnObject* other)
 {
-    assert(obj && other);
+    if (!obj || !other) return false;
     return (
         obj->type == other->type && 
         Jn_object_hash(obj) == Jn_object_hash(other)

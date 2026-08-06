@@ -157,9 +157,9 @@ typedef struct Jn_environ Jn_environ;
     putchar('\n');                                    \
 } while (false)
 
-#define JN_LOG(msg, ...) do {                           \
-    fprintf(stderr, "[MESSAGE]: ");                     \
-    fprintf(stderr, msg, __VA_ARG__);                   \
+#define JN_LOG(msg, ...) do {                               \
+    fprintf(stderr, "[MESSAGE]: ");                         \
+    fprintf(stderr, msg, ##__VA_ARGS__);                    \
 } while (false)
 
 #define JN_ARGS_COUNT(obj) ((obj)->arg.count)
@@ -199,6 +199,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_AS_CHAR(obj) (obj)->j_char
 #define JN_AS_STRING(obj) (obj)->str
 #define JN_AS_CSTRING(obj) (JN_AS_STRING(obj)->chars)
+#define JN_STRING_LEN(obj) JN_AS_STRING(obj)->len
 #define JN_AS_INT(obj) (obj)->int_val
 #define JN_AS_FLOAT(obj) (obj)->float_val
 #define JN_AS_ARRAY(obj) (obj)->arr
@@ -595,6 +596,7 @@ JnObject* jn_obj_arg(J_State*, JnObject** args, char** arg_names, size_t count);
 JnObject* jn_obj_method(J_State*, JnObject* obj, JN_CMethod method);
 JnObject* jn_obj_instance(J_State*, JnObject* obj, Jn_environ* fields);
 bool jn_obj_equals(JnObject* obj, JnObject* other);
+bool jn_obj_match(JnObject* obj, JnObject* other);
 uint64_t Jn_object_hash(JnObject* obj);
 char* jn_obj_to_string(JnObject* obj);
 char* jn_obj_cstring(JnObject* obj);

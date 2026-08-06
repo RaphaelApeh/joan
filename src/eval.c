@@ -19,7 +19,7 @@
 #define eval_bin_bool_c(l, r, op) jn_obj_bool(state, tonumber_c((l)) op tonumber_c((r)))
 
 
-static inline bool isnumber(JnObject* obj)
+JN_INLINE bool isnumber(JnObject* obj)
 {
     if (NULL == obj) return false;
     if (obj->type == JN_INT_TYPE || obj->type == JN_FLOAT_TYPE)
@@ -27,14 +27,14 @@ static inline bool isnumber(JnObject* obj)
     return false;
 }
 
-static inline double tonumber(JnObject* obj)
+JN_INLINE double tonumber(JnObject* obj)
 {
     if (obj->type == JN_INT_TYPE)
         return (double)obj->int_val;
     return obj->float_val;
 }
 
-static inline bool isnumber_c(JnObject* obj)
+JN_INLINE bool isnumber_c(JnObject* obj)
 {
     if (NULL == obj) return false;
     
@@ -44,7 +44,7 @@ static inline bool isnumber_c(JnObject* obj)
     return false;
 }
 
-static inline int tonumber_c(JnObject* obj)
+JN_INLINE int tonumber_c(JnObject* obj)
 {
     assert(obj);
     if (obj->type == JN_CHAR_TYPE)
@@ -62,8 +62,7 @@ static bool array_contains(JnObject* key, JnArrayObject* arr)
 {
     for (size_t i = 0; i < arr->size; ++i)
     {
-        if ( key->type == arr->items[i]->type &&
-            Jn_object_hash(key) == Jn_object_hash(arr->items[i]))
+        if (jn_obj_equals(key, arr->items[i]))
             return true;
     }
     return false;
@@ -78,6 +77,30 @@ static JnObject* eval_array(J_State* state, JnObject* lhs, JnObject* rhs, int op
 static JnObject* eval_hashmap(J_State* state, JnObject* lhs, JnObject* rhs, int op);
 static JnObject* eval_default(J_State* state, JnObject* lhs, JnObject* rhs, int op);
 
+
+bool jn_obj_match(JnObject* obj, JnObject* other)
+{
+    if (jn_obj_equals(obj, other))
+        return true;
+    
+    switch (JN_OBJ_TYPE(other))
+    {
+        case JN_ARRAY_TYPE:
+        case JN_TUPLE_TYPE:
+            return array_contains(obj, JN_IS_ARRAY(other) ? JN_AS_ARRAY(other) : JN_AS_TUPLE(other));
+        case JN_HASHMAP_TYPE:
+            return hashmap_contains(obj, JN_AS_HASHMAP(other));
+        case JN_STRING_TYPE:
+        {
+            if (!JN_IS_CHAR(obj)) return false;
+            char* ret_str = memchr(JN_AS_CSTRING(other), JN_AS_CHAR(obj), JN_STRING_LEN(other));
+            return ret_str != NULL;
+        }
+        default:
+            break;
+    }
+    return false;
+}
 
 JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
 {

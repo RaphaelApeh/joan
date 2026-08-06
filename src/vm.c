@@ -607,6 +607,10 @@ int vm_run(J_State* state, JnVM* vm)
                     return die(state,vm, "Expected an iterable.");
                 }
                 break;
+            case OP_MATCH:  {
+                b = pop(vm); a = pop(vm);
+                PUSH(vm, JN_RETURN_BOOL(state, jn_obj_match(a, b)));
+            } break;
             case OP_POP:
                 pop(vm); break;
             case OP_DUP:
@@ -1049,7 +1053,7 @@ void compile(AST* node, Chuck* chuck)
             case_o caseObj = node->match_node.cases->cases[i];
             WRITE_CHUCK(chuck, OP_DUP);
             compile(caseObj.pattern, chuck);
-            WRITE_CHUCK(chuck, OP_EQUAL);
+            WRITE_CHUCK(chuck, OP_MATCH);
             int next_case = emit_jump(chuck, OP_JUMP_IF_FALSE);
             WRITE_CHUCK(chuck, OP_POP);
             compile(caseObj.block, chuck);

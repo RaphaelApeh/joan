@@ -27,6 +27,7 @@
 
 
 static AST* parse_unary(joan_parser_t* p, J_TokenType op);
+static AST* parse_block(joan_parser_t* p);
 
 int check(joan_parser_t* p, J_TokenType type)
 {
@@ -62,7 +63,11 @@ JN_INLINE joan_token_t previous(joan_parser_t* p)
 
 JN_INLINE void consume(joan_parser_t* p, J_TokenType token)
 {
-    if (!check(p, token)) return;
+    if (!check(p, token)) 
+    {
+        JN_LOG("consume() does not match token.");
+        return;
+    }
     next_parser(p);
 }
 
@@ -158,7 +163,7 @@ static char* consume_string(joan_parser_t* p)
     return consume_token(p, TOKEN_STRING);
 }
 
-static AST* parse_body(joan_parser_t* p)
+static AST* parse__body(joan_parser_t* p)
 {
     if (check(p, TOKEN_LBRACE))
         return parse_block(p);
@@ -237,7 +242,7 @@ precedence get_prec(J_TokenType type)
     }
 }
 
-AST* parse_block(joan_parser_t* p)
+static AST* parse_block(joan_parser_t* p)
 {
     consume(p, TOKEN_LBRACE);
     AST* block = new_block(p);
@@ -802,11 +807,15 @@ AST* parse_array(joan_parser_t* p)
     {
         if (match(p, TOKEN_RBRACKET))
             break;
+        
         ast_array_add(arr, parse_expr(p));
+
         if (match(p, TOKEN_COMMA))
             continue;
+        
         if (match(p, TOKEN_RBRACKET))
             break;
+        
         return parse_error(p, "Expected a closing bracket '['.");
     }
     return arr;
