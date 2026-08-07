@@ -261,7 +261,7 @@ int fuzzy_match(const char* word, char** list_words, int size, struct FuzzMatch*
     return found;
 }
 
-static set__color(int color)
+static void set__color(int color)
 {
 
 }

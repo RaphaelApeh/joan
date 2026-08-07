@@ -1138,7 +1138,6 @@ AST* parse_primary(joan_parser_t* p)
     {
         case TOKEN_INT:
             long i = t.i;
-            printf("Hello World %ld\n", i);
             JnObject* v =  jn_obj_int(p->state, i);
             return parse_literal(p, v);
         case TOKEN_LPARN:

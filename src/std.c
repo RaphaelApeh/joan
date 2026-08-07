@@ -4,12 +4,9 @@
 #include "vm.h"
 #include "object.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#define sleep Sleep
+#ifdef JN_WINDOWS
 
-#elif
-#include <unistd.h>
+#define sleep Sleep
 #endif
 
 
@@ -802,11 +799,11 @@ static JnObject* native_sleep(J_State* state, JnObject* args)
     if (!JN_AS_INT(JN_GET_ARG(args)))
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "sleep() takes an int type but got TODO.");
     
-    #ifdef _WIN32
-        sleep(JN_AS_INT(JN_GET_ARG(args)) * 1000);
-    #else
-        sleep(JN_AS_INT(JN_GET_ARG(args)));
-    #endif
+#ifdef JN_WINDOWS
+    sleep(JN_AS_INT(JN_GET_ARG(args)) * 1000);
+#else
+    sleep(JN_AS_INT(JN_GET_ARG(args)));
+#endif
     return JN_RETURN_NONE;
 }
 

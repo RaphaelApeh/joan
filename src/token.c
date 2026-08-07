@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include "token.h"
 #include "lexer.h"
@@ -80,8 +81,63 @@ joan_token_t number_token(joan_lexer_t* l)
     char* buff;
     bool is_float = false;
     bool prev_us = false;
-    if (l->start[0] == '0' && (peek(l) == 'x' || peek(l) == 'X'))
+    short base = 0;
+    if (l->start[0] == '0')
     {
+        if (peek(l) == 'x' || peek(l) == 'X')
+        {
+            base = 16;
+            advance(l);
+        }
+        else if (peek(l) == 'b' || peek(l) == 'B')
+        {
+            base = 2;
+            advance(l);
+        }
+        if (base)
+        {
+            if (base == 16)
+            {
+                if (!isxdigit(peek(l)))
+                    return make_error(l, "token is not an hexadecimal.");
+            } else
+            {
+                if (peek(l) != '0' && peek(l) != '1')
+                    return make_error(l, "invalid digit '%c' in binary literal.", peek(l));
+            }
+            for (;;)
+            {
+                char c = peek(l);
+                bool _valid = (
+                    base == 16 && isxdigit(c))  || (base == 2 && (c == '0' || c == '1')
+                );
+                if (_valid)
+                {
+                    prev_us = false;
+                    advance(l);
+                    continue;
+                }
+                if (c == '_')
+                {
+                    if (prev_us)    return make_error(l, "consecutive '_' in int.");
+                    prev_us = true;
+                    advance(l);
+                    continue;
+                }
+                break;
+            }
+            if (l->curr[-1] == '_')
+                return make_error(l, "'_' found in an integer.");
+            joan_token_t t = make_token(l, TOKEN_INT);
+            buff = rm_num_sep(t.lexeme);
+            if (base == 2)
+                t.i = strtoll(buff + 2, NULL, base);
+            else
+                t.i = strtoll(buff, NULL, base);
+            free(buff);
+            buff = NULL;
+            return t;
+        }
         advance(l);
         if (!isxdigit(peek(l)))
             return make_error(l, "token is not an hex.");

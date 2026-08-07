@@ -183,6 +183,8 @@ int vm_run(J_State* state, JnVM* vm)
     #define READ_IDENT() (vm->chuck->idents[READ_BYTE()])
     #define POP() pop(vm)
     #define DIE(msg, ...) die(state, vm, msg, ##__VA_ARGS__)
+    #define PEEK() vm_peek(vm, 0)
+    #define PEEK2() vm_peek(vm, 1);
     int count;
     JnObject* tmp;
     JnObject* o = NULL;
@@ -705,7 +707,7 @@ int vm_run(J_State* state, JnVM* vm)
                 PUSH(vm, JN_ITER_INIT(state, iterable));
                 break;
             case OP_ITER_NEXT:
-                JnObject* iter_obj = pop(vm);
+                JnObject* iter_obj = PEEK();
                 if (!_JN_CHECK_TYPE(iter_obj, JN_ITER_TYPE))
                     return die(state,vm, "Expected an iter type.");
                 JnIterObject* _iter = JN_AS_ITER(iter_obj);
@@ -1177,6 +1179,7 @@ void compile(AST* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_RETURN);
         break;
     case AST_CONTINUE:
+    {
         if (loop_depth <= 0)
         {
             id = add_ident(chuck, "cannot add 'continue' outside a loop.");
@@ -1187,8 +1190,7 @@ void compile(AST* node, Chuck* chuck)
         loop = &loop_stack[loop_depth - 1];
         jump = emit_jump(chuck, OP_JUMP);
         loop->continues[loop->continue_count++] = jump;
-        break;
-    
+    }   break;
     case AST_FOR_EACH: {
         loop = &loop_stack[loop_depth++];
         loop->break_count = 0;
@@ -1207,6 +1209,7 @@ void compile(AST* node, Chuck* chuck)
 
         id = add_ident(chuck, (char *)node->foreach_node.ident);
         WRITE_CHUCK(chuck, OP_SET_GLOBAL);
+        WRITE_CHUCK(chuck, id);
         WRITE_CHUCK(chuck, 0);
         
         if (node->foreach_node.index)
@@ -1226,7 +1229,9 @@ void compile(AST* node, Chuck* chuck)
         
         emit_loop(chuck, loop_start);
         patch_jump(chuck, exit_jump);
-        WRITE_CHUCK(chuck, OP_POP);
+        WRITE_CHUCK(chuck, OP_POP); // remove flag
+
+        WRITE_CHUCK(chuck, OP_POP); // remove iterator
 
         for (int i = 0; i < loop->break_count; i++)
             patch_jump(chuck, loop->breaks[i]);
