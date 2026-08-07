@@ -298,6 +298,7 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
 
 uint64_t Jn_object_hash(JnObject* obj)
 {
+    #define HASH_MIX_STRING(str)  hash_mix(djb2_hash((const unsigned char *)(str)))
     if (!obj) return 0;
     uint64_t h;
     switch (obj->type)
@@ -333,8 +334,8 @@ uint64_t Jn_object_hash(JnObject* obj)
         }
         case JN_MODULE_TYPE:
         {
-            h = hash_mix(djb2_hash(obj->module->name));
-            return hash_combine(h, hash_mix(djb2_hash(obj->module->path)));
+            h = HASH_MIX_STRING(obj->module->name);
+            return hash_combine(h, HASH_MIX_STRING(obj->module->path));
         }
         case JN_STRUCT_TYPE:
         {

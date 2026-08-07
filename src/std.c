@@ -779,6 +779,13 @@ static JnObject* native_isinstance(J_State* state, JnObject* arg)
     return NULL;
 }
 
+static JnObject* native_exit(J_State* state, JnObject* args)
+{
+    int count = JN_ARGS_COUNT(args);
+    // TODO
+    return NULL;
+}
+
 static JnObject* native_defined(J_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1)

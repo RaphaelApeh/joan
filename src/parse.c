@@ -803,21 +803,34 @@ AST* parse_array(joan_parser_t* p)
 {
     consume(p, TOKEN_LBRACKET);
     AST* arr = ast_array(p);
-    while (true)
+    while (check(p, TOKEN_RBRACKET))
     {
-        if (match(p, TOKEN_RBRACKET))
+
+        if (check(p, TOKEN_COMMA))
+        {
+            return parse_error(p, "Expected an expression before ','.");
+        }
+
+        if (check(p, TOKEN_RBRACKET))
             break;
         
         ast_array_add(arr, parse_expr(p));
 
         if (match(p, TOKEN_COMMA))
+        {
+            if (check(p, TOKEN_RBRACKET))
+                break;
             continue;
-        
-        if (match(p, TOKEN_RBRACKET))
+        }
+        if (check(p, TOKEN_RBRACKET))
             break;
         
-        return parse_error(p, "Expected a closing bracket '['.");
+        if (!check(p, TOKEN_RBRACKET))
+        {
+            return parse_error(p, "Expected ',' or closing ']'.");
+        }
     }
+    SKIP(p, TOKEN_RBRACKET, "Expected a closing ']'.");
     return arr;
 }
 
