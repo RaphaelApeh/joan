@@ -802,6 +802,8 @@ int vm_run(J_State* state, JnVM* vm)
                 return vm_error(state, vm, JN_RAISE_EXCPETION(state, SYNTAX_ERROR, ident));
             case OP_END:
                 return JN_INTERPRET_OK;
+            case OP_EXIT:
+                return JN_INTERPRET_EXIT;
             case OP_RETURN:
                 o = pop(vm);
                 PUSH(vm, o);
@@ -814,6 +816,8 @@ int vm_run(J_State* state, JnVM* vm)
     }
     #undef READ_BYTE
     #undef READ_CONST
+    #undef PEEK
+    #undef PEEK2
 }
 
 void compile(AST* node, Chuck* chuck)
