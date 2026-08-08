@@ -130,7 +130,7 @@ JN_API void Jn_program_init(J_State* state)
     assert(state->vm->chuck != NULL);
     chuck_init(state->vm->chuck);
     state->running = true;
-    state->parser = malloc(sizeof(joan_parser_t));
+    state->parser = malloc(sizeof(JnParser));
     state->gc->next_gc = 1024 * 1024;
     state->gc->bytes_allocated = 0;
     state->gc->object_count = 0;
@@ -153,7 +153,7 @@ JN_API void Jn_program_init(J_State* state)
 JN_API int Jn_compile(J_State* state)
 {
     JnSemantic sem;
-    joan_parser_t* p = state->parser;
+    JnParser* p = state->parser;
     Jn_semantic_init(state, &sem);
     while(p->curr.type != TOKEN_EOF)
     {
@@ -300,7 +300,7 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     J_Source src = read_source_file(filename);
     cxt->source = src;
     joan_lexer_t l;
-    joan_parser_t p = {0};
+    JnParser p = {0};
     p.arena = state->arena;
     J_init_lexer(&l, src.source, path);
     jn_init_parser(&p, &l);

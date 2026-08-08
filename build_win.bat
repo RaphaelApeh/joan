@@ -6,9 +6,9 @@ if "%1" == "debug" set opt = "-ggdb -DJOAN_DEBUG"
 cd src
 
 :: TODO: exclude main.c (might create more c files)
-gcc %opt% -O2 -Wall -Wno-unused-function -Wno-unused-variable -I../include -c *.c
+gcc %opt% -O2 -Wall -DJN_BUILD_DLL -Wno-unused-function -Wno-unused-variable -I../include -c *.c
 
-gcc %opt% -Wno-unused-function -Wno-unused-variable -shared -Wl,--output-def=libjoan.def -Wl,--out-implib=libjoan.a -Wl,--dll *.o -o libjoan.dll -static-libgcc -static
+gcc %opt% -DJN_BUILD_DLL -Wno-unused-function -Wno-unused-variable -shared -Wl,--output-def=libjoan.def -Wl,--out-implib=libjoan.a -Wl,--dll *.o -o libjoan.dll -static-libgcc -static
 
 gcc -Wall  -Wno-unused-function -Wno-unused-variable -I../include -c main.c
 gcc main.o -o joan.exe -static-libgcc -static -L%cd% -lm -ljoan

@@ -9,7 +9,7 @@
 #include "parse.h"
 
 
-AST* ast_create(joan_parser_t* p, AST_TYPE type)
+AST* ast_create(JnParser* p, AST_TYPE type)
 {
     assert(p != NULL);
     assert(p->arena != NULL);
@@ -23,7 +23,7 @@ AST* ast_create(joan_parser_t* p, AST_TYPE type)
     return ast;
 }
 
-AST* new_block(joan_parser_t* p)
+AST* new_block(JnParser* p)
 {
     u64 capacity = 8;
     AST* ast = ast_create(p, AST_BLOCK);
@@ -46,7 +46,7 @@ void add_block(AST* ast, AST* node)
 }
 
 
-AST* ast_literal(joan_parser_t* p, JnObject* object)
+AST* ast_literal(JnParser* p, JnObject* object)
 {
     AST* ast = ast_create(p, AST_LITERAL);
 
@@ -54,7 +54,7 @@ AST* ast_literal(joan_parser_t* p, JnObject* object)
     return ast;
 }
 
-AST* ast_identifier(joan_parser_t* p, const char* identifier)
+AST* ast_identifier(JnParser* p, const char* identifier)
 {
     AST* ast = ast_create(p, AST_IDENTIFIER);
 
@@ -62,7 +62,7 @@ AST* ast_identifier(joan_parser_t* p, const char* identifier)
     return ast;
 }
 
-AST* ast_unary(joan_parser_t* p, J_TokenType op, AST* right)
+AST* ast_unary(JnParser* p, J_TokenType op, AST* right)
 {
     AST* ast = ast_create(p, AST_UNARY);
 
@@ -71,7 +71,7 @@ AST* ast_unary(joan_parser_t* p, J_TokenType op, AST* right)
     return ast;
 }
 
-AST* ast_binary(joan_parser_t* p, AST* lhs, J_TokenType op, AST* rhs)
+AST* ast_binary(JnParser* p, AST* lhs, J_TokenType op, AST* rhs)
 {
     AST* ast = ast_create(p, AST_BINARY);
 
@@ -81,7 +81,7 @@ AST* ast_binary(joan_parser_t* p, AST* lhs, J_TokenType op, AST* rhs)
     return ast;
 }
 
-AST* ast_println(joan_parser_t* p, AST* out)
+AST* ast_println(JnParser* p, AST* out)
 {
     AST* ast = ast_create(p, AST_PRINTLN);
 
@@ -89,7 +89,7 @@ AST* ast_println(joan_parser_t* p, AST* out)
     return ast;
 }
 
-AST* ast_array(joan_parser_t* p)
+AST* ast_array(JnParser* p)
 {
     AST* ast = ast_create(p, AST_ARRAY);
 
@@ -117,7 +117,7 @@ void ast_array_add(AST* arr, AST* element)
 
 
 AST* ast_assign(
-    joan_parser_t* p,
+    JnParser* p,
     char* name,
     bool is_const,
     AST* value
@@ -130,7 +130,7 @@ AST* ast_assign(
     return ast;
 }
 
-AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* else_node)
+AST* ast_if_node(JnParser* p, AST* cond, AST* then, elseif* elseif, AST* else_node)
 {
     AST* ast = ast_create(p, AST_IF);
     ast->if_node.condition = cond;
@@ -140,19 +140,19 @@ AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* el
     return ast;
 }
 
-AST* ast_break(joan_parser_t* p)
+AST* ast_break(JnParser* p)
 {
     AST* ast = ast_create(p, AST_BREAK);
     return ast;
 }
 
-AST* ast_continue(joan_parser_t* p)
+AST* ast_continue(JnParser* p)
 {
     AST* ast = ast_create(p, AST_CONTINUE);
     return ast;
 }
 
-AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def)
+AST* ast_match(JnParser* p, AST* sub, case_t* cases, AST* def)
 {
     AST* ast = ast_create(p, AST_MATCH);
     ast->match_node.cases = cases;
@@ -161,7 +161,7 @@ AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def)
     return ast;
 }
 
-AST* ast_call(joan_parser_t* p, AST* callee, AST** args, size_t count)
+AST* ast_call(JnParser* p, AST* callee, AST** args, size_t count)
 {
     AST* ast = ast_create(p, AST_CALL);
     ast->call.callee = callee;
@@ -171,7 +171,7 @@ AST* ast_call(joan_parser_t* p, AST* callee, AST** args, size_t count)
 }
 
 
-AST* ast_function(joan_parser_t* p, char* ident, AST* block, int count, char** params)
+AST* ast_function(JnParser* p, char* ident, AST* block, int count, char** params)
 {
     AST* ast = ast_create(p, AST_FUNCTION);
     ast->fn_node.block = block;
@@ -181,7 +181,7 @@ AST* ast_function(joan_parser_t* p, char* ident, AST* block, int count, char** p
     return ast;
 }
 
-AST* ast_error(joan_parser_t* p, const char* msg)
+AST* ast_error(JnParser* p, const char* msg)
 {
     AST* ast = ast_create(p, AST_ERROR);
     ast->error_msg = msg;

@@ -11,7 +11,7 @@
 
 #define CHECK_TOK(lex, str) ((strcmp((lex), (str))) == 0)
 
-static joan_token_t make_error(joan_lexer_t* l, char* msg, ...);
+static JnToken make_error(joan_lexer_t* l, char* msg, ...);
 
 #define KEYWORD_S struct {const char* keyword; J_TokenType token; }
 
@@ -67,16 +67,16 @@ static bool equal(const char* src, const char* src2)
     return strcmp(src, src2) == 0;
 }
 
-joan_token_t clean_token(joan_lexer_t* l)
+JnToken clean_token(joan_lexer_t* l)
 {
-    joan_token_t t;
+    JnToken t;
     do {
         t = next_token(l);
     } while (t.type == TOKEN_NEWLINE);
     return t;
 }
 
-joan_token_t number_token(joan_lexer_t* l)
+JnToken number_token(joan_lexer_t* l)
 {
     char* buff;
     bool is_float = false;
@@ -128,7 +128,7 @@ joan_token_t number_token(joan_lexer_t* l)
             }
             if (l->curr[-1] == '_')
                 return make_error(l, "'_' found in an integer.");
-            joan_token_t t = make_token(l, TOKEN_INT);
+            JnToken t = make_token(l, TOKEN_INT);
             buff = rm_num_sep(t.lexeme);
             if (base == 2)
                 t.i = strtoll(buff + 2, NULL, base);
@@ -155,7 +155,7 @@ joan_token_t number_token(joan_lexer_t* l)
         }
         if (l->curr[-1] == '_')
             return make_error(l, "int cannot end with '_'.");
-        joan_token_t _t = make_token(l, TOKEN_INT);
+        JnToken _t = make_token(l, TOKEN_INT);
         buff = rm_num_sep(_t.lexeme);
         _t.i = strtol(buff, NULL, 0);
         free(buff);
@@ -220,20 +220,20 @@ joan_token_t number_token(joan_lexer_t* l)
     }
     if (is_float)
     {
-        joan_token_t t = make_token(l, TOKEN_FLOAT);
+        JnToken t = make_token(l, TOKEN_FLOAT);
         buff = rm_num_sep(t.lexeme);
         t.d = strtod(buff, NULL);
         free(buff);
         return t;
     }
-    joan_token_t t = make_token(l, TOKEN_INT);
+    JnToken t = make_token(l, TOKEN_INT);
     buff = rm_num_sep(t.lexeme);
     t.i = strtol(buff, NULL, 10);
     free(buff);
     return t;
 }
 
-joan_token_t token_string(joan_lexer_t* l)
+JnToken token_string(joan_lexer_t* l)
 {
     l->start = l->curr;
     char q = l->curr[-1];
@@ -252,7 +252,7 @@ joan_token_t token_string(joan_lexer_t* l)
     }
     if (*l->curr == '\0')
     {
-        joan_token_t t;
+        JnToken t;
         t.type = TOKEN_ERROR;
         t.lexeme = "unterminated string literal.";
         t.v = NULL;
@@ -260,7 +260,7 @@ joan_token_t token_string(joan_lexer_t* l)
         t.column = l->column;
         return t;
     }
-    joan_token_t t = make_token(l, TOKEN_STRING);
+    JnToken t = make_token(l, TOKEN_STRING);
     char c = *l->curr++;
     l->column++;
     if (q != c)
@@ -268,11 +268,11 @@ joan_token_t token_string(joan_lexer_t* l)
     return t;   
 }
 
-static joan_token_t token_char(joan_lexer_t* l)
+static JnToken token_char(joan_lexer_t* l)
 {
     char c;
     l->start = l->curr;
-    joan_token_t t;
+    JnToken t;
     if (*l->curr == '\0')
     {
         t.type = TOKEN_ERROR;
@@ -321,11 +321,11 @@ static joan_token_t token_char(joan_lexer_t* l)
     return t;
 }
 
-joan_token_t token_identifier(joan_lexer_t* l)
+JnToken token_identifier(joan_lexer_t* l)
 {
     while (isalnum(peek(l)) || peek(l) == '_') 
         advance(l);
-    joan_token_t t = make_token(l, TOKEN_IDENTIFIER);
+    JnToken t = make_token(l, TOKEN_IDENTIFIER);
 
     for (int i = 0; i < (int)(sizeof(Keywords) / sizeof(Keywords[0])); ++i)
     {
@@ -339,9 +339,9 @@ joan_token_t token_identifier(joan_lexer_t* l)
 }
 
 
-static joan_token_t make_error(joan_lexer_t* l, char* msg, ...)
+static JnToken make_error(joan_lexer_t* l, char* msg, ...)
 {
-    joan_token_t t;
+    JnToken t;
     char buffer[256];
     va_list arg; va_start(arg, msg);
     vsnprintf(buffer, sizeof(buffer), msg, arg);
@@ -355,9 +355,9 @@ static joan_token_t make_error(joan_lexer_t* l, char* msg, ...)
     return t;
 }
 
-joan_token_t make_token(joan_lexer_t* l, J_TokenType type)
+JnToken make_token(joan_lexer_t* l, J_TokenType type)
 {
-    joan_token_t t;
+    JnToken t;
     t.type = type;
     int len = l->curr - l->start;
     char* copy = malloc(len + 1);
@@ -370,7 +370,7 @@ joan_token_t make_token(joan_lexer_t* l, J_TokenType type)
     return t;
 }
 
-joan_token_t make_comment(joan_lexer_t* l)
+JnToken make_comment(joan_lexer_t* l)
 {
     l->curr += 2;
     l->start = l->curr;
@@ -379,7 +379,7 @@ joan_token_t make_comment(joan_lexer_t* l)
     return make_token(l, TOKEN_COMMENT);
 }
 
-joan_token_t make_comment_block(joan_lexer_t* l)
+JnToken make_comment_block(joan_lexer_t* l)
 {
     l->curr += 2;
     l->start = l->curr;
@@ -391,7 +391,7 @@ joan_token_t make_comment_block(joan_lexer_t* l)
     return make_token(l, TOKEN_COMMENT);
 }
 
-joan_token_t next_token(joan_lexer_t* l)
+JnToken next_token(joan_lexer_t* l)
 {
     strip_ws(l);
     l->start = l->curr;

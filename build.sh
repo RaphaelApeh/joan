@@ -16,7 +16,7 @@ cd src
 
 SRC = $(find . -maxdepth 1 -name "*.c" | -name "main.c")
 
-$CC $OPT -O2 -Wall -Wno-unused-function -Wno-pointer-sign -Wno-unused-variable    \
+$CC $OPT -O2 -Wall -DJN_BUILD_DLL -Wno-unused-function -Wno-pointer-sign -Wno-unused-variable    \
     -I../include -c $SRC
 
 $CC $OPT -shared *.o -o libjoan.so

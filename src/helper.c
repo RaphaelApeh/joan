@@ -284,8 +284,57 @@ JN_API char* Jn_get_pass(const char* msg)
 {
     if (!msg)
         msg = "Enter your password: ";
+    
+    char* buff = Jn_alloc(sizeof(char) * 20);
+    size_t len = 0, cap = 20;
+    char c;
 #ifdef JN_WINDOWS
     JnHandle hStdIn = GetStdHandle(STD_INPUT_HANDLE);
-    
+    DWORD mode, dwRead;
+    GetConsoleMode(hStdIn, &mode);
+    SetConsoleMode(hStdIn, mode & ~ENABLE_ECHO_INPUT);
+    printf("%s", msg);
+    while (ReadConsole(hStdIn, &c, 1, &dwRead, NULL) &&  c != '\r')
+    {
+        if (c == '\b' && len > 0)
+        {
+            printf("\b \b");
+            len--;
+            continue;
+        }
+        if (len >= cap)
+        {
+            cap *= 2;
+            buff = Jn_realloc(buff, sizeof(char) * cap);
+        }
+        buff[len++] = c;
+    }
+    buff[len] = 0;
+    SetConsoleMode(hStdIn, mode);
+    return buff;
+#else
+    struct termios old, new;
+    tcgetattr(STDIN_FILENO, &old);
+    new = old;
+    new.c_lflag &= ~(ECHO | ICANON);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new);
+    printf("%s", msg);
+    while (read(STDIN_FILENO, &c, 1) && c != '\n')
+    {
+        if (c == 127 && len > 0)
+        {
+            printf("\b \b");
+            len--;
+        }
+        if (len >= cap)
+        {
+            cap *= 2;
+            buff = Jn_realloc(buff, sizeof(char) * cap);
+        }
+        buff[len++] = c;
+    }
+    buff[len] = 0;
+    tcsetattr(STDIN_FILENO, TCSANOW, &old);
+    return buff;
 #endif
 }

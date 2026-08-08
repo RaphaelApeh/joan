@@ -11,7 +11,7 @@ typedef uint64_t u64;
 typedef struct case_t case_t;
 typedef struct case_o case_o;
 typedef struct elseif elseif;
-typedef struct joan_parser_t joan_parser_t;
+typedef struct JnParser JnParser;
 typedef struct attr_t attr_t;
 typedef struct AST AST;
 
@@ -259,29 +259,29 @@ typedef struct AST{
     int line, col;
 } AST;
 
-AST* ast_create(joan_parser_t* p, AST_TYPE type);
+AST* ast_create(JnParser* p, AST_TYPE type);
 
-AST* new_block(joan_parser_t* p);
+AST* new_block(JnParser* p);
 
 void add_block(AST* ast, AST* node);
 // LITERAL: -> true, false, None
-AST* ast_literal(joan_parser_t* p, JnObject* object);
+AST* ast_literal(JnParser* p, JnObject* object);
 
-AST* ast_binary(joan_parser_t* p, AST* lhs, J_TokenType op, AST* rhs);
+AST* ast_binary(JnParser* p, AST* lhs, J_TokenType op, AST* rhs);
 
-AST* ast_unary(joan_parser_t* p, J_TokenType op, AST* right);
+AST* ast_unary(JnParser* p, J_TokenType op, AST* right);
 
-AST* ast_println(joan_parser_t* p, AST* out);
+AST* ast_println(JnParser* p, AST* out);
 
 //ARRAY: AST functions
-AST* ast_array(joan_parser_t* p);
+AST* ast_array(JnParser* p);
 void ast_array_add(AST* arr, AST* element);
 
-AST* ast_identifier(joan_parser_t* p, const char* identifier);
+AST* ast_identifier(JnParser* p, const char* identifier);
 
 //ASSIGN: v = true; const x = 4
 AST* ast_assign(
-    joan_parser_t* p,
+    JnParser* p,
     char* name,
     bool is_const,
     AST* value
@@ -289,23 +289,23 @@ AST* ast_assign(
 
 
 // Function
-AST* ast_function(joan_parser_t* p, char* ident, AST* block, int count, char** params);
+AST* ast_function(JnParser* p, char* ident, AST* block, int count, char** params);
 
 //IF STATEMENT
-AST* ast_if_node(joan_parser_t* p, AST* cond, AST* then, elseif* elseif, AST* else_node);
+AST* ast_if_node(JnParser* p, AST* cond, AST* then, elseif* elseif, AST* else_node);
 
 //BREAK, CONTINUE
-AST* ast_break(joan_parser_t* p);
-AST* ast_continue(joan_parser_t* p);
-AST* ast_return(joan_parser_t* p, AST* value);
+AST* ast_break(JnParser* p);
+AST* ast_continue(JnParser* p);
+AST* ast_return(JnParser* p, AST* value);
 // Call
-AST* ast_call(joan_parser_t* p, AST* callee, AST** args, size_t count);
+AST* ast_call(JnParser* p, AST* callee, AST** args, size_t count);
 
 
 //Match
-AST* ast_match(joan_parser_t* p, AST* sub, case_t* cases, AST* def);
+AST* ast_match(JnParser* p, AST* sub, case_t* cases, AST* def);
 
 //ERROR
-AST* ast_error(joan_parser_t* p, const char* msg);
+AST* ast_error(JnParser* p, const char* msg);
 
 #endif // JOAN_AST_H

@@ -39,27 +39,27 @@ typedef enum{
     PREC_PRIMARY
 } precedence;
 
-typedef struct joan_parser_t{
+typedef struct JnParser{
     J_State* state;
     joan_lexer_t* l;
     Jn_Arena* arena;
-    joan_token_t prev;
-    joan_token_t curr;
-    joan_token_t next;
+    JnToken prev;
+    JnToken curr;
+    JnToken next;
     bool has_newl;
     int errors;
-} joan_parser_t;
+} JnParser;
 
 
-void jn_init_parser(joan_parser_t* p, joan_lexer_t* l);
-void advance_parser(joan_parser_t* p);
+void jn_init_parser(JnParser* p, joan_lexer_t* l);
+void advance_parser(JnParser* p);
 
-joan_token_t next_parser(joan_parser_t* p);
-AST* parse_primary(joan_parser_t* p);
+JnToken next_parser(JnParser* p);
+AST* parse_primary(JnParser* p);
 // Main function for the parser.
-AST* parse_stmt(joan_parser_t* p);
-AST* parse_stmt_check(joan_parser_t* p, AST* stmt);
-AST* parse_expr(joan_parser_t* p);
-AST* parse_error(joan_parser_t* p, const char* msg, ...);
+AST* parse_stmt(JnParser* p);
+AST* parse_stmt_check(JnParser* p, AST* stmt);
+AST* parse_expr(JnParser* p);
+AST* parse_error(JnParser* p, const char* msg, ...);
 
 #endif //JN_PARSE_H

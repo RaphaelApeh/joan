@@ -63,7 +63,8 @@ extern "C" {
 #define JN_LINUX
 #endif
 
-#if defined(JN_LINUX) || defined(JN_APPLE) || defined(__unix__)
+#if (defined(JN_LINUX) || defined(JN_APPLE) || defined(__unix__)) && !defined(JN_WINDOWS)
+#include <termios.h>
 #include <unistd.h>
 #endif
 
@@ -93,7 +94,7 @@ typedef int JnHandle;
     #ifdef JN_BUILD_DLL
     #define JN_API __declspec(dllexport)
     #else
-    #define JN_API
+    #define JN_API __declspec(dllimport)
     #endif
 #else
     #define JN_API
@@ -153,7 +154,7 @@ typedef enum{
 typedef struct J_State Joan;
 typedef struct Jn_GC Jn_GC;
 typedef struct JnInternEntry JnInternEntry;
-typedef struct joan_parser_t joan_parser_t;
+typedef struct JnParser JnParser;
 typedef struct Jn_Arena Jn_Arena;
 typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
@@ -381,7 +382,7 @@ typedef struct J_State
     JnVM* vm;
     Jn_GC* gc;
     Jn_Arena* arena;
-    joan_parser_t* parser;
+    JnParser* parser;
     Jn_Error error;
     JnInternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
