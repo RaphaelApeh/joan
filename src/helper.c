@@ -310,6 +310,7 @@ JN_API char* Jn_get_pass(const char* msg)
         buff[len++] = c;
     }
     buff[len] = 0;
+    putchar('\n');
     SetConsoleMode(hStdIn, mode);
     return buff;
 #else
@@ -334,6 +335,7 @@ JN_API char* Jn_get_pass(const char* msg)
         buff[len++] = c;
     }
     buff[len] = 0;
+    putchar('\n');
     tcsetattr(STDIN_FILENO, TCSANOW, &old);
     return buff;
 #endif

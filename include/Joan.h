@@ -622,9 +622,9 @@ JN_API void Jn_program_close(J_State*);
 JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
 
 // Object functions
-JnObject* jn_obj_new(J_State*, JnTypeObject type);
-JnObject* jn_obj_int(J_State*, long o_int);
-JnObject* jn_obj_string(J_State*, char* str);
+JN_API JnObject* jn_obj_new(J_State*, JnTypeObject type);
+JN_API JnObject* jn_obj_int(J_State*, long o_int);
+JN_API JnObject* jn_obj_string(J_State*, char* str);
 JnObject* jn_obj_copy(JnObject* src);
 JnObject* jn_obj_char(J_State*, char c);
 JnObject* jn_obj_none(void);

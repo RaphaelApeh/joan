@@ -4,3 +4,9 @@ test-win:
 # Linux or Macos
 test:
 	gcc test.c -Wall -Wextra -Werror -L../build -l:libjoan.a -I../include -o test && ./test
+
+clean-win:
+	del test.exe
+
+clean:
+	rm -f test
