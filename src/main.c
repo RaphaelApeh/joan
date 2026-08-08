@@ -97,7 +97,7 @@ int main(int argc, char** argv)
     execute:
         Jn_program_init(&state);
         if (!c.filename)   return -1;
-        exit_code = Jn_execute_main(&state, c.filename);
+        exit_code = Jn_execute_main(&state, c.filename, new_argv, new_argc);
         Jn_program_close(&state);
         return exit_code;
     interative:

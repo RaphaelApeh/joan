@@ -32,6 +32,7 @@ void Jnvm_init(JnVM* vm, Chuck* chuck)
     vm->ip = chuck->code;
     vm->sp = vm->stack;
     vm->global = chuck->env;
+    vm->exit_code = DEFAULT_VM_EXIT_CODE;
     vm->env = vm->global;
 }
 
@@ -801,14 +802,17 @@ int vm_run(J_State* state, JnVM* vm)
                 ident = READ_IDENT();
                 return vm_error(state, vm, JN_RAISE_EXCPETION(state, SYNTAX_ERROR, ident));
             case OP_END:
+                vm->exit_code = 0;
                 return JN_INTERPRET_OK;
             case OP_EXIT:
                 return JN_INTERPRET_EXIT;
             case OP_RETURN:
                 o = pop(vm);
                 PUSH(vm, o);
+                vm->exit_code = 0;
                 return JN_INTERPRET_OK;
             case OP_ERROR:
+                vm->exit_code = -1;
                 return JN_INTERPRET_RUNTIME_ERROR;
             default:
                 return die(state,vm, "System error.");

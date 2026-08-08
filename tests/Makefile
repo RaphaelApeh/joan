@@ -1,6 +1,6 @@
 # Windows
 test-win:
-	gcc test.c -Wall -Wextra -Werror -L../build -l:libjoan.dll.a -I../include -o test.exe && .\test.exe
+	gcc test.c -g -Wall -Wextra -Werror -L../build -l:libjoan.dll.a -I../include -o test.exe && .\test.exe
 # Linux or Macos
 test:
 	gcc test.c -Wall -Wextra -Werror -L../build -l:libjoan.a -I../include -o test && ./test

@@ -182,7 +182,7 @@ void elseif_add(elseif* elif, AST* block, AST* cond)
 
 void print_source_lines(char* source, int line, int column, int context)
 {
-    if (line < 1)   return;
+    if (line < 1 || !source)   return;
     char* p = source;
     int cur_line = 1;
 
@@ -200,7 +200,7 @@ void print_source_lines(char* source, int line, int column, int context)
             {
                 printf("   | ");
                 for (int i = 1; i < column; ++i)    putchar(' ');
-                printf("^^\n");
+                Jn_color_printf(JN_COLOR_GREEN, "^^\n");
             }
 
         }
@@ -233,7 +233,7 @@ void print_source_line(char* source, int line, int column)
     printf("   | ");
     for (int i = 1; i < column; ++i)
         putchar(' ');
-    printf("^\n");
+    Jn_color_printf(JN_COLOR_GREEN, "^\n");
 }
 
 bool file_exists(const char* filename)

@@ -362,6 +362,7 @@ typedef struct {
 
 typedef struct J_Context {
     J_Source source;
+    char** argv; int argc;
     int cur_line, column;
 } J_Context;
 
@@ -609,11 +610,11 @@ JN_API JnObject* Jn_call_fn(J_State*, char* fn_name, JnObject* args);
 JN_API J_Context* Jn_get_context(J_State*);
 // Jn_exec_from_file(FILE* fptr);
 JN_API void Jn_program_init(J_State*);
-JN_API int Jn_exec_program(J_State* state, const char* source);
+JN_API int Jn_exec_program(J_State* state, const char* filename, const char* source);
 JN_API int Jn_exec_string(J_State*, const char*);
 JN_API int Jn_exec_REPL(J_State*, const char* source);
 // Main Execution function
-JN_API int Jn_execute_main(J_State*, const char*);
+JN_API int Jn_execute_main(J_State*, const char*, char**, int);
 // Execute for FILE ptr.
 JN_API int Jn_exec_from_file(J_State*, FILE*);
 

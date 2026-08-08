@@ -8,6 +8,7 @@
 typedef struct Chuck Chuck;
 typedef struct AST AST;
 
+#define DEFAULT_VM_EXIT_CODE 1
 typedef struct Chuck{
     uint8_t* code;
     size_t count;
@@ -47,7 +48,7 @@ typedef struct JnVM{
     CallFrame frames[JN_FRAME_MAX];
     int frame_count;
 
-    //Jn_GC gc;
+    int exit_code;
 } JnVM;
 
 typedef struct {

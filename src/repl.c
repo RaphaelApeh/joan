@@ -130,7 +130,7 @@ static void print_help(void)
 
 JN_API void Jn_run_iterative(J_State* state, const char* filename)
 {
-    int exit_code = Jn_execute_main(state, filename);
+    int exit_code = Jn_execute_main(state, filename, NULL, 0);
     if (exit_code != 0)
     {
         // TODO
