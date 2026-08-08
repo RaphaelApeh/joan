@@ -261,13 +261,31 @@ int fuzzy_match(const char* word, char** list_words, int size, struct FuzzMatch*
     return found;
 }
 
-static void set__color(int color)
+static void set__color(FILE* _Std, int color)
 {
-
+#if !defined(JN_WINDOWS) || defined(JN_USE_ASCII)
+    fprintf(_Std, "\x1b[%dm", color);
+#elif defined(JN_WINDOWS)
+    JnHandle hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+#endif
 }
 
-JN_API void Jn_color_printf(int color, const char* msg, ...)
+JN_API void Jn_color_fprintf(FILE* _Std, int color, const char* fmt, ...)
 {
-#if defined(JN_WINDOWS)
+    set__color(_Std, color);
+    va_list args; va_start(args, fmt);
+    vfprintf(stdout, fmt, args);
+    va_end(args);
+    set__color(_Std, JN_COLOR_RESET);   
+}
+
+JN_API char* Jn_get_pass(const char* msg)
+{
+    if (!msg)
+        msg = "Enter your password: ";
+#ifdef JN_WINDOWS
+    JnHandle hStdIn = GetStdHandle(STD_INPUT_HANDLE);
+    
 #endif
 }

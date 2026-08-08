@@ -48,9 +48,7 @@ void error(JnSemantic* sem, AST* node, const char* msg, ...)
 void warning(JnSemantic* sem, AST* node, const char* msg, ...)
 {
     sem->warnings++;
-    print_source_lines(sem->state->cxt.source.source, node->line, node->col, 2);
-    fprintf(
-        stderr, 
+    Jn_warning_printf(
         "%s:%d:%d Warning: %s\n", 
         node->filename, 
         node->line, 

@@ -9,7 +9,7 @@
 #include "env.h"
 
 
-#define JNSTR_OBJ(s) (JnStringObject){.chars = str_esc(s), .len = strlen((s)), .hash = djb2_hash((s))}
+#define JNSTR_OBJ(s) (JnStringObject){.chars = str_esc(s), .len = strlen((s)), .hash = djb2_hash((const unsigned char *)(s))}
 
 #define DEFAULT_LAMBDA_NAME "<lambda>"
 typedef struct JnObject JnObject;

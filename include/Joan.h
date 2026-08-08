@@ -99,6 +99,30 @@ typedef int JnHandle;
     #define JN_API
 #endif
 
+// JN_USE_ASCII
+
+#if !defined(JN_WINDOWS) || defined(JN_USE_ASCII)
+enum {
+    JN_COLOR_RESET = 0,
+    JN_COLOR_BLACK = 30,
+    JN_COLOR_RED = 31,
+    JN_COLOR_GREEN = 32,
+    JN_COLOR_YELLOW = 33,
+    JN_COLOR_BLUE = 34,
+};
+
+#else 
+enum {
+    JN_COLOR_RESET = FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
+    JN_COLOR_BLACK = 0,
+    JN_COLOR_RED = FOREGROUND_RED,
+    JN_COLOR_GREEN = FOREGROUND_GREEN,
+    JN_COLOR_BLUE = FOREGROUND_BLUE,
+    JN_COLOR_YELLOW = FOREGROUND_RED | FOREGROUND_GREEN,
+};
+#endif
+
+
 #define JN_INITIAL_CAPACITY 0xff
 
 typedef enum{
@@ -546,8 +570,19 @@ JN_API void* Jn_defualt_handler(J_State* state, const char* fn_name, int params,
 
 JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
 
+// IO
 
-JN_API void Jn_color_printf(int color, const char* msg, ...);
+// Custom implementation of get_pass()
+JN_API char* Jn_get_pass(const char* msg);
+
+// Color Stuff
+JN_API void Jn_color_fprintf(FILE* _Std, int color, const char* fmt, ...);
+#define Jn_color_printf(color, fmt, ...) Jn_color_fprintf(stdout, (color), (fmt), ##__VA_ARGS__)
+
+#define Jn_warning_printf(fmt, ...) \
+    Jn_color_fprintf(stderr, JN_COLOR_YELLOW, (fmt), ##__VA_ARGS__)
+
+#define Jn_error_printf(fmt, ...) Jn_color_fprintf(stderr, JN_COLOR_RED, (fmt), ##__VA_ARGS__)
 
 // Register native function
 JN_API void Jn_define_fn(J_State* state, const char*, Jn_CFunction);

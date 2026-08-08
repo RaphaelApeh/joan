@@ -15,11 +15,6 @@ typedef struct J_DArray_Obj J_DArray_Obj;
 
 #define RESIZE_DOBJ(arr) (arr)->items = realloc((arr)->items, sizeof(*(arr)->items) * (arr)->capacity)
 
-/* COLORS */
-#define RESET "\x1b[0m"
-#define RED "\x1b[31m"
-#define GREEN "\x1b[31m"
-
 
 #define JOAN_PATH getenv("JOAN_PATH")
 #define JN_STD_PATH getenv("JN_STD_PATH")

@@ -18,7 +18,7 @@
 #include "optionals/c_string.h"
 #endif
 
-
+#define JN_INTERN_OBJECT(obj) jn_obj_intern(state, (obj))
 #define LONG_HEX_NUM 0xbf58476d1ce4e5b9ULL
 #define LONG_HEX_NUM2 0x94d049bb133111ebULL
 #define LONG_HEX_NUM3 0x9e3779b97f4e7c15ULL
@@ -45,14 +45,13 @@ JnObject* jn_obj_new(J_State* state, JnTypeObject type)
     JnObject* obj = gc_alloc(state, sizeof(JnObject), type);
     assert(obj != NULL);
     return obj;
-    // return jn_obj_intern(state, obj);
 }
 
 JnObject* jn_obj_int(J_State* state, long int_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_INT_TYPE);
     obj->int_val = int_val;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_string(J_State* state, char* str)
@@ -64,28 +63,28 @@ JnObject* jn_obj_string(J_State* state, char* str)
     strObj->hash = S_Obj.hash;
     strObj->len = S_Obj.len;
     obj->str = strObj;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_char(J_State* state, char c)
 {
     JnObject* obj =  jn_obj_new(state, JN_CHAR_TYPE);
     obj->j_char = c;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_bool(J_State* state, bool bool_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_BOOL_TYPE);
     obj->bool_val = bool_val;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_float(J_State* state, double float_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_FLOAT_TYPE);
     obj->float_val = float_val;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 
@@ -103,7 +102,7 @@ JnObject* jn_obj_iter(J_State* state, JnObject* obj)
     iter->obj = obj;
     iter->index = 0;
     new_obj->iter = iter;
-    return new_obj;
+    return JN_INTERN_OBJECT(new_obj);
 }
 
 int64_t range_len(JnRange* r)
@@ -130,7 +129,7 @@ JnObject* jn_obj_range(J_State* state, int64_t start, int64_t stop, int64_t step
     obj->range.start = start;
     obj->range.stop = stop;
     obj->range.step = (step == 0) ? 1 : step;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t count)
@@ -139,7 +138,7 @@ JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t c
     obj->arg.args = args;
     obj->arg.count = count;
     obj->arg.arg_names = arg_names;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_error(J_State* state, int type, char* msg, ...)
@@ -156,7 +155,7 @@ JnObject* jn_obj_error(J_State* state, int type, char* msg, ...)
     obj->expection.line = 0;
     obj->expection.filename = NULL;
     obj->expection.var_name = NULL;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 
@@ -200,7 +199,7 @@ JnObject* jn_obj_type(J_State* state, char* type_name, JnTypeObject type, Jn_CFu
     obj->type_val.typename = type_name;
     obj->type_val.type = type;
     obj->type_val.ctor = fn;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_method(J_State* state, JnObject* obj, JN_CMethod method)
@@ -208,7 +207,7 @@ JnObject* jn_obj_method(J_State* state, JnObject* obj, JN_CMethod method)
     JnObject* new_obj = jn_obj_new(state, JN_METHOD_TYPE);
     new_obj->method.fn = method;
     new_obj->method.obj = obj;
-    return new_obj;
+    return JN_INTERN_OBJECT(new_obj);
 }
 
 char* jn_obj_to_string(JnObject* obj)
@@ -339,10 +338,10 @@ uint64_t Jn_object_hash(JnObject* obj)
         }
         case JN_STRUCT_TYPE:
         {
-            h = hash_mix(djb2_hash(obj->struct_obj->name));
+            h = HASH_MIX_STRING(obj->struct_obj->name);
             for (int i = 0; i < obj->struct_obj->field_count; ++i)
             {
-                h = hash_combine(h, hash_mix(djb2_hash(obj->struct_obj->fields[i])));
+                h = hash_combine(h, HASH_MIX_STRING(obj->struct_obj->fields[i]));
             }
             return h;
         }
@@ -358,14 +357,14 @@ uint64_t Jn_object_hash(JnObject* obj)
         }
         case JN_FUNCTION_TYPE:
         {
-            return hash_mix(djb2_hash(obj->fn->name));
+            return HASH_MIX_STRING(obj->fn->name);
         }
         case JN_NATIVE_TYPE:
         {
             return hash_mix((uint64_t)(uintptr_t)obj->native_fn);
         }
         case JN_OBJECT_TYPE:
-            return hash_mix(djb2_hash(obj->type_val.typename));
+            return HASH_MIX_STRING(obj->type_val.typename);
         case JN_ARRAY_TYPE:
         {
             h = hash_mix(obj->arr->size);
@@ -388,6 +387,7 @@ uint64_t Jn_object_hash(JnObject* obj)
         default:
             return hash_mix((uintptr_t)obj);
     }
+    #undef HASH_MIX_STRING
 }
 
 JnObject* jn_obj_intern(J_State* state, JnObject* obj)
@@ -443,7 +443,7 @@ JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_
     fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(state, JN_FUNCTION_TYPE);
     obj->fn = fn;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_function(
@@ -470,7 +470,7 @@ JnObject* jn_obj_function(
     fn->name = name;
     JnObject* obj = jn_obj_new(state, JN_FUNCTION_TYPE);
     obj->fn = fn;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_struct(J_State* state, char* name, char** fields)
@@ -480,7 +480,7 @@ JnObject* jn_obj_struct(J_State* state, char* name, char** fields)
     struct_obj->fields = fields;
     struct_obj->name = name;
     obj->struct_obj = struct_obj;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* bind_argument(J_State* state, JnObject* obj, char** fields, JnObject** values, long count)
@@ -513,7 +513,7 @@ JnObject* jn_obj_instance(J_State* state, JnObject* from_obj, Jn_environ* fields
     instance->obj = from_obj;
     instance->fields = Jn_environ_init(fields);
     obj->instance = instance;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 JnObject* jn_obj_module(J_State* state, char* name, char* path, Jn_environ* env)
@@ -525,7 +525,7 @@ JnObject* jn_obj_module(J_State* state, char* name, char* path, Jn_environ* env)
     mod->path = path;
     mod->alias = NULL; // TODO
     obj->module = mod;
-    return obj;
+    return JN_INTERN_OBJECT(obj);
 }
 
 
