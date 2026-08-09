@@ -380,3 +380,10 @@ JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len)
     memmove(B->data + B->len, str, sizeof(*str) * len);
     B->len += len;
 }
+
+JN_API void Jn_buff_clear(Jn_Buffer* B)
+{
+    B->len = 0;
+    Jn_free(B->data);
+    B->data = NULL;
+}

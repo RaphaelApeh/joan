@@ -57,8 +57,8 @@ JnObject* jn_obj_int(J_State* state, long int_val)
 JnObject* jn_obj_string(J_State* state, char* str)
 {
     JnObject* obj =  jn_obj_new(state, JN_STRING_TYPE);
-    JnStringObject* strObj = Jn_alloc(sizeof(JnStringObject));
-    JnStringObject S_Obj = JNSTR_OBJ(str);
+    Jn_String* strObj = Jn_alloc(sizeof(Jn_String));
+    Jn_String S_Obj = JNSTR_OBJ(str);
     strObj->chars = S_Obj.chars;
     strObj->hash = S_Obj.hash;
     strObj->len = S_Obj.len;
@@ -98,7 +98,7 @@ JnObject* jn_obj_none(void)
 JnObject* jn_obj_iter(J_State* state, JnObject* obj)
 {
     JnObject* new_obj = jn_obj_new(state, JN_ITER_TYPE);
-    JnIterObject* iter = malloc(sizeof(JnIterObject)); // TODO
+    Jn_Iter* iter = malloc(sizeof(Jn_Iter)); // TODO
     iter->obj = obj;
     iter->index = 0;
     new_obj->iter = iter;
@@ -529,7 +529,7 @@ JnObject* jn_obj_module(J_State* state, char* name, char* path, Jn_environ* env)
 }
 
 
-JnObject* jn_obj_array_get(JnArrayObject* arr, int idx)
+JnObject* jn_obj_array_get(Jn_Array* arr, int idx)
 {
     assert(arr != NULL);
     if (idx < 0)
@@ -725,7 +725,7 @@ int jn_obj_count(JnObject* obj)
 void jn_arr_pop(JnObject* arr_obj, JnObject** value)
 {
     assert(arr_obj != NULL);
-    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     memcpy(*value, iter->items[iter->size - 1], sizeof(JnObject));
     Jn_mem_zero(iter->items[iter->size - 1], sizeof(JnObject));
     iter->size--;
@@ -733,8 +733,8 @@ void jn_arr_pop(JnObject* arr_obj, JnObject** value)
 
 void jn_arr_copy(JnObject* dest, JnObject* src)
 {
-    JnArrayObject* iter = JN_IS_ARRAY(dest) ? JN_AS_ARRAY(dest) : JN_AS_TUPLE(dest);
-    JnArrayObject* src_iter = JN_IS_ARRAY(src) ? JN_AS_ARRAY(src) : JN_AS_TUPLE(src);
+    Jn_Array* iter = JN_IS_ARRAY(dest) ? JN_AS_ARRAY(dest) : JN_AS_TUPLE(dest);
+    Jn_Array* src_iter = JN_IS_ARRAY(src) ? JN_AS_ARRAY(src) : JN_AS_TUPLE(src);
     jn_arr_grow(src, iter->size);
     memcpy(iter->items, src_iter->items, src_iter->size * sizeof(JnObject *));
 }
@@ -742,7 +742,7 @@ void jn_arr_copy(JnObject* dest, JnObject* src)
 int jn_arr_grow(JnObject* arr_obj, size_t new_size)
 {
     if (NULL == arr_obj) return -1;
-    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     if (iter->size + new_size >= iter->capacity)
     {
         if (iter->capacity == 0) iter->capacity = JN_INITIAL_CAPACITY;
@@ -757,7 +757,7 @@ int jn_arr_grow(JnObject* arr_obj, size_t new_size)
 void jn_arr_append(JnObject* arr_obj, JnObject* value)
 {
     if (jn_arr_grow(arr_obj, 0) == -1) return;
-    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     iter->items[iter->size++] = value;
     memmove(iter->items + iter->size, value, sizeof(JnObject));
     iter->size++;
@@ -765,7 +765,7 @@ void jn_arr_append(JnObject* arr_obj, JnObject* value)
 
 void jn_arr_append_many(JnObject* arr_obj, JnObject** argv, size_t argc)
 {
-    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     if (jn_arr_grow(arr_obj, argc) == -1) return;
     memmove(iter->items + iter->size, argv, sizeof(JnObject *) * argc);
     iter->size += argc;
@@ -779,7 +779,7 @@ void jn_arr_clear(JnObject* arr_obj)
 
 JnObject* jn_arr_remove(JnObject* arr_obj, int index)
 {
-    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     if (index < 0)
     {
         index += iter->size;
@@ -793,7 +793,7 @@ JnObject* jn_arr_remove(JnObject* arr_obj, int index)
 
 JnObject* jn_arr_get(JnObject* arr_obj, int index)
 {
-    JnArrayObject* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
+    Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     if (index < 0)
     {
         index += iter->size;

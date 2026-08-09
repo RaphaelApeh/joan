@@ -58,7 +58,7 @@ static bool hashmap_contains(JnObject* key, Jn_Hashmap* map)
     return Jn_hashmap_get(map, key) != NULL;
 }
 
-static bool array_contains(JnObject* key, JnArrayObject* arr)
+static bool array_contains(JnObject* key, Jn_Array* arr)
 {
     for (size_t i = 0; i < arr->size; ++i)
     {

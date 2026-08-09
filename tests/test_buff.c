@@ -8,5 +8,6 @@ int main(void)
     Jn_buff_add_string(&buff, "ello World");
     Jn_buff_add_char(&buff, '\n');
     printf("buff = %.*s", (int)buff.len, buff.data);
+    Jn_buff_clear(&buff);
     return 0;
 }

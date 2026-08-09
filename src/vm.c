@@ -335,7 +335,7 @@ int vm_run(J_State* state, JnVM* vm)
                 break;
             case OP_TUPLE:
                 count = READ_BYTE();
-                JnArrayObject* arr = NULL;
+                Jn_Array* arr = NULL;
                 for (int i = count - 1; i >= 0; --i)
                 {
                     JN_SET_ARRAY(arr, pop(vm), i);
@@ -711,7 +711,7 @@ int vm_run(J_State* state, JnVM* vm)
                 JnObject* iter_obj = PEEK();
                 if (!_JN_CHECK_TYPE(iter_obj, JN_ITER_TYPE))
                     return die(state,vm, "Expected an iter type.");
-                JnIterObject* _iter = JN_AS_ITER(iter_obj);
+                Jn_Iter* _iter = JN_AS_ITER(iter_obj);
                 JnObject* target = _iter->obj;
                 assert(target != NULL);
                 switch (target->type)

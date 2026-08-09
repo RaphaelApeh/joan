@@ -243,7 +243,7 @@ static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg)
     int size;
     char c = JN_AS_CHAR(char_obj);
     char** items = strsplt(obj_str, c, &size);
-    JnArrayObject* arr = NULL;
+    Jn_Array* arr = NULL;
     for (int i = 0; i < size; ++i)
     {
         JN_SET_ARRAY(arr, JN_RETURN_STRING(state, items[i]), i);
@@ -321,7 +321,7 @@ static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg)
     if (ret != 0)
         return JN_RETURN_NONE;
 
-    JnArrayObject* arr = NULL;
+    Jn_Array* arr = NULL;
     if (NULL != left)
     {
         JN_SET_ARRAY(arr, JN_RETURN_STRING(state, left), 0);

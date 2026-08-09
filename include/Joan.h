@@ -289,7 +289,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_ALLOC(s) malloc(s)
 
 #define JN_DEFAULT_HM(obj) do{\
-    (obj) = malloc(sizeof(JnArrayObject));   \
+    (obj) = malloc(sizeof(Jn_Array));   \
     (obj)->capacity = 100;                    \
     (obj)->size = 0;                            \
     (obj)->buckets = malloc(sizeof(Jn_HashEntry) * (obj)->capacity);  \
@@ -297,7 +297,7 @@ typedef struct Jn_environ Jn_environ;
 
 
 #define JN_ARRAY_DEFAULT(arr) do {\
-        (arr) = malloc(sizeof(JnArrayObject));          \
+        (arr) = malloc(sizeof(Jn_Array));          \
         (arr)->capacity = 100;                          \
         (arr)->size = 0;                                \
         (arr)->items = malloc(sizeof(JnObject *) * (arr)->capacity);    \
@@ -305,7 +305,7 @@ typedef struct Jn_environ Jn_environ;
 
 #define JN_SET_ARRAY(arr, obj, i) do{                  \
     if ((arr) == NULL){                                 \
-        (arr) = malloc(sizeof(JnArrayObject));          \
+        (arr) = malloc(sizeof(Jn_Array));          \
         (arr)->capacity = 100;                          \
         (arr)->size = 0;                                \
         (arr)->items = malloc(sizeof(JnObject *) * (arr)->capacity);    \
@@ -434,7 +434,7 @@ typedef struct {
     char* chars;
     unsigned long hash;
     long len;
-} JnStringObject;
+} Jn_String;
 
 typedef struct {
     Jn_CFunction fn;
@@ -460,7 +460,7 @@ typedef struct {
     JnObject** items;
     size_t size;
     size_t capacity;
-} JnArrayObject;
+} Jn_Array;
 
 typedef struct {
     uint64_t start, stop;
@@ -470,7 +470,7 @@ typedef struct {
 typedef struct {
     JnObject* obj;
     int index;
-} JnIterObject;
+} Jn_Iter;
 
 typedef struct Jn_HashEntry {
     JnObject* key;
@@ -505,21 +505,21 @@ typedef struct {
     char* alias;
 } JnModule;
 
-typedef long long JnIntObject;
-typedef double JnFloatObject;
-typedef bool JnBoolObject;
-typedef char JnCharObject;
-typedef  JnArrayObject JnTupleObject;
+typedef long long Jn_Integer;
+typedef double Jn_Float;
+typedef bool Jn_Bool;
+typedef char Jn_Char;
+typedef  Jn_Array Jn_Tuple;
 // Object
 
 typedef struct JnObject{
     union
     {
-        JnStringObject* str;
-        JnArrayObject* arr;
-        JnTupleObject* tuple;
+        Jn_String* str;
+        Jn_Array* arr;
+        Jn_Tuple* tuple;
         JnFunctionObject* fn;
-        JnIterObject* iter;
+        Jn_Iter* iter;
         Jn_Hashmap* hashmap;
         JnNativeObject* native_fn;
         Jn_Enum* enum_n;
@@ -535,10 +535,10 @@ typedef struct JnObject{
         JN_Args arg;
         Jn_Error expection;
         JnRange range;
-        JnIntObject int_val;
-        JnFloatObject float_val;
-        JnBoolObject bool_val;
-        JnCharObject j_char;
+        Jn_Integer int_val;
+        Jn_Float float_val;
+        Jn_Bool bool_val;
+        Jn_Char j_char;
     };
     JnObject* next;
     const char* doc;
@@ -604,6 +604,20 @@ JN_API int Jn_buff_init(Jn_Buffer* B);
 JN_API void Jn_buff_add_char(Jn_Buffer* B, char c);
 JN_API void Jn_buff_add_string(Jn_Buffer* B, char* str);
 JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len);
+JN_API void Jn_buff_clear(Jn_Buffer* B);
+
+JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...);
+
+
+// Stack / Push
+
+JN_API void Jn_pushnone(J_State*);
+JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
+JN_API void Jn_pushobject(J_State*, JnObject*);
+
+JN_API JnObject* Jn_gettop(J_State*);
+JN_API void Jn_settop(J_State*, JnObject*);
+JN_API void Jn_setinst(J_State*, int);
 
 // Variable stuff
 JN_API JnObject* Jn_get_variable(J_State* state, const char* name);
@@ -659,7 +673,7 @@ uint64_t Jn_object_hash(JnObject* obj);
 char* jn_obj_to_string(JnObject* obj);
 char* jn_obj_cstring(JnObject* obj);
 int jn_obj_count(JnObject* obj);
-JnObject* jn_obj_array_get(JnArrayObject* arr, int idx);
+JnObject* jn_obj_array_get(Jn_Array* arr, int idx);
 JnObject* jn_obj_error(J_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool jn_obj_truthy(JnObject* obj);
