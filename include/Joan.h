@@ -161,6 +161,7 @@ typedef struct JnVM JnVM;
 typedef struct J_State J_State;
 typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
+typedef struct Jn_Buffer Jn_Buffer;
 typedef JnObject* (*Jn_CFunction)(J_State* state, JnObject* args);
 typedef JnObject* (*JN_CMethod) (J_State* state, JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
@@ -591,6 +592,18 @@ JN_API void Jn_define_fn(J_State* state, const char*, Jn_CFunction);
 JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
 
+
+// Buffer
+
+struct Jn_Buffer {
+    char* data;
+    size_t len, cap;
+};
+
+JN_API int Jn_buff_init(Jn_Buffer* B);
+JN_API void Jn_buff_add_char(Jn_Buffer* B, char c);
+JN_API void Jn_buff_add_string(Jn_Buffer* B, char* str);
+JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len);
 
 // Variable stuff
 JN_API JnObject* Jn_get_variable(J_State* state, const char* name);

@@ -5,6 +5,8 @@ test-win:
 test:
 	gcc test.c -Wall -Wextra -Werror -L../build -l:libjoan.a -I../include -o test && ./test
 
+test_buff:
+	gcc test_buff.c -g -Wall -Wextra -Werror -L../build -l:libjoan.dll.a -I../include -o test.exe && .\test.exe
 clean-win:
 	del test.exe
 

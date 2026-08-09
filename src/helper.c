@@ -340,3 +340,43 @@ JN_API char* Jn_get_pass(const char* msg)
     return buff;
 #endif
 }
+
+JN_API int Jn_buff_init(Jn_Buffer* B)
+{
+    if (!B) return -1;
+    Jn_mem_zero(B, sizeof(*B));
+    B->len = 0;
+    B->cap = 50;
+    B->data = Jn_alloc(sizeof(char) * B->cap);
+    if (!B->data) return -1;
+    return 0;
+}
+static void buff__gw(Jn_Buffer* B, size_t new_s)
+{
+    if (new_s + B->len > B->cap)
+    {
+        if (B->cap == 0) B->cap = 50;
+        while (new_s + B->len > B->cap)
+            B->cap *= 2;
+        B->data = Jn_realloc(B->data, sizeof(*B->data) * B->cap);
+    }
+}
+
+JN_API void Jn_buff_add_char(Jn_Buffer* B, char c)
+{
+    buff__gw(B, 0);
+    B->data[B->len++] = c;
+}
+
+JN_API void Jn_buff_add_string(Jn_Buffer* B, char* str)
+{
+    Jn_buff_add_nstring(B, str, strlen(str));
+}
+
+JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len)
+{
+    if (NULL == str || len == 0) return;
+    buff__gw(B, len);
+    memmove(B->data + B->len, str, sizeof(*str) * len);
+    B->len += len;
+}
