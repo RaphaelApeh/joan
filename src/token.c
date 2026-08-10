@@ -203,7 +203,8 @@ JnToken number_token(joan_lexer_t* l)
     if (is_float && (peek(l) == 'f' || peek(l) == 'F'))
     {
         advance(l);
-    }    
+    } else if (peek(l) == 'f' || peek(l) == 'F')
+        return make_error(l, "Found a 'f' suffix in a nor float literal.");
     if (peek(l) == 'e' || peek(l) == 'E')
     {
         is_float = true;
