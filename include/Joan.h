@@ -618,6 +618,7 @@ JN_API void Jn_pushobject(J_State*, JnObject*);
 JN_API JnObject* Jn_gettop(J_State*);
 JN_API void Jn_settop(J_State*, JnObject*);
 JN_API void Jn_setinst(J_State*, int);
+JN_API int Jn_pop(J_State*);
 
 // Variable stuff
 JN_API JnObject* Jn_get_variable(J_State* state, const char* name);
