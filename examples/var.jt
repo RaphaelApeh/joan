@@ -1,14 +1,7 @@
-let name = "John Doe";
-let x = 43;
-pi := 3.14;
+main:
+    printf("%s World", name);
+    exit(0);
 
-//pi = None // Error
-x = 10; // OK
-name = "Jane Doe"; // OK
-printf("Name: %s", name);
-printf("X: %i", x);
-printf("PI: %f", pi);
 
-let y = x;
-x = 5;
-printf("X: %d", x); // 5
+if __name__ == "__main__" then
+    goto main;

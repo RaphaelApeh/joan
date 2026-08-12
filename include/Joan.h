@@ -616,9 +616,15 @@ JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
 JN_API void Jn_pushobject(J_State*, JnObject*);
 
 JN_API JnObject* Jn_gettop(J_State*);
-JN_API void Jn_settop(J_State*, JnObject*);
+JN_API int Jn_settop(J_State*, JnObject*);
 JN_API void Jn_setinst(J_State*, int);
-JN_API int Jn_pop(J_State*);
+JN_API JnObject* Jn_pop(J_State*);
+
+
+// Globals
+
+JN_API void Jn_set_global(J_State*, char*, JnObject*);
+JN_API JnObject* Jn_get_global(J_State*, char*);
 
 // Variable stuff
 JN_API JnObject* Jn_get_variable(J_State* state, const char* name);

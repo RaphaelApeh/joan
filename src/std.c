@@ -782,7 +782,18 @@ static JnObject* native_isinstance(J_State* state, JnObject* arg)
 static JnObject* native_exit(J_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
-    // TODO
+    int exit_code = 0;
+    if (count > 1)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "exit() expected one argument");
+
+    if (count != 0 && !JN_IS_INT(JN_GET_ARG(args)))
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "exit() expected an int.");
+    if (count)
+    {
+        exit_code = JN_AS_INT(JN_GET_ARG(args));
+    }
+    state->vm->exit_code = exit_code;
+    Jn_setinst(state, 64);
     return NULL;
 }
 
@@ -1015,5 +1026,6 @@ JN_API void Jn_load_Cfunctions(J_State* state)
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
     Jn_register_fn(state, "defined", "Check if a variable exists in the current scope.", native_defined);
     Jn_register_fn(state, "format", "String format specifier.", native_format);
+    Jn_register_fn(state, "exit", "Exit from program", native_exit);
     // add other built-in functions
 }

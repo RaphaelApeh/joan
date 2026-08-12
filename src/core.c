@@ -91,7 +91,6 @@ JN_API void Jn_mem_zero(void* ptr, size_t size)
     memset(ptr, 0, size);
 }
 
-
 JN_API J_Context* Jn_get_context(J_State* state) { return &state->cxt; }
 
 JN_API Jn_Error* Jn_get_error(J_State* state)
@@ -99,6 +98,19 @@ JN_API Jn_Error* Jn_get_error(J_State* state)
     assert(state != NULL);
     return &state->error;
 }
+
+JN_API void Jn_set_global(J_State* state, char* name, JnObject* obj)
+{
+    environ_insert(state->globals, name, obj);
+}
+
+JN_API JnObject* Jn_get_global(J_State* state, char* name)
+{
+    Jn_environ_E* ett = environ_get(state->globals, name);
+    if (ett->key == NULL || ett->value == NULL) return NULL;
+    return ett->value;
+}
+
 
 void set_symbols(J_State* state, const char* str)
 {

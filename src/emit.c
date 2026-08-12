@@ -12,6 +12,41 @@
 } while(0)
 #define CHECK_CHUCK() assert(chuck != NULL)
 
+
+
+JN_API JnObject* Jn_gettop(J_State* state)
+{
+    if (state->vm->sp <= 0)
+        return NULL;
+    return *state->vm->sp;
+}
+
+JN_API int Jn_settop(J_State* state, JnObject* obj)
+{
+    if (state->vm->sp - state->vm->stack >= JN_STACK_MAX)
+        return -1;
+    *state->vm->sp++ = obj;
+    return 0;
+}
+
+JN_API void Jn_setinst(J_State* state, int ip)
+{
+    write_chuck_loc(
+        state->vm->chuck, 
+        ip, 
+        *state->vm->chuck->lines + 1, // Warning
+        *state->vm->chuck->columns + 1 // Warning
+    );
+}
+
+JN_API JnObject* Jn_pop(J_State* state)
+{
+    if (state->vm->sp - state->vm->stack >= JN_STACK_MAX)
+    return NULL;
+    return *--state->vm->sp;
+}
+
+
 int add_ident(Chuck* chuck, char* ident)
 {
     CHECK_CHUCK();
