@@ -13,7 +13,7 @@ typedef struct JnSemantic JnSemantic;
 typedef enum { SYMBOL_VAR, SYMBOL_CONST, SYMBOL_FN, SYMBOL_STRUCT} JnSymbolKind;
 
 struct JnSymbol {
-    AST* type;
+    Jn_Node* type;
     struct JnSymbol* next;
     char* name;
     JnSymbolKind kind;
@@ -32,13 +32,13 @@ struct JnSemantic {
 };
 
 // Visits
-void Jn_visit(JnSemantic*, AST*);
+void Jn_visit(JnSemantic*, Jn_Node*);
 
 // Semantic
-void error(JnSemantic* sem, AST* node, const char* msg, ...);
-void warning(JnSemantic* sem, AST* node, const char* msg, ...);
+void error(JnSemantic* sem, Jn_Node* node, const char* msg, ...);
+void warning(JnSemantic* sem, Jn_Node* node, const char* msg, ...);
 void Jn_semantic_init(J_State*, JnSemantic*);
-void Jn_semantic_check(JnSemantic* sem, AST* node);
+void Jn_semantic_check(JnSemantic* sem, Jn_Node* node);
 
 
 // TODO

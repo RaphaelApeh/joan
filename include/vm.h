@@ -6,7 +6,7 @@
 #include "parse.h"
 
 typedef struct Chuck Chuck;
-typedef struct AST AST;
+typedef struct Jn_Node Jn_Node;
 
 #define DEFAULT_VM_EXIT_CODE 1
 typedef struct Chuck{
@@ -67,7 +67,7 @@ typedef struct {
 
 void Jnvm_init(JnVM* vm, Chuck* chuck);
 void chuck_init(Chuck* chuck);
-void compile(AST* node, Chuck* chuck);
+void compile(Jn_Node* node, Chuck* chuck);
 void vm_free(JnVM* vm);
 void reset_vm(JnVM* vm);
 void chuck_free(Chuck* chuck);

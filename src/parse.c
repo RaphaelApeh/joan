@@ -26,8 +26,8 @@
 #define skip SKIP
 
 
-static AST* parse_unary(JnParser* p, J_TokenType op);
-static AST* parse_block(JnParser* p);
+static Jn_Node* parse_unary(JnParser* p, J_TokenType op);
+static Jn_Node* parse_block(JnParser* p);
 
 int check(JnParser* p, J_TokenType type)
 {
@@ -119,7 +119,7 @@ static bool is_stmt_end(JnParser* p)
     }
 }
 
-AST* parse_stmt_check(JnParser* p, AST* stmt)
+Jn_Node* parse_stmt_check(JnParser* p, Jn_Node* stmt)
 {
     if (stmt->type == AST_COMMENT) // TODO
         return stmt;
@@ -163,7 +163,7 @@ static char* consume_string(JnParser* p)
     return consume_token(p, TOKEN_STRING);
 }
 
-static AST* parse__body(JnParser* p)
+static Jn_Node* parse__body(JnParser* p)
 {
     if (check(p, TOKEN_LBRACE))
         return parse_block(p);
@@ -242,10 +242,10 @@ precedence get_prec(J_TokenType type)
     }
 }
 
-static AST* parse_block(JnParser* p)
+static Jn_Node* parse_block(JnParser* p)
 {
     consume(p, TOKEN_LBRACE);
-    AST* block = new_block(p);
+    Jn_Node* block = new_block(p);
     while (!check(p, TOKEN_RBRACE) && !check(p, TOKEN_EOF))
     {
         add_block(block, parse_stmt_check(p, parse_stmt(p)));
@@ -268,22 +268,22 @@ JnToken next_parser(JnParser* p)
     return p->curr;
 }
 
-AST* parse_error(JnParser* p, const char* msg, ...)
+Jn_Node* parse_error(JnParser* p, const char* msg, ...)
 {
     char buffer[256];
     va_list args;
     va_start(args, msg);
     vsnprintf(buffer, sizeof(buffer), msg, args);
     va_end(args);
-    AST* err = ast_error(p, strdup(buffer));
+    Jn_Node* err = ast_error(p, strdup(buffer));
     next_parser(p);
     return err;
 }
 
-static AST* parse_loop(JnParser* p)
+static Jn_Node* parse_loop(JnParser* p)
 {
     consume(p, TOKEN_LOOP);
-    AST* ast = ast_create(p, AST_LOOP);
+    Jn_Node* ast = ast_create(p, AST_LOOP);
     if (check(p, TOKEN_LBRACE))
         ast->loop_stmt.block = parse_block(p);
     else {
@@ -292,7 +292,7 @@ static AST* parse_loop(JnParser* p)
     return ast;
 }
 
-static AST* parse_range(JnParser* p, AST* node)
+static Jn_Node* parse_range(JnParser* p, Jn_Node* node)
 {
     consume(p, TOKEN_RANGE);
     int op = 0; // None
@@ -300,11 +300,11 @@ static AST* parse_range(JnParser* p, AST* node)
         op = TOKEN_EQUAL;
     else if (match(p, TOKEN_LT))
         op = TOKEN_LT;
-    AST* stop = parse_expr(p);
-    AST* step = NULL;
+    Jn_Node* stop = parse_expr(p);
+    Jn_Node* step = NULL;
     if (match(p, TOKEN_COLON))
         step = parse_expr(p);
-    AST* ast = ast_create(p, AST_RANGE);
+    Jn_Node* ast = ast_create(p, AST_RANGE);
     ast->range_node.start = node;
     ast->range_node.stop = stop;
     ast->range_node.step = step;
@@ -313,33 +313,33 @@ static AST* parse_range(JnParser* p, AST* node)
     return ast;
 }
 
-static AST* parse_while(JnParser* p)
+static Jn_Node* parse_while(JnParser* p)
 {
     consume(p, TOKEN_WHILE);
-    AST* cond = parse_expr(p);
-    AST* block = NULL;
+    Jn_Node* cond = parse_expr(p);
+    Jn_Node* block = NULL;
     block = parse_block(p);
     return ast_while(p, cond, block);
 }
 
-static AST* parse_if(JnParser* p)
+static Jn_Node* parse_if(JnParser* p)
 {
     consume(p, TOKEN_IF);
-    AST* cond = parse_expr(p);
-    AST* block = NULL;
+    Jn_Node* cond = parse_expr(p);
+    Jn_Node* block = NULL;
     if (check(p, TOKEN_LBRACE))
         block = parse_block(p);
     else if (match(p, TOKEN_THEN))
         block = parse_expr(p);
     else return parse_error(p, "Got an invalid if statement.");
     
-    AST* elsenode = NULL;
+    Jn_Node* elsenode = NULL;
     elseif* elseifs = elseif_init();
     while(match(p, TOKEN_ELSEIF))
     {
         match(p, TOKEN_IF);
-        AST* cond = parse_expr(p);
-        AST* childblock;
+        Jn_Node* cond = parse_expr(p);
+        Jn_Node* childblock;
         if (check(p, TOKEN_LBRACE))
         {
             childblock = parse_block(p);
@@ -367,11 +367,11 @@ static AST* parse_if(JnParser* p)
     );
 }
 
-static AST* parse_match(JnParser* p)
+static Jn_Node* parse_match(JnParser* p)
 {
     consume(p, TOKEN_MATCH);
-    AST* stmt = parse_expr(p);
-    AST* else_stmt = NULL;
+    Jn_Node* stmt = parse_expr(p);
+    Jn_Node* else_stmt = NULL;
     if (!match(p, TOKEN_LBRACE))
         return parse_error(p, "Expected '{'"); // TODO
     case_t* caseObj = init_case(p->arena);
@@ -386,8 +386,8 @@ static AST* parse_match(JnParser* p)
                 else_stmt = parse_block(p);
         } else 
         {
-            AST* sub = parse_expr(p);
-            AST* block = NULL;
+            Jn_Node* sub = parse_expr(p);
+            Jn_Node* block = NULL;
             if (!match(p, TOKEN_DCOLON))
                 return parse_error(p, "Expected '=>'");
             if (match(p, TOKEN_THEN))
@@ -397,14 +397,14 @@ static AST* parse_match(JnParser* p)
             push_case(caseObj, sub, block);
         }
     }
-    AST* ast = ast_create(p, AST_MATCH);
+    Jn_Node* ast = ast_create(p, AST_MATCH);
     ast->match_node.def = else_stmt;
     ast->match_node.cases = caseObj;
     ast->match_node.subject = stmt;
     return ast;
 }
 
-static AST* parse_fn(JnParser* p)
+static Jn_Node* parse_fn(JnParser* p)
 {
     consume(p, TOKEN_FN);
     if (!check(p, TOKEN_IDENTIFIER))
@@ -413,7 +413,7 @@ static AST* parse_fn(JnParser* p)
     next_parser(p); // ident
     char** params = malloc(sizeof(char *) * 100);
     int len = 0;
-    AST* block = NULL;
+    Jn_Node* block = NULL;
     if (!match(p, TOKEN_LPARN))
         return parse_error(p, "Expected an '(");
     while (!match(p, TOKEN_RPARN))
@@ -427,7 +427,7 @@ static AST* parse_fn(JnParser* p)
     }
     if (!check(p, TOKEN_LBRACE))
     {
-        AST* ast = ast_function(p, ident, NULL, len, params);
+        Jn_Node* ast = ast_function(p, ident, NULL, len, params);
         ast->fn_node.is_defined = false;
         return ast;
     }
@@ -435,18 +435,18 @@ static AST* parse_fn(JnParser* p)
         block = parse_block(p);
     else
         return parse_error(p, "Invalid function body.");
-    AST* ast = ast_function(p, ident, block, len, params);
+    Jn_Node* ast = ast_function(p, ident, block, len, params);
     ast->fn_node.is_async = false;
     ast->fn_node.is_yield = false;
     ast->fn_node.is_defined = true;
     return ast;
 }
 
-static AST* parse_assign(JnParser* p)
+static Jn_Node* parse_assign(JnParser* p)
 {
     char* ident;
     bool is_const = false;
-    AST* type = NULL;
+    Jn_Node* type = NULL;
     if (match(p, TOKEN_CONST))
         is_const = true;
     if (!is_const && !match(p, TOKEN_LET))
@@ -466,15 +466,15 @@ static AST* parse_assign(JnParser* p)
     if (!match(p, TOKEN_EQUAL))
         return parse_error(p, "Expected an '=' operator but got '%s'.", p->curr.lexeme);
     
-    AST* ast = ast_assign(p, ident, is_const,  parse_expr(p));
+    Jn_Node* ast = ast_assign(p, ident, is_const,  parse_expr(p));
     ast->assign.type = type;
     return ast;
 }
 
-static AST* parse_reassign(JnParser* p, AST* node)
+static Jn_Node* parse_reassign(JnParser* p, Jn_Node* node)
 {
     J_TokenType op = p->curr.type;
-    AST* ast = ast_create(p, AST_REASSIGN);
+    Jn_Node* ast = ast_create(p, AST_REASSIGN);
     next_parser(p); // += reassign operator
     //x += 4;
     ast->reassign.expr = node;
@@ -483,12 +483,12 @@ static AST* parse_reassign(JnParser* p, AST* node)
     return ast;
 }
 
-static AST* parse_call(JnParser* p, AST* callee)
+static Jn_Node* parse_call(JnParser* p, Jn_Node* callee)
 {
     //e.g main(1, None, true)
-    AST** args = arena_alloc(p->arena, sizeof(AST *) * 20);
+    Jn_Node** args = arena_alloc(p->arena, sizeof(Jn_Node *) * 20);
     size_t len = 0, cap = 20;
-    AST* ast = ast_create(p, AST_CALL);
+    Jn_Node* ast = ast_create(p, AST_CALL);
     if (match(p, TOKEN_RPARN))
     {
         ast->call.callee = callee;
@@ -500,7 +500,7 @@ static AST* parse_call(JnParser* p, AST* callee)
         if (len >= cap)
         {
             cap *= 2;
-            args = realloc(args, sizeof(AST*) * cap);
+            args = realloc(args, sizeof(Jn_Node*) * cap);
         }
         args[len++] = parse_expr(p);
     } while (match(p, TOKEN_COMMA));
@@ -514,7 +514,7 @@ static AST* parse_call(JnParser* p, AST* callee)
     return ast;
 }
 
-static AST* parse_for_each(JnParser* p)
+static Jn_Node* parse_for_each(JnParser* p)
 {
     /*
     Example:
@@ -538,8 +538,8 @@ static AST* parse_for_each(JnParser* p)
     }
     SKIP(p, TOKEN_IN, "Expected an 'in' token.");
 
-    AST* iter = parse_expr(p);
-    AST* block = NULL;
+    Jn_Node* iter = parse_expr(p);
+    Jn_Node* block = NULL;
     if (match(p, TOKEN_THEN)) // TODO: parse_then(p);
         block = parse_expr(p);
     else if (match(p, TOKEN_LBRACE))
@@ -547,7 +547,7 @@ static AST* parse_for_each(JnParser* p)
     else
         return parse_error(p, "Expected a block body.");
     
-    AST* ast = ast_create(p, AST_FOR_EACH);
+    Jn_Node* ast = ast_create(p, AST_FOR_EACH);
     ast->foreach_node.block = block;
     if (NULL == var)
     {
@@ -560,7 +560,7 @@ static AST* parse_for_each(JnParser* p)
     return ast;
 }
 
-static AST* parse_for(JnParser* p)
+static Jn_Node* parse_for(JnParser* p)
 {
     /*
     for loop;
@@ -568,8 +568,8 @@ static AST* parse_for(JnParser* p)
     */
 
     next_parser(p); // for
-    AST* init = NULL, *cond = NULL, *incr = NULL;
-    AST* block = NULL;
+    Jn_Node* init = NULL, *cond = NULL, *incr = NULL;
+    Jn_Node* block = NULL;
     if (check(p, TOKEN_LPARN))
         return parse_error(p, "Sorry, does not support parentheses like C.");
     
@@ -596,7 +596,7 @@ static AST* parse_for(JnParser* p)
     } else 
         return parse_error(p, "fooloop has no block.");
 
-    AST* ast = ast_create(p, AST_FOR);
+    Jn_Node* ast = ast_create(p, AST_FOR);
     ast->for_node.block = block;
     ast->for_node.cond = cond;
     ast->for_node.init = init;
@@ -604,9 +604,9 @@ static AST* parse_for(JnParser* p)
     return ast;
 }
 
-static AST* parse_instance(JnParser* p, AST* instance_obj);
+static Jn_Node* parse_instance(JnParser* p, Jn_Node* instance_obj);
 
-static AST* parse_member(JnParser* p, AST* obj)
+static Jn_Node* parse_member(JnParser* p, Jn_Node* obj)
 {
     // obj.field or obj.field()
     J_TokenType tok = p->curr.type;
@@ -618,8 +618,8 @@ static AST* parse_member(JnParser* p, AST* obj)
     char* ident = consume_ident(p);
     if (NULL == ident)
         return parse_error(p, "Expected identifier but got (%s).", GET_LEX(p));
-    AST* field = ast_identifier(p, ident);
-    AST* ast = ast_create(p, AST_MEMBER);
+    Jn_Node* field = ast_identifier(p, ident);
+    Jn_Node* ast = ast_create(p, AST_MEMBER);
     ast->member.callie = obj;
     ast->member.field = field;
     ast->member.tok = tok;
@@ -627,7 +627,7 @@ static AST* parse_member(JnParser* p, AST* obj)
     return ast;
 }
 
-static AST* parse_enum(JnParser* p)
+static Jn_Node* parse_enum(JnParser* p)
 {
     next_parser(p); // enum
     if (!check(p, TOKEN_IDENTIFIER))
@@ -657,30 +657,30 @@ static AST* parse_enum(JnParser* p)
             continue;
     }
     fields[len] = NULL;
-    AST* ast = ast_create(p, AST_ENUM);
+    Jn_Node* ast = ast_create(p, AST_ENUM);
     ast->enum_stmt.ident = ident;
     ast->enum_stmt.fields = fields;
     ast->enum_stmt.count = len;
     return ast; 
 }
-static AST* parse_inline_if(JnParser* p, AST* node)
+static Jn_Node* parse_inline_if(JnParser* p, Jn_Node* node)
 {
     next_parser(p); // if
-    AST* cond = parse_expr(p);
+    Jn_Node* cond = parse_expr(p);
     if (!match(p, TOKEN_ELSE))
         return parse_error(p, "Expected an 'else' clause.");
-    AST* elsenode = parse_expr(p);
-    AST* ast = ast_create(p, AST_INLINE_IF);
+    Jn_Node* elsenode = parse_expr(p);
+    Jn_Node* ast = ast_create(p, AST_INLINE_IF);
     ast->inline_if_stmt.cond = cond;
     ast->inline_if_stmt.then = node;
     ast->inline_if_stmt.otherwise = elsenode;
     return ast;
 }
 
-static AST* parse_index(JnParser* p, AST* arr)
+static Jn_Node* parse_index(JnParser* p, Jn_Node* arr)
 {
     next_parser(p); //[
-    AST* ast = ast_create(p, AST_ARRAY_INDEX);
+    Jn_Node* ast = ast_create(p, AST_ARRAY_INDEX);
     ast->index.array = arr;
     ast->index.pos = parse_expr(p);
     ast->index.is_set = false;
@@ -691,7 +691,7 @@ static AST* parse_index(JnParser* p, AST* arr)
 }
 
 
-static bool allow_instance(JnParser* p, AST* node)
+static bool allow_instance(JnParser* p, Jn_Node* node)
 {
     bool ret = false;
     switch (node->type)
@@ -711,7 +711,7 @@ static bool allow_instance(JnParser* p, AST* node)
     return ret;
 }
 
-static AST* parse_postfix(JnParser* p, AST* left)
+static Jn_Node* parse_postfix(JnParser* p, Jn_Node* left)
 {
     if (check(p, TOKEN_PLUS_PLUS))
         return parse_unary(p, TOKEN_PLUS_PLUS);
@@ -752,13 +752,13 @@ static AST* parse_postfix(JnParser* p, AST* left)
     return left;
 }
 
-static AST* parse_hashmap(JnParser* p)
+static Jn_Node* parse_hashmap(JnParser* p)
 {
     skip(p, TOKEN_LBRACE, "Expected an opening '{'");
-    AST** keys = arena_alloc(p->arena, sizeof(AST *) * 30);
-    AST** values = arena_alloc(p->arena, sizeof(AST *) * 30);
+    Jn_Node** keys = arena_alloc(p->arena, sizeof(Jn_Node *) * 30);
+    Jn_Node** values = arena_alloc(p->arena, sizeof(Jn_Node *) * 30);
     size_t len= 0, cap = 30;    
-    AST* ast = ast_create(p, AST_HASHMAP);
+    Jn_Node* ast = ast_create(p, AST_HASHMAP);
 
     while (true)
     {
@@ -769,8 +769,8 @@ static AST* parse_hashmap(JnParser* p)
         if (len > cap)
         {
             cap *= 2;
-            keys = realloc(keys, sizeof(AST *) * cap);
-            values = realloc(values, sizeof(AST *) * cap);
+            keys = realloc(keys, sizeof(Jn_Node *) * cap);
+            values = realloc(values, sizeof(Jn_Node *) * cap);
         }
         keys[len] = parse_expr(p);
         if (!match(p, TOKEN_COLON))
@@ -791,10 +791,10 @@ static AST* parse_hashmap(JnParser* p)
 }
 
 
-AST* parse_array(JnParser* p)
+Jn_Node* parse_array(JnParser* p)
 {
     SKIP(p, TOKEN_LBRACKET, "Expected an opening '['.");
-    AST* arr = ast_array(p);
+    Jn_Node* arr = ast_array(p);
     if (match(p, TOKEN_RBRACKET)) return arr;
 
     for (;;)
@@ -815,7 +815,7 @@ AST* parse_array(JnParser* p)
     return arr;
 }
 
-static AST* parse_lambda(JnParser* p)
+static Jn_Node* parse_lambda(JnParser* p)
 {
     /*
     Inline function
@@ -852,7 +852,7 @@ static AST* parse_lambda(JnParser* p)
     } while(true);
     args[len] = NULL;
     match(p, TOKEN_DCOLON);
-    AST* expr = NULL;
+    Jn_Node* expr = NULL;
     
     if (check(p, TOKEN_LBRACE))
     {
@@ -860,14 +860,14 @@ static AST* parse_lambda(JnParser* p)
     } else {    
         expr = parse_expr(p);
     }
-    AST* ast = ast_create(p, AST_LAMBDA);
+    Jn_Node* ast = ast_create(p, AST_LAMBDA);
     ast->lambda_node.count = len;
     ast->lambda_node.expr = expr;
     ast->lambda_node.args = args;
     return ast;
 }
 
-static AST* parse_import(JnParser* p)
+static Jn_Node* parse_import(JnParser* p)
 {
     /*
     Example:
@@ -904,14 +904,14 @@ static AST* parse_import(JnParser* p)
         }
     }
     fields[len] = NULL;
-    AST* ast = ast_create(p, AST_IMPORT);
+    Jn_Node* ast = ast_create(p, AST_IMPORT);
     ast->import_node.lib = import_path;
     ast->import_node.fields = fields;
     ast->import_node.count = len;
     return ast;
 }
 
-static AST* parse_struct(JnParser* p)
+static Jn_Node* parse_struct(JnParser* p)
 {
     /*
     Example:
@@ -938,7 +938,7 @@ static AST* parse_struct(JnParser* p)
         if (len >= cap)
         {
             cap *= 2;
-            fields = realloc(fields, sizeof(AST *) * cap);
+            fields = realloc(fields, sizeof(Jn_Node *) * cap);
         }
         fields[len++] = get_lexeme(p);
         if (match(p, TOKEN_COLON))
@@ -947,18 +947,18 @@ static AST* parse_struct(JnParser* p)
     } while (match(p, TOKEN_COMMA) || match(p, TOKEN_SEMICOLON));
     SKIP(p, TOKEN_RBRACE, "Expected an closing '}'");
     fields[len] = NULL;
-    AST* ast = ast_create(p, AST_STRUCT);
+    Jn_Node* ast = ast_create(p, AST_STRUCT);
     ast->struct_node.fields = fields;
     ast->struct_node.ident = NULL;
     ast->struct_node.count = len;
     return ast;
 }
 
-static AST* parse_instance(JnParser* p, AST* instance_obj)
+static Jn_Node* parse_instance(JnParser* p, Jn_Node* instance_obj)
 {
     SKIP(p, TOKEN_LBRACE, "To initalize a instance you need '{'.");
     char** fields = arena_alloc(p->arena, sizeof(char *) * 10);
-    AST** values = arena_alloc(p->arena, sizeof(AST *) * 10);
+    Jn_Node** values = arena_alloc(p->arena, sizeof(Jn_Node *) * 10);
     int len = 0, cap = 10;
     bool contains_kwargs = false;
     for (;;)
@@ -968,7 +968,7 @@ static AST* parse_instance(JnParser* p, AST* instance_obj)
         {
             cap *= 2;
             fields = realloc(fields, sizeof(char *) * cap);
-            values = realloc(values, sizeof(AST *) * cap);
+            values = realloc(values, sizeof(Jn_Node *) * cap);
         }
         if (match(p, TOKEN_DOT)){
             contains_kwargs = true;
@@ -987,7 +987,7 @@ static AST* parse_instance(JnParser* p, AST* instance_obj)
         return parse_error(p, "Expected a closing '}' or ','.");
     }
 
-    AST* ast = ast_create(p, AST_INSTANCE);
+    Jn_Node* ast = ast_create(p, AST_INSTANCE);
     ast->instance_node.fields = fields;
     ast->instance_node.values = values;
     ast->instance_node.count = len;
@@ -996,7 +996,7 @@ static AST* parse_instance(JnParser* p, AST* instance_obj)
 }
 
 
-static AST* parse_multi_var(JnParser* p, AST* first)
+static Jn_Node* parse_multi_var(JnParser* p, Jn_Node* first)
 {
 
     /*
@@ -1022,7 +1022,7 @@ static AST* parse_multi_var(JnParser* p, AST* first)
         {
             cap *= 2;
             // TODO
-            idents = arena_realloc(p->arena, idents, sizeof(idents), sizeof(AST *) * cap);
+            idents = arena_realloc(p->arena, idents, sizeof(idents), sizeof(Jn_Node *) * cap);
         }
         idents[len++] =  GET_LEX(p);
         next_parser(p);
@@ -1036,9 +1036,9 @@ static AST* parse_multi_var(JnParser* p, AST* first)
     }
     int op = GET_TOK(p).type;
     next_parser(p);
-    AST* expr = parse_expr(p);
+    Jn_Node* expr = parse_expr(p);
     // TODO: a, b := [1, 2]
-    AST* ast = ast_create(p, AST_MULTI_VAR);
+    Jn_Node* ast = ast_create(p, AST_MULTI_VAR);
     ast->assign_multiple.count = len;
     ast->assign_multiple.idents = idents;
     ast->assign_multiple.value = expr;
@@ -1046,10 +1046,10 @@ static AST* parse_multi_var(JnParser* p, AST* first)
     return ast;
 }
 
-static AST* parse_tuple(JnParser* p)
+static Jn_Node* parse_tuple(JnParser* p)
 {
     consume(p, TOKEN_LPARN);
-    AST* node = ast_create(p, AST_TUPLE);
+    Jn_Node* node = ast_create(p, AST_TUPLE);
     size_t len = 0, cap = 100;
     if (match(p, TOKEN_RPARN))
     {
@@ -1057,20 +1057,20 @@ static AST* parse_tuple(JnParser* p)
         node->tuple.elements = NULL;
         return node;
     }
-    AST* first = parse_expr(p);
+    Jn_Node* first = parse_expr(p);
     if (!match(p, TOKEN_COMMA))
     {
         SKIP(p, TOKEN_RPARN, "Expected ')'.");
         return first;
     }
-    AST** items = arena_alloc(p->arena, sizeof(AST *) * cap);
+    Jn_Node** items = arena_alloc(p->arena, sizeof(Jn_Node *) * cap);
     items[len++] = first;
     do {
         if (check(p, TOKEN_RPARN)) break;
         if (len > cap)
         {
             cap *= 2;
-            items = arena_realloc(p->arena, items, sizeof(AST *) * len, sizeof(AST *) * cap);
+            items = arena_realloc(p->arena, items, sizeof(Jn_Node *) * len, sizeof(Jn_Node *) * cap);
         }
         items[len++] = parse_expr(p);
     } while (match(p, TOKEN_COMMA));
@@ -1083,16 +1083,16 @@ static AST* parse_tuple(JnParser* p)
 }
 
 
-static AST* parse_unary(JnParser* p, J_TokenType op)
+static Jn_Node* parse_unary(JnParser* p, J_TokenType op)
 {
     consume(p, op);
-    AST* ast = ast_create(p, AST_UNARY);
+    Jn_Node* ast = ast_create(p, AST_UNARY);
     ast->unary.op = op;
     ast->unary.right = parse_expr(p); 
     return ast;
 }
 
-static AST* parse_string(JnParser* p)
+static Jn_Node* parse_string(JnParser* p)
 {
     size_t len = strlen(GET_LEX(p)), cap = len + 1;
     char* buff = malloc(sizeof(char) * cap);
@@ -1112,21 +1112,21 @@ static AST* parse_string(JnParser* p)
         len += next_len;
         next_parser(p);
     }
-    AST* ast = ast_literal(p,  jn_obj_string(p->state, buff));
+    Jn_Node* ast = ast_literal(p,  jn_obj_string(p->state, buff));
     free(buff);
     return ast;   
 }
 
-static AST* parse_literal(JnParser* p, JnObject* obj)
+static Jn_Node* parse_literal(JnParser* p, JnObject* obj)
 {
     next_parser(p);
     return ast_literal(p, obj);
 }
 
-AST* parse_primary(JnParser* p)
+Jn_Node* parse_primary(JnParser* p)
 {
     JnToken t = p->curr;
-    AST* ast = NULL;
+    Jn_Node* ast = NULL;
     char* msg = t.lexeme;
     switch (t.type)
     {
@@ -1202,7 +1202,7 @@ AST* parse_primary(JnParser* p)
             return parse_import(p);
         case TOKEN_PRINTLN: {
             next_parser(p);
-            AST* out = NULL;
+            Jn_Node* out = NULL;
             if (!check(p, TOKEN_NEWLINE))
                 out = parse_expr(p);
             return ast_println(p, out);
@@ -1217,9 +1217,9 @@ AST* parse_primary(JnParser* p)
     }
 }
 
-AST* parse_prec(JnParser* p, precedence prec)
+Jn_Node* parse_prec(JnParser* p, precedence prec)
 {
-    AST* left = parse_primary(p);
+    Jn_Node* left = parse_primary(p);
     while (true)
     {
         left = parse_postfix(p, left);
@@ -1253,21 +1253,21 @@ AST* parse_prec(JnParser* p, precedence prec)
         } else {
             next_parser(p);
         }
-        AST* right = parse_prec(p, op == TOKEN_POW ? next_pr - 1 : next_pr);
+        Jn_Node* right = parse_prec(p, op == TOKEN_POW ? next_pr - 1 : next_pr);
         left = ast_binary(p, left, op, right);
     }
     return  left;
 }
-AST* parse_expr(JnParser* p)
+Jn_Node* parse_expr(JnParser* p)
 {
     // MAIN FUNCTION
     return parse_prec(p, PREC_NONE);
 }
 
 
-AST* parse_stmt(JnParser* p)
+Jn_Node* parse_stmt(JnParser* p)
 {
-    AST* stmt;
+    Jn_Node* stmt;
     switch (GET_TOK_TYPE(p))
     {
         case TOKEN_CONST:

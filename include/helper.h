@@ -8,7 +8,7 @@
     #define getcwd _getcwd
 #endif
 
-typedef struct AST AST;
+typedef struct Jn_Node Jn_Node;
 typedef uint64_t u64;
 typedef struct JnObject JnObject;
 typedef struct J_DArray_Obj J_DArray_Obj;
@@ -41,8 +41,8 @@ int fuzzy_match(const char* word, char** list_words, int size, struct FuzzMatch*
 
 
 typedef struct case_o{
-    AST* pattern;
-    AST* block;
+    Jn_Node* pattern;
+    Jn_Node* block;
 } case_o;
 
 typedef struct case_t{
@@ -52,8 +52,8 @@ typedef struct case_t{
 } case_t;
 
 typedef struct{
-    AST* cond;
-    AST* stmt;
+    Jn_Node* cond;
+    Jn_Node* stmt;
 } elif_node;
 
 typedef struct elseif{
@@ -77,11 +77,11 @@ void print_source_lines(char* source, int line, int column, int context);
 void print_source_line(char* source, int line, int column);
 bool file_exists(const char* filename);
 void runtime_error(char* msg, ...);
-void call_add_pos(AST* call, AST* arg);
+void call_add_pos(Jn_Node* call, Jn_Node* arg);
 case_t* init_case(Jn_Arena* arena);
-void push_case(case_t* caseObj, AST* sub, AST* block);
+void push_case(case_t* caseObj, Jn_Node* sub, Jn_Node* block);
 
 elseif* elseif_init(void);
-void elseif_add(elseif* elif, AST* block, AST* cond);
+void elseif_add(elseif* elif, Jn_Node* block, Jn_Node* cond);
 
 #endif

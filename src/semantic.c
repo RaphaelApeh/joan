@@ -19,7 +19,7 @@ void Jn_semantic_init(J_State* state, JnSemantic* sem)
 }
 
 
-void Jn_semantic_check(JnSemantic* sem, AST* node)
+void Jn_semantic_check(JnSemantic* sem, Jn_Node* node)
 {
     Jn_visit(sem, node);
     if (sem->errors)
@@ -33,7 +33,7 @@ void Jn_semantic_check(JnSemantic* sem, AST* node)
     }
 }
 
-void error(JnSemantic* sem, AST* node, const char* msg, ...)
+void error(JnSemantic* sem, Jn_Node* node, const char* msg, ...)
 {
     print_source_lines(sem->state->cxt.source.source, node->line, node->col, 2);
     putc('\n', stdout);
@@ -45,7 +45,7 @@ void error(JnSemantic* sem, AST* node, const char* msg, ...)
     sem->state->error.code = -1;
     sem->state->error.filename = node->filename;
 }
-void warning(JnSemantic* sem, AST* node, const char* msg, ...)
+void warning(JnSemantic* sem, Jn_Node* node, const char* msg, ...)
 {
     sem->warnings++;
     Jn_warning_printf(

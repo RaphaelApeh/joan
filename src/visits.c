@@ -3,7 +3,7 @@
 #include "semantic.h"
 
 
-static void visit_return(JnSemantic* sem, AST* node)
+static void visit_return(JnSemantic* sem, Jn_Node* node)
 {
     if (sem->fnc_depth == 0)
         error(sem, node, "return statement found outside of a function.");
@@ -13,7 +13,7 @@ static void visit_return(JnSemantic* sem, AST* node)
 }
 
 
-static void visit_ident(JnSemantic* sem, AST* node)
+static void visit_ident(JnSemantic* sem, Jn_Node* node)
 {
     if (!symbol_lookup(sem, sem->scope, node->identifier))
     {
@@ -21,7 +21,7 @@ static void visit_ident(JnSemantic* sem, AST* node)
     }
 }
 
-static void visit_reassign(JnSemantic* sem, AST* node)
+static void visit_reassign(JnSemantic* sem, Jn_Node* node)
 {
     if (node->reassign.op == TOKEN_WALRUS || node->reassign.op == TOKEN_DCOLON)
         return;
@@ -46,7 +46,7 @@ static void visit_reassign(JnSemantic* sem, AST* node)
     Jn_visit(sem, node->reassign.value);
 }
 
-static void visit_for(JnSemantic* sem, AST* node)
+static void visit_for(JnSemantic* sem, Jn_Node* node)
 {
     if (node->for_node.cond)
         Jn_visit(sem, node->for_node.cond);
@@ -60,7 +60,7 @@ static void visit_for(JnSemantic* sem, AST* node)
     sem->loop_depth--;
 }
 
-static void visit_var(JnSemantic* sem, AST* node)
+static void visit_var(JnSemantic* sem, Jn_Node* node)
 {
 	Jn_visit(sem, node->assign.value);
 
@@ -68,7 +68,7 @@ static void visit_var(JnSemantic* sem, AST* node)
     if (ret) error(sem, node, "variable already declared.");
 }
 
-static void visit_println(JnSemantic* sem, AST* node)
+static void visit_println(JnSemantic* sem, Jn_Node* node)
 {
     #ifndef JN_DEBUG
         warning(sem, node, "It is not recommended to use println, use printf.");
@@ -76,7 +76,7 @@ static void visit_println(JnSemantic* sem, AST* node)
     return;
 }
 
-static void visit_fn(JnSemantic* sem, AST* node)
+static void visit_fn(JnSemantic* sem, Jn_Node* node)
 {
     scope_insert(sem->scope, node->fn_node.name, SYMBOL_FN, true);
     JnScope* old = sem->scope;
@@ -93,7 +93,7 @@ static void visit_fn(JnSemantic* sem, AST* node)
     scope_free(child);
 }
 
-static void visit_block(JnSemantic* sem, AST* node)
+static void visit_block(JnSemantic* sem, Jn_Node* node)
 {
     JnScope* old = sem->scope;
     sem->scope = scope_new(old);
@@ -106,13 +106,13 @@ static void visit_block(JnSemantic* sem, AST* node)
     scope_free(child);
 }
 
-static void visit_binary(JnSemantic* sem, AST* node)
+static void visit_binary(JnSemantic* sem, Jn_Node* node)
 {
     Jn_visit(sem, node->binary.left);
     Jn_visit(sem, node->binary.right);
 }
 
-static void visit_break(JnSemantic* sem, AST* node)
+static void visit_break(JnSemantic* sem, Jn_Node* node)
 {
     if (sem->loop_depth == 0)
     {
@@ -120,7 +120,7 @@ static void visit_break(JnSemantic* sem, AST* node)
     }
 }
 
-static void visit_continue(JnSemantic* sem, AST* node)
+static void visit_continue(JnSemantic* sem, Jn_Node* node)
 {
     if (sem->loop_depth == 0)
     {
@@ -128,7 +128,7 @@ static void visit_continue(JnSemantic* sem, AST* node)
     }
 }
 
-static void visit_while(JnSemantic* sem, AST* node)
+static void visit_while(JnSemantic* sem, Jn_Node* node)
 {
     Jn_visit(sem, node->while_node.cond);
     sem->loop_depth++;
@@ -136,13 +136,13 @@ static void visit_while(JnSemantic* sem, AST* node)
     sem->loop_depth--;
 }
 
-static void visit_lambda(JnSemantic* sem, AST* node)
+static void visit_lambda(JnSemantic* sem, Jn_Node* node)
 {
     sem->fnc_depth++;
     assert(false && "TODO");
 }
 
-void Jn_visit(JnSemantic* sem, AST* node)
+void Jn_visit(JnSemantic* sem, Jn_Node* node)
 {
     if (NULL == node) return;
     switch (node->type)

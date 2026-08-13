@@ -135,7 +135,7 @@ case_t* init_case(Jn_Arena* arena)
     return caseObj;
 }
 
-void push_case(case_t* caseObj, AST* sub, AST* block)
+void push_case(case_t* caseObj, Jn_Node* sub, Jn_Node* block)
 {
     if (NULL == caseObj) return;
     if (caseObj->count >= caseObj->capacity)
@@ -146,7 +146,7 @@ void push_case(case_t* caseObj, AST* sub, AST* block)
     caseObj->cases[caseObj->count++] = (case_o){.pattern = sub, .block = block};
 }
 
-void call_add_pos(AST* call, AST* arg)
+void call_add_pos(Jn_Node* call, Jn_Node* arg)
 {
     call->call.pos_args[call->call.pos_count++] = arg;
 }
@@ -164,7 +164,7 @@ elseif* elseif_init(void)
     return elif;
 }
 
-void elseif_add(elseif* elif, AST* block, AST* cond)
+void elseif_add(elseif* elif, Jn_Node* block, Jn_Node* cond)
 {
     if (elif->count >= elif->capacity)
     {

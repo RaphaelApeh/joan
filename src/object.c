@@ -423,7 +423,7 @@ bool jn_obj_equals(JnObject* obj, JnObject* other)
     );
 }
 
-JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_environ* env)
+JnObject* jn_obj_lambda(J_State* state, Jn_Node* expr, char** params, int arity, Jn_environ* env)
 {
     Chuck* chuck = JN_ALLOC(sizeof(Chuck));
     chuck_init(chuck);
@@ -448,7 +448,7 @@ JnObject* jn_obj_lambda(J_State* state, AST* expr, char** params, int arity, Jn_
 
 JnObject* jn_obj_function(
     J_State* state,
-    AST* block,
+    Jn_Node* block,
     Jn_environ* env,
     char** params, 
     int arity, 

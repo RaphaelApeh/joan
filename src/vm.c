@@ -827,7 +827,7 @@ int vm_run(J_State* state, JnVM* vm)
     #undef PEEK2
 }
 
-void compile(AST* node, Chuck* chuck)
+void compile(Jn_Node* node, Chuck* chuck)
 {
     int id, idx, jump, offset, loop_start, exit_jmp, exit_jump;
     LoopContext* loop;
@@ -883,7 +883,7 @@ void compile(AST* node, Chuck* chuck)
             // WRITE_CHUCK(chuck, node->member.tok); // TODO: '.' instance call and ':' static or class method call
             break;
         } else if (node->member.field->type == AST_CALL){
-            AST* call = node->member.field;
+            Jn_Node* call = node->member.field;
             if (call->call.callee->type != AST_IDENTIFIER)
             {
                 id = add_ident(chuck, "Invalid member attribute.");

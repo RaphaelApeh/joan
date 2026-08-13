@@ -6,7 +6,7 @@
 #include "env.h"
 
 typedef struct Jn_Arena Jn_Arena;
-typedef struct AST AST;
+typedef struct Jn_Node Jn_Node;
 typedef struct joan_lexer_t joan_lexer_t;
 
 typedef enum{
@@ -55,11 +55,11 @@ void jn_init_parser(JnParser* p, joan_lexer_t* l);
 void advance_parser(JnParser* p);
 
 JnToken next_parser(JnParser* p);
-AST* parse_primary(JnParser* p);
+Jn_Node* parse_primary(JnParser* p);
 // Main function for the parser.
-AST* parse_stmt(JnParser* p);
-AST* parse_stmt_check(JnParser* p, AST* stmt);
-AST* parse_expr(JnParser* p);
-AST* parse_error(JnParser* p, const char* msg, ...);
+Jn_Node* parse_stmt(JnParser* p);
+Jn_Node* parse_stmt_check(JnParser* p, Jn_Node* stmt);
+Jn_Node* parse_expr(JnParser* p);
+Jn_Node* parse_error(JnParser* p, const char* msg, ...);
 
 #endif //JN_PARSE_H
