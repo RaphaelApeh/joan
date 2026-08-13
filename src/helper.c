@@ -381,6 +381,12 @@ JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len)
     B->len += len;
 }
 
+JN_API char* Jn_buff_to_string(Jn_Buffer* B)
+{
+    Jn_buff_add_char(B, 0);
+    return B->data;
+}
+
 JN_API void Jn_buff_clear(Jn_Buffer* B)
 {
     B->len = 0;

@@ -605,6 +605,7 @@ JN_API void Jn_buff_add_char(Jn_Buffer* B, char c);
 JN_API void Jn_buff_add_string(Jn_Buffer* B, char* str);
 JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len);
 JN_API void Jn_buff_clear(Jn_Buffer* B);
+JN_API char* Jn_buff_to_string(Jn_Buffer* B);
 
 JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...);
 
@@ -614,18 +615,10 @@ JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...);
 JN_API void Jn_pushnone(J_State*);
 JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
 JN_API void Jn_pushobject(J_State*, JnObject*);
-
-#define Jn_pushinteger(s, i) \
-    Jn_pushobject(s, jn_obj_int((i)))
-
-#define Jn_pushstring(s, str)   \
-    Jn_pushobject(s, jn_obj_str((str)))
-
-#define Jn_pushfloat(s, f)  \
-    Jn_pushobject(s, jn_obj_float((f)))
-
-#define Jn_pushchar(s, c)   \
-    Jn_pushobject(s, jn_obj_char((c)))
+JN_API void Jn_pushinteger(J_State* Jn_Integer);
+JN_API void Jn_pushstring(J_State*, char*);
+JN_API void Jn_pushfloat(J_State*, Jn_Float);
+JN_API void Jn_pushchar(J_State*, Jn_Char);
 
 JN_API JnObject* Jn_gettop(J_State*);
 JN_API int Jn_settop(J_State*, JnObject*);
@@ -662,7 +655,7 @@ JN_API int Jn_exec_REPL(J_State*, const char* source);
 // Main Execution function
 JN_API int Jn_execute_main(J_State*, const char*, char**, int);
 // Execute for FILE ptr.
-JN_API int Jn_exec_from_file(J_State*, FILE*);
+JN_API int Jn_exec_from_file(J_State*, char*, FILE*);
 
 JN_API void Jn_program_close(J_State*);
 

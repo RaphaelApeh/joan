@@ -54,7 +54,10 @@ AST* ast_literal(JnParser* p, JnObject* object)
     return ast;
 }
 
-AST* ast_decl(JnParser* p, const char* ident, AST* value, bool is_const);
+AST* ast_decl(JnParser* p, const char* ident, AST* value, bool is_const)
+{
+    
+}
 
 AST* ast_while(JnParser* p, AST* cond, AST* block)
 {

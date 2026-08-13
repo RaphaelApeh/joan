@@ -318,16 +318,8 @@ static AST* parse_while(JnParser* p)
     consume(p, TOKEN_WHILE);
     AST* cond = parse_expr(p);
     AST* block = NULL;
-    if (check(p, TOKEN_LBRACE))
-        block = parse_block(p);
-    else if (match(p, TOKEN_THEN))
-        block = parse_expr(p);
-    else
-        return parse_error(p, "Expected a while block.");
-    AST* ast = ast_create(p, AST_WHILE);
-    ast->while_node.cond = cond;
-    ast->while_node.block = block;
-    return ast;
+    block = parse_block(p);
+    return ast_while(p, cond, block);
 }
 
 static AST* parse_if(JnParser* p)

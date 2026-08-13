@@ -21,33 +21,42 @@ struct Module_Reg {
 
 struct Module_Reg module_register[300];
 static int module_count = 0;
-// Helper function to read file content
 
+static int read_from_fptr(FILE* f, Jn_Buffer* B)
+{
+    if (NULL == f)
+        return -1;
+    fseek(f, 0, SEEK_END);
+    size_t size = ftell(f);
+    rewind(f);
+    char* buf = malloc(sizeof(char) * (size + 1));
+    if (NULL == buf)
+        return -1;
+    fread(buf, 1, size, f);
+    buf[size] = '\0';
+    fclose(f);
+    Jn_buff_add_nstring(B, buf, size);
+    return 0;
+}
+
+// Helper function to read file content
 
 J_Source read_source_file(const char* filename)
 {
     J_Source src;
     FILE* p_file;
+    Jn_Buffer b = {0};
+    Jn_buff_init(&b);
     p_file = fopen(filename, "rb");
-    if (NULL == p_file)
+    int err = read_from_fptr(p_file, &b);
+    if (err == -1 && b.len == 0)
     {
-        perror("Filename does not exists.");
+        perror("Failed to read file.");
         exit(1);
     }
-    fseek(p_file, 0, SEEK_END);
-    size_t size = ftell(p_file);
-    rewind(p_file);
-    char* buf = malloc(sizeof(char) * (size + 1));
-    if (NULL == buf)
-    {
-        perror("memory failed.");
-        exit(1);
-    }
-    fread(buf, 1, size, p_file);
-    buf[size] = '\0';
-    fclose(p_file);
+    Jn_buff_add_char(&b, '\0');
     src.filename = (const char*)strdup(filename);
-    src.source = buf;
+    src.source = b.data;
     return src;
 }
 
@@ -254,10 +263,17 @@ JN_API int Jn_execute_main(J_State* state, const char* filepath, char** argv, in
 }
 
 
-JN_API int Jn_exec_from_file(J_State* state, FILE* fptr) 
+JN_API int Jn_exec_from_file(J_State* state, char* filename, FILE* fptr) 
 {
-    // TODO
-    assert(false && "Not yet Implemented.");
+    if (!fptr) return NULL;
+    Jn_Buffer b;
+    Jn_buff_init(&b);
+    read_from_fptr(fptr, &b);
+    if (filename)
+        state->cxt.source.filename = strdup(filename);
+    state->cxt.source.source = b.data; 
+    int exit_code = Jn_exec_program(state, filename, b.data);    
+    return exit_code;
 }
 
 JN_API int Jn_exec_string(J_State* state, const char* string)
@@ -352,6 +368,14 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     module_register[module_count++] = (struct Module_Reg){obj, filename};
     return obj;
 }
+
+JN_API void Jn_pushnone(J_State*);
+JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
+JN_API void Jn_pushobject(J_State*, JnObject*);
+JN_API void Jn_pushinteger(J_State* Jn_Integer);
+JN_API void Jn_pushstring(J_State*, char*);
+JN_API void Jn_pushfloat(J_State*, Jn_Float);
+JN_API void Jn_pushchar(J_State*, Jn_Char);
 
 JN_API void Jn_program_close(J_State* state)
 {

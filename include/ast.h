@@ -301,7 +301,7 @@ AST* ast_return(JnParser* p, AST* value);
 // Call
 AST* ast_call(JnParser* p, AST* callee, AST** args, size_t count);
 
-
+AST* ast_while(JnParser* p, AST* cond, AST* block);
 //Match
 AST* ast_match(JnParser* p, AST* sub, case_t* cases, AST* def);
 
