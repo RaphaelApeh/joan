@@ -7,7 +7,7 @@
 
 typedef struct Jn_Arena Jn_Arena;
 typedef struct Jn_Node Jn_Node;
-typedef struct joan_lexer_t joan_lexer_t;
+typedef struct Jn_Lexer Jn_Lexer;
 
 typedef enum{
     PREC_NONE,
@@ -41,7 +41,7 @@ typedef enum{
 
 typedef struct JnParser{
     J_State* state;
-    joan_lexer_t* l;
+    Jn_Lexer* l;
     Jn_Arena* arena;
     JnToken prev;
     JnToken curr;
@@ -51,7 +51,7 @@ typedef struct JnParser{
 } JnParser;
 
 
-void jn_init_parser(JnParser* p, joan_lexer_t* l);
+void jn_init_parser(JnParser* p, Jn_Lexer* l);
 void advance_parser(JnParser* p);
 
 JnToken next_parser(JnParser* p);

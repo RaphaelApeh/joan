@@ -4,19 +4,19 @@
 
 #include <stdbool.h>
 
-typedef struct joan_lexer_t{
+typedef struct Jn_Lexer{
     const char* filename;
     char* start, *curr; 
     size_t line;
     size_t column;
-} joan_lexer_t;
+} Jn_Lexer;
 
-void J_init_lexer(joan_lexer_t* l, char* source, const char* filename);
-void strip_ws(joan_lexer_t * l);
-char peek_next(joan_lexer_t* l);
-char peek(joan_lexer_t* l);
-bool peek_advance(joan_lexer_t* l, char c);
-char advance(joan_lexer_t* l);
-bool at_end(joan_lexer_t* l);
+void J_init_lexer(Jn_Lexer* l, char* source, const char* filename);
+void strip_ws(Jn_Lexer * l);
+char peek_next(Jn_Lexer* l);
+char peek(Jn_Lexer* l);
+bool peek_advance(Jn_Lexer* l, char c);
+char advance(Jn_Lexer* l);
+bool at_end(Jn_Lexer* l);
 
 #endif //JOAN_LEXER_H

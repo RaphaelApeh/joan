@@ -120,10 +120,10 @@ typedef struct JnToken{
     int column;
 } JnToken;
 
-JnToken clean_token(joan_lexer_t * l);
+JnToken clean_token(Jn_Lexer * l);
 
-JnToken make_token(joan_lexer_t * l, J_TokenType type);
+JnToken make_token(Jn_Lexer * l, J_TokenType type);
 
-JnToken next_token(joan_lexer_t * l);
+JnToken next_token(Jn_Lexer * l);
 
 #endif

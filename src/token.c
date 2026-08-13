@@ -11,7 +11,7 @@
 
 #define CHECK_TOK(lex, str) ((strcmp((lex), (str))) == 0)
 
-static JnToken make_error(joan_lexer_t* l, char* msg, ...);
+static JnToken make_error(Jn_Lexer* l, char* msg, ...);
 
 #define KEYWORD_S struct {const char* keyword; J_TokenType token; }
 
@@ -67,7 +67,7 @@ static bool equal(const char* src, const char* src2)
     return strcmp(src, src2) == 0;
 }
 
-JnToken clean_token(joan_lexer_t* l)
+JnToken clean_token(Jn_Lexer* l)
 {
     JnToken t;
     do {
@@ -76,7 +76,7 @@ JnToken clean_token(joan_lexer_t* l)
     return t;
 }
 
-JnToken number_token(joan_lexer_t* l)
+JnToken number_token(Jn_Lexer* l)
 {
     char* buff;
     bool is_float = false;
@@ -239,7 +239,7 @@ JnToken number_token(joan_lexer_t* l)
     return t;
 }
 
-JnToken token_string(joan_lexer_t* l)
+JnToken token_string(Jn_Lexer* l)
 {
     l->start = l->curr;
     char q = l->curr[-1];
@@ -274,7 +274,7 @@ JnToken token_string(joan_lexer_t* l)
     return t;   
 }
 
-static JnToken token_char(joan_lexer_t* l)
+static JnToken token_char(Jn_Lexer* l)
 {
     char c;
     l->start = l->curr;
@@ -327,7 +327,7 @@ static JnToken token_char(joan_lexer_t* l)
     return t;
 }
 
-JnToken token_identifier(joan_lexer_t* l)
+JnToken token_identifier(Jn_Lexer* l)
 {
     while (isalnum(peek(l)) || peek(l) == '_') 
         advance(l);
@@ -345,7 +345,7 @@ JnToken token_identifier(joan_lexer_t* l)
 }
 
 
-static JnToken make_error(joan_lexer_t* l, char* msg, ...)
+static JnToken make_error(Jn_Lexer* l, char* msg, ...)
 {
     JnToken t;
     char buffer[256];
@@ -361,7 +361,7 @@ static JnToken make_error(joan_lexer_t* l, char* msg, ...)
     return t;
 }
 
-JnToken make_token(joan_lexer_t* l, J_TokenType type)
+JnToken make_token(Jn_Lexer* l, J_TokenType type)
 {
     JnToken t;
     t.type = type;
@@ -376,7 +376,7 @@ JnToken make_token(joan_lexer_t* l, J_TokenType type)
     return t;
 }
 
-JnToken make_comment(joan_lexer_t* l)
+JnToken make_comment(Jn_Lexer* l)
 {
     l->curr += 2;
     l->start = l->curr;
@@ -385,7 +385,7 @@ JnToken make_comment(joan_lexer_t* l)
     return make_token(l, TOKEN_COMMENT);
 }
 
-JnToken make_comment_block(joan_lexer_t* l)
+JnToken make_comment_block(Jn_Lexer* l)
 {
     l->curr += 2;
     l->start = l->curr;
@@ -397,7 +397,7 @@ JnToken make_comment_block(joan_lexer_t* l)
     return make_token(l, TOKEN_COMMENT);
 }
 
-JnToken next_token(joan_lexer_t* l)
+JnToken next_token(Jn_Lexer* l)
 {
     strip_ws(l);
     l->start = l->curr;

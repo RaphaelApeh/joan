@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "lexer.h"
 
-void strip_ws(joan_lexer_t* l)
+void strip_ws(Jn_Lexer* l)
 {
     while(!at_end(l))
     {
@@ -19,12 +19,12 @@ void strip_ws(joan_lexer_t* l)
     }
 }
 
-bool at_end(joan_lexer_t* l)
+bool at_end(Jn_Lexer* l)
 {
     return *l->curr == '\0';
 }
 
-char advance(joan_lexer_t* l)
+char advance(Jn_Lexer* l)
 {
     char c = *l->curr++;
     if (c == '\n')
@@ -36,18 +36,18 @@ char advance(joan_lexer_t* l)
     return c;
 }
 
-char peek(joan_lexer_t* l)
+char peek(Jn_Lexer* l)
 {
     return *l->curr;
 }
 
-char peek_next(joan_lexer_t* l)
+char peek_next(Jn_Lexer* l)
 {
     if (at_end(l)) return '\0';
     return l->curr[1];
 }
 
-bool peek_advance(joan_lexer_t* l, char c)
+bool peek_advance(Jn_Lexer* l, char c)
 {
     if (peek(l) != c)
         return false;
@@ -56,7 +56,7 @@ bool peek_advance(joan_lexer_t* l, char c)
 }
 
 
-void J_init_lexer(joan_lexer_t* l, char* source, const char* filename)
+void J_init_lexer(Jn_Lexer* l, char* source, const char* filename)
 {
     l->start = source;
     l->curr = source;

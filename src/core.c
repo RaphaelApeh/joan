@@ -213,7 +213,7 @@ JN_API int Jn_exec_program(J_State* state, const char* filename, const char* sou
     if (!filename)
         filename = "main";
     assert(state->running && "program is not initialize.");
-    joan_lexer_t l;
+    Jn_Lexer l;
     state->parser->arena = state->arena;
     J_init_lexer(&l, (char *)source, filename);
     jn_init_parser(state->parser, &l);
@@ -339,7 +339,7 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     J_Source old = cxt->source;
     J_Source src = read_source_file(filename);
     cxt->source = src;
-    joan_lexer_t l;
+    Jn_Lexer l;
     JnParser p = {0};
     p.arena = state->arena;
     J_init_lexer(&l, src.source, path);

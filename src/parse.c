@@ -174,7 +174,7 @@ static Jn_Node* parse__body(JnParser* p)
     return parse_error(p, "No expression block found.");
 }
 
-void jn_init_parser(JnParser* p, joan_lexer_t* l)
+void jn_init_parser(JnParser* p, Jn_Lexer* l)
 {
     assert(p != NULL && l != NULL);
     p->l = l;
@@ -184,7 +184,7 @@ void jn_init_parser(JnParser* p, joan_lexer_t* l)
 
 void J_parse_file(JnParser* p, char* restrict filecontent)
 {
-    joan_lexer_t l;
+    Jn_Lexer l;
     J_init_lexer(&l, filecontent, "main");
     p->l = &l;
     p->next = next_token(&l);
