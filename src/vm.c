@@ -34,6 +34,7 @@ void Jnvm_init(JnVM* vm, Chuck* chuck)
     vm->global = chuck->env;
     vm->exit_code = DEFAULT_VM_EXIT_CODE;
     vm->env = vm->global;
+    vm->want_exit = false;
 }
 
 void chuck_init(Chuck* chuck)
@@ -193,6 +194,8 @@ int vm_run(J_State* state, JnVM* vm)
     uint16_t offset;
     for (;;)
     {
+        if (vm->want_exit)
+            return JN_INTERPRET_EXIT;
         J_Context* ctx = Jn_get_context(state);
         ctx->cur_line = vm_line(vm);
         ctx->column = vm_column(vm);

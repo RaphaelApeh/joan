@@ -615,6 +615,18 @@ JN_API void Jn_pushnone(J_State*);
 JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
 JN_API void Jn_pushobject(J_State*, JnObject*);
 
+#define Jn_pushinteger(s, i) \
+    Jn_pushobject(s, jn_obj_int((i)))
+
+#define Jn_pushstring(s, str)   \
+    Jn_pushobject(s, jn_obj_str((str)))
+
+#define Jn_pushfloat(s, f)  \
+    Jn_pushobject(s, jn_obj_float((f)))
+
+#define Jn_pushchar(s, c)   \
+    Jn_pushobject(s, jn_obj_char((c)))
+
 JN_API JnObject* Jn_gettop(J_State*);
 JN_API int Jn_settop(J_State*, JnObject*);
 JN_API void Jn_setinst(J_State*, int);

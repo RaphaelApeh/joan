@@ -49,6 +49,7 @@ typedef struct JnVM{
     int frame_count;
 
     int exit_code;
+    bool want_exit;
 } JnVM;
 
 typedef struct {

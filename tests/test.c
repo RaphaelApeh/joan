@@ -31,7 +31,7 @@ SOFTWARE.
 #include <stdbool.h>
 #include <Joan.h>
 
-const char* source = "exit(634)";
+const char* source = "printf(\"Hello from C !%s\", TEST)";
 
 int main(void)
 {

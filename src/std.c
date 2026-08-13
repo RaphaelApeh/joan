@@ -786,15 +786,15 @@ static JnObject* native_exit(J_State* state, JnObject* args)
     if (count > 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "exit() expected one argument");
 
-    if (count != 0 && !JN_IS_INT(JN_GET_ARG(args)))
+    if (count == 1 && !JN_IS_INT(JN_GET_ARG(args)))
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "exit() expected an int.");
     if (count)
     {
         exit_code = JN_AS_INT(JN_GET_ARG(args));
     }
     state->vm->exit_code = exit_code;
-    Jn_setinst(state, 64);
-    return NULL;
+    state->vm->want_exit = true;
+    return JN_RETURN_NONE;
 }
 
 static JnObject* native_defined(J_State* state, JnObject* args)

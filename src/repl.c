@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include <Joan.h>
+#include "vm.h"
 #include "repl.h"
 
 #define OPTPARSE_IMPLEMENTATION
@@ -173,13 +174,13 @@ JN_API void Jn_repl(J_State* state)
         int exit_code = Jn_exec_REPL(state, buffer);
         buffer[0] = 0;
         buffer_count = 0;
-        if (exit_code < 0 || exit_code > 0)
+        if (state->vm->want_exit)
         {
-            #ifdef JOAN_DEBUG
-                printf("Eixt code: %d\n", exit_code);
-            #endif
+        #ifdef JOAN_DEBUG
+            printf("Eixt code: %d\n", exit_code);
+        #endif
             //  exit() function
-            // break;
+            break;
         }
     }
 }
