@@ -392,71 +392,71 @@ int vm_run(J_State* state, JnVM* vm)
                     return die(state,vm, "Seem like you are trying to reassign a variable of type const, \t did you mean ':=' but used '::'.");
                 switch (t_op)
                 {
-                    case TOKEN_APLUS:
+                    case TOK_APLUS:
                         b = eval_binary(state, o, a, EVAL_ADD);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_AMINUS:
+                    case TOK_AMINUS:
                         b = eval_binary(state, o, a, EVAL_SUB);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_EQUAL:
+                    case TOK_EQUAL:
                         jn_obj_reassign(o, a);
                         break;
-                    case TOKEN_AMUL:
+                    case TOK_AMUL:
                         b = eval_binary(state, o, a, EVAL_MUL);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_ARSHIFT:
+                    case TOK_ARSHIFT:
                         b = eval_binary(state, o, a, EVAL_RSHIFT);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
 
                         break;
-                    case TOKEN_ALSHIFT:
+                    case TOK_ALSHIFT:
                         b = eval_binary(state, o, a, EVAL_LSHIFT);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_XOR:
+                    case TOK_XOR:
                         b = eval_binary(state, o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_APERCENTAGE:
+                    case TOK_APERCENTAGE:
                         b = eval_binary(state, o, a, EVAL_PERC);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_AXOR:
+                    case TOK_AXOR:
                         b = eval_binary(state, o, a, EVAL_BAC);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_ASLASH:
+                    case TOK_ASLASH:
                         b = eval_binary(state, o, a, EVAL_DIV);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_ABITAND:
+                    case TOK_ABITAND:
                         b = eval_binary(state, o, a, EVAL_BAND);
                         if (NULL == b)
                             break;
                         jn_obj_reassign(o, b);
                         break;
-                    case TOKEN_ABITOR:
+                    case TOK_ABITOR:
                         b = eval_binary(state, o, a, EVAL_BOR);
                         if (NULL == b)
                             break;
@@ -858,7 +858,7 @@ void compile(Jn_Node* node, Chuck* chuck)
             id = add_ident(chuck, node->assign_multiple.idents[i]);
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, node->assign_multiple.op == TOKEN_SETTER);
+            WRITE_CHUCK(chuck, node->assign_multiple.op == TOK_SETTER);
         }
         break;
     case AST_TUPLE:
@@ -931,16 +931,16 @@ void compile(Jn_Node* node, Chuck* chuck)
         compile(node->unary.right, chuck);
         switch (node->unary.op)
         {
-            case TOKEN_MINUS:
+            case TOK_MINUS:
                 write_chuck_loc(chuck, OP_NEGATE, line, column);
                 break;
-            case TOKEN_PLUS_PLUS:
+            case TOK_PLUS_PLUS:
                 WRITE_CHUCK(chuck, OP_PLUS_PLUS);
                 break;
-            case TOKEN_NOT:
+            case TOK_NOT:
                 write_chuck_loc(chuck, OP_NOT, line, column);
                 break;
-            case TOKEN_TILDE:
+            case TOK_TILDE:
                 WRITE_CHUCK(chuck, OP_TILDE);
                 break;
             default:
@@ -958,67 +958,67 @@ void compile(Jn_Node* node, Chuck* chuck)
         compile(node->binary.right, chuck);
         switch (node->binary.op)
         {
-            case TOKEN_PLUS:
+            case TOK_PLUS:
                 write_chuck_loc(chuck, OP_ADD, line, column);
                 break;
-            case TOKEN_MUL:
+            case TOK_MUL:
                 write_chuck_loc(chuck, OP_MUL, line, column);
                 break;
-            case TOKEN_MINUS:
+            case TOK_MINUS:
                 write_chuck_loc(chuck, OP_SUB, line, column);
                 break;
-            case TOKEN_RSHIFT:
+            case TOK_RSHIFT:
                 write_chuck_loc(chuck, OP_RSHIFT, line, column);
                 break;
-            case TOKEN_LSHIFT:
+            case TOK_LSHIFT:
                 write_chuck_loc(chuck, OP_LSHIFT, line, column);
                 break;
-            case TOKEN_EQEQ:
+            case TOK_EQEQ:
                 WRITE_CHUCK(chuck, OP_EQUAL);
                 break;
-            case TOKEN_NEQ:
+            case TOK_NEQ:
                 WRITE_CHUCK(chuck, OP_NEQ);
                 break;
-            case TOKEN_GT:
+            case TOK_GT:
                 WRITE_CHUCK(chuck, OP_GT);
                 break;
-            case TOKEN_GTE:
+            case TOK_GTE:
                 WRITE_CHUCK(chuck, OP_GTE);
                 break;
-            case TOKEN_LT:
+            case TOK_LT:
                 WRITE_CHUCK(chuck, OP_LT);
                 break;
-            case TOKEN_LTE:
+            case TOK_LTE:
                 WRITE_CHUCK(chuck, OP_LTE);
                 break;
-            case TOKEN_BITAND:
+            case TOK_BITAND:
                 WRITE_CHUCK(chuck, OP_BITAND);
                 break;
-            case TOKEN_BITOR:
+            case TOK_BITOR:
                 WRITE_CHUCK(chuck, OP_BITOR);
                 break;
-            case TOKEN_XOR:
+            case TOK_XOR:
                 WRITE_CHUCK(chuck, OP_BITAC);
                 break;
-            case TOKEN_PERCENTAGE:
+            case TOK_PERCENTAGE:
                 WRITE_CHUCK(chuck, OP_PERC);
                 break;
-            case TOKEN_IN:
+            case TOK_IN:
                 WRITE_CHUCK(chuck, OP_IN);
                 break;
-            case TOKEN_NOT_IN:
+            case TOK_NOT_IN:
                 WRITE_CHUCK(chuck, OP_NOT_IN);
                 break;
-            case TOKEN_SLASH:
+            case TOK_SLASH:
                 WRITE_CHUCK(chuck, OP_DIV);
                 break;
-            case TOKEN_IS:
+            case TOK_IS:
                 WRITE_CHUCK(chuck, OP_IS); break;
-            case TOKEN_AND:
+            case TOK_AND:
                 WRITE_CHUCK(chuck, OP_AND); break;
-            case TOKEN_OR:
+            case TOK_OR:
                 WRITE_CHUCK(chuck, OP_OR); break;
-            case TOKEN_POW:
+            case TOK_POW:
                 WRITE_CHUCK(chuck, OP_POW);
                 break;
             default:
@@ -1346,7 +1346,7 @@ void compile(Jn_Node* node, Chuck* chuck)
     case AST_REASSIGN:
         compile(node->reassign.value, chuck);
 
-        if (node->reassign.op == TOKEN_WALRUS || node->reassign.op == TOKEN_SETTER)
+        if (node->reassign.op == TOK_WALRUS || node->reassign.op == TOK_SETTER)
         {
             if (node->reassign.expr->type != AST_IDENTIFIER)
             {
@@ -1359,7 +1359,7 @@ void compile(Jn_Node* node, Chuck* chuck)
 
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, node->reassign.op == TOKEN_SETTER);
+            WRITE_CHUCK(chuck, node->reassign.op == TOK_SETTER);
             break;
         }
 

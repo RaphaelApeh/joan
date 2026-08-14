@@ -1,110 +1,110 @@
-#ifndef JOAN_TOKEN_H
+#ifndef JOAN_TOK_H
 
-#define JOAN_TOKEN_H
+#define JOAN_TOK_H
 
 #include "lexer.h"
 
-typedef enum {  TOKEN_EOF, TOKEN_NEWLINE, 
+typedef enum {  TOK_EOF, TOK_NEWLINE, 
     
-    TOKEN_INT,
-    TOKEN_FLOAT,
-    TOKEN_STRING,
-    TOKEN_CHAR,
-    TOKEN_IDENTIFIER,
+    TOK_INT,
+    TOK_FLOAT,
+    TOK_STRING,
+    TOK_CHAR,
+    TOK_IDENT,
     
-    TOKEN_LPARN,
-    TOKEN_RPARN,
-    TOKEN_LBRACE,
-    TOKEN_RBRACE,
-    TOKEN_LBRACKET,
-    TOKEN_RBRACKET,
+    TOK_LPARN,
+    TOK_RPARN,
+    TOK_LBRACE,
+    TOK_RBRACE,
+    TOK_LBRACKET,
+    TOK_RBRACKET,
 
-    TOKEN_PLUS,
-    TOKEN_MINUS,
-    TOKEN_MUL,
-    TOKEN_SLASH,
-    TOKEN_POW,
-    TOKEN_COMMA,
-    TOKEN_PLUS_PLUS,
-    TOKEN_SEMICOLON,
-    TOKEN_DOT,
-    TOKEN_QUOTE,
-    TOKEN_SQUOTE,
-    TOKEN_BSLASH,
-    TOKEN_GT_EQ,
-    TOKEN_BITOR,
-    TOKEN_BITAND,
-    TOKEN_XOR,
-    TOKEN_HASH, // #
-    TOKEN_PI,
-    TOKEN_AT,
-    TOKEN_RANGE,
-    TOKEN_DCOLON,
-    TOKEN_TILDE,
-    TOKEN_ELLIPSIS,
+    TOK_PLUS,
+    TOK_MINUS,
+    TOK_MUL,
+    TOK_SLASH,
+    TOK_POW,
+    TOK_COMMA,
+    TOK_PLUS_PLUS,
+    TOK_SEMICOLON,
+    TOK_DOT,
+    TOK_QUOTE,
+    TOK_SQUOTE,
+    TOK_BSLASH,
+    TOK_GT_EQ,
+    TOK_BITOR,
+    TOK_BITAND,
+    TOK_XOR,
+    TOK_HASH, // #
+    TOK_PI,
+    TOK_AT,
+    TOK_RANGE,
+    TOK_DCOLON,
+    TOK_TILDE,
+    TOK_ELLIPSIS,
 
-    TOKEN_APLUS, // +=
-    TOKEN_AMINUS, // -=
-    TOKEN_AMUL, // *=
-    TOKEN_ARSHIFT, // >>=
-    TOKEN_ALSHIFT, // <<=
-    TOKEN_APERCENTAGE, // %=
-    TOKEN_AXOR, // ^=
-    TOKEN_ASLASH, // /=
-    TOKEN_ABITAND, // &=
-    TOKEN_ABITOR, // |=
-    TOKEN_APOW, // **=
+    TOK_APLUS, // +=
+    TOK_AMINUS, // -=
+    TOK_AMUL, // *=
+    TOK_ARSHIFT, // >>=
+    TOK_ALSHIFT, // <<=
+    TOK_APERCENTAGE, // %=
+    TOK_AXOR, // ^=
+    TOK_ASLASH, // /=
+    TOK_ABITAND, // &=
+    TOK_ABITOR, // |=
+    TOK_APOW, // **=
 
-    TOKEN_EQUAL,
-    TOKEN_EQEQ,
-    TOKEN_GT,
-    TOKEN_LT,
-    TOKEN_GTE,
-    TOKEN_LTE,
-    TOKEN_NEQ,
-    TOKEN_RSHIFT,
-    TOKEN_LSHIFT,
-    TOKEN_COLON, // :
-    TOKEN_WALRUS, // :=
-    TOKEN_QUESTION, // ?
-    TOKEN_PERCENTAGE, // %
-    TOKEN_SETTER,
-    TOKEN_NONE,
-    TOKEN_TRUE,
-    TOKEN_FALSE,
+    TOK_EQUAL,
+    TOK_EQEQ,
+    TOK_GT,
+    TOK_LT,
+    TOK_GTE,
+    TOK_LTE,
+    TOK_NEQ,
+    TOK_RSHIFT,
+    TOK_LSHIFT,
+    TOK_COLON, // :
+    TOK_WALRUS, // :=
+    TOK_QUESTION, // ?
+    TOK_PERCENTAGE, // %
+    TOK_SETTER,
+    TOK_NONE,
+    TOK_TRUE,
+    TOK_FALSE,
 
-    TOKEN_LET,
-    TOKEN_IF,
-    TOKEN_ELSEIF,
-    TOKEN_ELSE,
-    TOKEN_THEN,
-    TOKEN_FOR,
-    TOKEN_LOOP,
-    TOKEN_WHILE,
-    TOKEN_OR,
-    TOKEN_IS,
-    TOKEN_IS_NOT,
-    TOKEN_IN,
-    TOKEN_NOT,
-    TOKEN_NOT_IN,
-    TOKEN_AND,
-    TOKEN_ARROW, // ->
+    TOK_LET,
+    TOK_IF,
+    TOK_ELSEIF,
+    TOK_ELSE,
+    TOK_THEN,
+    TOK_FOR,
+    TOK_LOOP,
+    TOK_WHILE,
+    TOK_OR,
+    TOK_IS,
+    TOK_IS_NOT,
+    TOK_IN,
+    TOK_NOT,
+    TOK_NOT_IN,
+    TOK_AND,
+    TOK_ARROW, // ->
 
-    TOKEN_FN,
-    TOKEN_IMPORT,
-    TOKEN_ENUM,
-    TOKEN_CONST,
-    TOKEN_RETURN,
-    TOKEN_CLASS,
-    TOKEN_STRUCT,
-    TOKEN_MATCH,
-    TOKEN_CONTINUE,
-    TOKEN_BREAK,
-    TOKEN_PRINTLN,
+    TOK_FN,
+    TOK_IMPORT,
+    TOK_ENUM,
+    TOK_CONST,
+    TOK_RETURN,
+    TOK_CLASS,
+    TOK_STRUCT,
+    TOK_MATCH,
+    TOK_CONTINUE,
+    TOK_BREAK,
+    TOK_PRINTLN,
     
-    TOKEN_COMMENT,
+    TOK_COMMENT,
 
-    TOKEN_ERROR,
+    TOK_ERROR,
 } J_TokenType;
 
 typedef struct JnToken{

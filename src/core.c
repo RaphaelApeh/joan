@@ -176,7 +176,7 @@ JN_API int Jn_compile(J_State* state)
     JnSemantic sem;
     JnParser* p = state->parser;
     Jn_semantic_init(state, &sem);
-    while(p->curr.type != TOKEN_EOF)
+    while(p->curr.type != TOK_EOF)
     {
         Jn_Node* stmt = parse_stmt(p);
         stmt = parse_stmt_check(p, stmt);
@@ -354,7 +354,7 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     chuck_init(&chuck);
     Jnvm_init(&vm, &chuck);
     Jn_load_Cfunctions(&st);
-    while(p.curr.type != TOKEN_EOF)
+    while(p.curr.type != TOK_EOF)
     {
         Jn_Node* stmt = parse_stmt(&p);
         compile(stmt, &chuck);

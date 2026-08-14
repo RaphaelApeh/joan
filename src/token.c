@@ -17,33 +17,33 @@ static JnToken make_error(Jn_Lexer* l, char* msg, ...);
 
 KEYWORD_S Keywords[] = {
     // Keywords
-    {"if", TOKEN_IF},
-    {"elseif", TOKEN_ELSEIF},
-    {"else", TOKEN_ELSE},
-    {"fn", TOKEN_FN},
-    {"struct", TOKEN_STRUCT},
-    {"break", TOKEN_BREAK},
-    {"continue", TOKEN_CONTINUE},
-    {"return", TOKEN_RETURN},
-    {"is", TOKEN_IS},
-    {"in", TOKEN_IN},
-    {"and", TOKEN_AND},
-    {"or", TOKEN_OR},
-    {"not", TOKEN_NOT},
-    {"const", TOKEN_CONST}, // Deprecated: remove soon.
-    {"let", TOKEN_LET}, // Deprecated: remove soon
-    {"while", TOKEN_WHILE},
-    {"for", TOKEN_FOR},
-    {"loop", TOKEN_LOOP}, // Deprecated: remove soon
-    {"then", TOKEN_THEN},
-    {"println", TOKEN_PRINTLN}, // Deprecated: remove soon.
-    {"class", TOKEN_CLASS},
-    {"match", TOKEN_MATCH},
+    {"if", TOK_IF},
+    {"elseif", TOK_ELSEIF},
+    {"else", TOK_ELSE},
+    {"fn", TOK_FN},
+    {"struct", TOK_STRUCT},
+    {"break", TOK_BREAK},
+    {"continue", TOK_CONTINUE},
+    {"return", TOK_RETURN},
+    {"is", TOK_IS},
+    {"in", TOK_IN},
+    {"and", TOK_AND},
+    {"or", TOK_OR},
+    {"not", TOK_NOT},
+    {"const", TOK_CONST}, // Deprecated: remove soon.
+    {"let", TOK_LET}, // Deprecated: remove soon
+    {"while", TOK_WHILE},
+    {"for", TOK_FOR},
+    {"loop", TOK_LOOP}, // Deprecated: remove soon
+    {"then", TOK_THEN},
+    {"println", TOK_PRINTLN}, // Deprecated: remove soon.
+    {"class", TOK_CLASS},
+    {"match", TOK_MATCH},
 
     // Type keywords
-    {"None", TOKEN_NONE},
-    {"true", TOKEN_TRUE},
-    {"false", TOKEN_FALSE},
+    {"None", TOK_NONE},
+    {"true", TOK_TRUE},
+    {"false", TOK_FALSE},
 };
 
 
@@ -72,7 +72,7 @@ JnToken clean_token(Jn_Lexer* l)
     JnToken t;
     do {
         t = next_token(l);
-    } while (t.type == TOKEN_NEWLINE);
+    } while (t.type == TOK_NEWLINE);
     return t;
 }
 
@@ -135,7 +135,7 @@ JnToken number_token(Jn_Lexer* l)
             }
             if (l->curr[-1] == '_')
                 return make_error(l, "'_' found in an integer.");
-            JnToken t = make_token(l, TOKEN_INT);
+            JnToken t = make_token(l, TOK_INT);
             buff = rm_num_sep(t.lexeme);
             if (base == 2)
                 t.i = strtoll(buff + 2, NULL, base);
@@ -162,7 +162,7 @@ JnToken number_token(Jn_Lexer* l)
         }
         if (l->curr[-1] == '_')
             return make_error(l, "int cannot end with '_'.");
-        JnToken _t = make_token(l, TOKEN_INT);
+        JnToken _t = make_token(l, TOK_INT);
         buff = rm_num_sep(_t.lexeme);
         _t.i = strtol(buff, NULL, 0);
         free(buff);
@@ -226,13 +226,13 @@ JnToken number_token(Jn_Lexer* l)
     }
     if (is_float)
     {
-        JnToken t = make_token(l, TOKEN_FLOAT);
+        JnToken t = make_token(l, TOK_FLOAT);
         buff = rm_num_sep(t.lexeme);
         t.d = strtod(buff, NULL);
         free(buff);
         return t;
     }
-    JnToken t = make_token(l, TOKEN_INT);
+    JnToken t = make_token(l, TOK_INT);
     buff = rm_num_sep(t.lexeme);
     t.i = strtol(buff, NULL, 10);
     free(buff);
@@ -259,18 +259,18 @@ JnToken token_string(Jn_Lexer* l)
     if (*l->curr == '\0')
     {
         JnToken t;
-        t.type = TOKEN_ERROR;
+        t.type = TOK_ERROR;
         t.lexeme = "unterminated string literal.";
         t.v = NULL;
         t.line = l->line;
         t.column = l->column;
         return t;
     }
-    JnToken t = make_token(l, TOKEN_STRING);
+    JnToken t = make_token(l, TOK_STRING);
     char c = *l->curr++;
     l->column++;
     if (q != c)
-        return make_token(l, TOKEN_ERROR);
+        return make_token(l, TOK_ERROR);
     return t;   
 }
 
@@ -281,7 +281,7 @@ static JnToken token_char(Jn_Lexer* l)
     JnToken t;
     if (*l->curr == '\0')
     {
-        t.type = TOKEN_ERROR;
+        t.type = TOK_ERROR;
         t.lexeme = strdup("unterminated char literal.");
         t.line = l->line;
         t.column = l->column;
@@ -300,7 +300,7 @@ static JnToken token_char(Jn_Lexer* l)
             case '\'': c = '\''; break;
             case '0': c = '\0'; break;
             default:
-            t.type = TOKEN_ERROR;
+            t.type = TOK_ERROR;
             t.lexeme = strdup("invalid escape sequence.");
             t.v = NULL;
             t.line = l->line;
@@ -314,7 +314,7 @@ static JnToken token_char(Jn_Lexer* l)
     }
     if (*l->curr != '\'')
     {
-        t.type = TOKEN_ERROR;
+        t.type = TOK_ERROR;
         t.lexeme = strdup("char literal contains more than one character.");
         t.v = NULL;
         t.line = l->line;
@@ -322,7 +322,7 @@ static JnToken token_char(Jn_Lexer* l)
         return t;
     }
     advance(l);
-    t = make_token(l, TOKEN_CHAR);
+    t = make_token(l, TOK_CHAR);
     t.c = c;
     return t;
 }
@@ -331,7 +331,7 @@ JnToken token_identifier(Jn_Lexer* l)
 {
     while (isalnum(peek(l)) || peek(l) == '_') 
         advance(l);
-    JnToken t = make_token(l, TOKEN_IDENTIFIER);
+    JnToken t = make_token(l, TOK_IDENT);
 
     for (int i = 0; i < (int)(sizeof(Keywords) / sizeof(Keywords[0])); ++i)
     {
@@ -353,7 +353,7 @@ static JnToken make_error(Jn_Lexer* l, char* msg, ...)
     vsnprintf(buffer, sizeof(buffer), msg, arg);
     va_end(arg);
 
-    t.type = TOKEN_ERROR;
+    t.type = TOK_ERROR;
     t.lexeme = strdup(buffer);
     t.v = NULL;
     t.line = l->line;
@@ -382,7 +382,7 @@ JnToken make_comment(Jn_Lexer* l)
     l->start = l->curr;
     while(peek(l) != '\n' && !at_end(l))
         advance(l);
-    return make_token(l, TOKEN_COMMENT);
+    return make_token(l, TOK_COMMENT);
 }
 
 JnToken make_comment_block(Jn_Lexer* l)
@@ -394,14 +394,14 @@ JnToken make_comment_block(Jn_Lexer* l)
         advance(l);
     advance(l);
     advance(l);
-    return make_token(l, TOKEN_COMMENT);
+    return make_token(l, TOK_COMMENT);
 }
 
 JnToken next_token(Jn_Lexer* l)
 {
     strip_ws(l);
     l->start = l->curr;
-    if (at_end(l)) return make_token(l, TOKEN_EOF);
+    if (at_end(l)) return make_token(l, TOK_EOF);
     char c = advance(l);
     if (
         isdigit(c) || 
@@ -413,32 +413,32 @@ JnToken next_token(Jn_Lexer* l)
     switch (c)
     {
         case '\n':
-            return make_token(l, TOKEN_NEWLINE);
+            return make_token(l, TOK_NEWLINE);
         case '(':
-            return make_token(l, TOKEN_LPARN);
+            return make_token(l, TOK_LPARN);
         case ')':
-            return make_token(l, TOKEN_RPARN);
+            return make_token(l, TOK_RPARN);
         case '{':
-            return make_token(l, TOKEN_LBRACE);
+            return make_token(l, TOK_LBRACE);
         case '}':
-            return make_token(l, TOKEN_RBRACE);
+            return make_token(l, TOK_RBRACE);
         case '[':
-            return make_token(l, TOKEN_LBRACKET);
+            return make_token(l, TOK_LBRACKET);
         case ']':
-            return make_token(l, TOKEN_RBRACKET);
+            return make_token(l, TOK_RBRACKET);
         case ':':
             if (peek(l) == ':')
             {
                 advance(l);
-                return make_token(l, TOKEN_SETTER);
+                return make_token(l, TOK_SETTER);
             }
             if (peek_advance(l, '='))
-                return make_token(l, TOKEN_WALRUS);
-            return make_token(l, TOKEN_COLON);
+                return make_token(l, TOK_WALRUS);
+            return make_token(l, TOK_COLON);
         case '\\':
-            return make_token(l, TOKEN_BSLASH);
+            return make_token(l, TOK_BSLASH);
         case ',':
-            return make_token(l, TOKEN_COMMA);
+            return make_token(l, TOK_COMMA);
         case '"':
             return token_string(l);
         case '\'':
@@ -450,130 +450,130 @@ JnToken next_token(Jn_Lexer* l)
             {
                 advance(l);
                 if (peek_advance(l, '.'))
-                    return make_token(l, TOKEN_ELLIPSIS);
-                return make_token(l, TOKEN_RANGE);
+                    return make_token(l, TOK_ELLIPSIS);
+                return make_token(l, TOK_RANGE);
             }
-            return make_token(l, TOKEN_DOT);
+            return make_token(l, TOK_DOT);
         case '+':
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOKEN_APLUS);
+                return make_token(l, TOK_APLUS);
             } else if (peek_advance(l, '+'))
-                return make_token(l, TOKEN_PLUS_PLUS);
-            return make_token(l, TOKEN_PLUS);
+                return make_token(l, TOK_PLUS_PLUS);
+            return make_token(l, TOK_PLUS);
         case '-':
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOKEN_AMINUS);
+                return make_token(l, TOK_AMINUS);
             }
 
             if (peek_advance(l, '>'))
-                return make_token(l, TOKEN_ARROW);
-            return make_token(l, TOKEN_MINUS);
+                return make_token(l, TOK_ARROW);
+            return make_token(l, TOK_MINUS);
         case '*':
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOKEN_AMUL);
+                return make_token(l, TOK_AMUL);
             } else if (peek_advance(l, '*'))
             {
                 if (peek_advance(l, '='))
-                    return make_token(l, TOKEN_APOW);
-                return make_token(l, TOKEN_POW);
+                    return make_token(l, TOK_APOW);
+                return make_token(l, TOK_POW);
             }
-            return make_token(l, TOKEN_MUL);
+            return make_token(l, TOK_MUL);
         case '=':
             if (peek(l) == '='){
                 advance(l);
-                return make_token(l, TOKEN_EQEQ);
+                return make_token(l, TOK_EQEQ);
             } else if (peek(l) == '>')
             {
                 advance(l);
-                return make_token(l, TOKEN_DCOLON);
+                return make_token(l, TOK_DCOLON);
             }
-            return make_token(l, TOKEN_EQUAL);
+            return make_token(l, TOK_EQUAL);
         case '>':
             if (peek(l) == '='){
                 advance(l);
-                return make_token(l, TOKEN_GTE);
+                return make_token(l, TOK_GTE);
             } else if (peek(l) == '>'){
                 advance(l);
                 if (peek(l) == '=')
                 {
                     advance(l);
-                    return make_token(l, TOKEN_ARSHIFT);
+                    return make_token(l, TOK_ARSHIFT);
                 }
-                return make_token(l, TOKEN_RSHIFT);
+                return make_token(l, TOK_RSHIFT);
             }
-            return make_token(l, TOKEN_GT);
+            return make_token(l, TOK_GT);
         case '^':
             if (peek_advance(l, '='))
-                return make_token(l, TOKEN_AXOR);
-            return make_token(l, TOKEN_XOR);
+                return make_token(l, TOK_AXOR);
+            return make_token(l, TOK_XOR);
         case '<':
             if (peek(l) == '='){
                 advance(l);
-                return make_token(l, TOKEN_LTE);
+                return make_token(l, TOK_LTE);
             }else if (peek(l) == '<'){
                 advance(l);
                 if (peek(l) == '=')
                 {
                     advance(l);
-                    return make_token(l, TOKEN_ALSHIFT);
+                    return make_token(l, TOK_ALSHIFT);
                 }
-                return make_token(l, TOKEN_LSHIFT);
+                return make_token(l, TOK_LSHIFT);
             }
-            return make_token(l, TOKEN_LT);
+            return make_token(l, TOK_LT);
         case '%':
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOKEN_APERCENTAGE);
+                return make_token(l, TOK_APERCENTAGE);
             }
-            return make_token(l, TOKEN_PERCENTAGE);
+            return make_token(l, TOK_PERCENTAGE);
         case '!':
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOKEN_NEQ);
+                return make_token(l, TOK_NEQ);
             }
-            return make_token(l, TOKEN_NOT);
+            return make_token(l, TOK_NOT);
         case '/':
             if (peek(l) == '/')
                 return make_comment(l);
             else if (peek_advance(l, '='))
-                return make_token(l, TOKEN_ASLASH);
+                return make_token(l, TOK_ASLASH);
             else if (peek(l) == '*')
                 return make_comment_block(l);
-            return make_token(l, TOKEN_SLASH);
+            return make_token(l, TOK_SLASH);
         case '?':
-            return make_token(l, TOKEN_QUESTION);
+            return make_token(l, TOK_QUESTION);
         case '@':
-            return make_token(l, TOKEN_AT);
+            return make_token(l, TOK_AT);
         case ';':
-            return make_token(l, TOKEN_SEMICOLON);
+            return make_token(l, TOK_SEMICOLON);
         case '&':
             if (peek(l) == '&')
             {
                 advance(l);
-                return make_token(l, TOKEN_AND);
+                return make_token(l, TOK_AND);
             } else if (peek_advance(l, '='))
-                return make_token(l, TOKEN_ABITAND);
-            return make_token(l, TOKEN_BITAND);
+                return make_token(l, TOK_ABITAND);
+            return make_token(l, TOK_BITAND);
         case '|':
             if (peek(l) == '|')
             {
                 advance(l);
-                return make_token(l, TOKEN_OR);
+                return make_token(l, TOK_OR);
             } else if (peek_advance(l, '='))
-                return make_token(l, TOKEN_ABITOR);
-            return make_token(l, TOKEN_BITOR);
+                return make_token(l, TOK_ABITOR);
+            return make_token(l, TOK_BITOR);
         case '#':
-            return make_token(l, TOKEN_HASH);
+            return make_token(l, TOK_HASH);
         case '~':
-            return make_token(l, TOKEN_TILDE);
+            return make_token(l, TOK_TILDE);
         default:
             return make_error(l, "Invalid token '%c'.", c);
     }
