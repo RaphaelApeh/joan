@@ -158,6 +158,41 @@ static JnObject* vm_peek(JnVM* vm, int d) {return vm->sp[-1 - d];}
 
 static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
+JN_API void Jn_pushnone(Jn_State* state)
+{
+    Jn_pushobject(state, JN_RETURN_NONE);
+}
+
+JN_API void Jn_pushcfunc(Jn_State*, Jn_CFunction)
+{
+    
+}
+
+JN_API void Jn_pushobject(Jn_State* state, JnObject* obj)
+{
+    if (!obj) return;
+    push(state->vm, obj);
+}
+
+JN_API void Jn_pushinteger(Jn_State* state,  Jn_Integer i)
+{
+    Jn_pushobject(state, jn_obj_int(state, i));
+}
+
+JN_API void Jn_pushstring(Jn_State* state, char* cstr)
+{
+    Jn_pushobject(state, jn_obj_string(state, cstr));
+}
+
+JN_API void Jn_pushfloat(Jn_State* state, Jn_Float f)
+{
+    Jn_pushobject(state, jn_obj_float(state, f));
+}
+
+JN_API void Jn_pushchar(Jn_State* state, Jn_Char c)
+{
+    Jn_pushobject(state, jn_obj_char(state, c));
+}
 
 static JnObject* call_function(Jn_State* state, JnVM* vm, JnObject* obj, JnObject** args)
 {

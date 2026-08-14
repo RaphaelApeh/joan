@@ -84,9 +84,9 @@ typedef int JnHandle;
 
 #define JOAN_VERSION_MAJOR 0
 #define JOAN_VERSION_MINOR 7
-#define JOAN_VERSION_PATCH 4
+#define JOAN_VERSION_PATCH 8
 
-#define JOAN_VERSION "0.7.4"
+#define JOAN_VERSION "0.7.8"
 #define JOAN_EXT "jt"
 #define JOAN_BRANCH "main"
 
@@ -440,7 +440,7 @@ typedef struct {
 typedef struct {
     Jn_CFunction fn;
     char* fnName;
-} JnNativeObject;
+} Jn_Native;
 
 typedef struct {
     const char* typename;
@@ -522,7 +522,7 @@ typedef struct JnObject{
         JnFunctionObject* fn;
         Jn_Iter* iter;
         Jn_Hashmap* hashmap;
-        JnNativeObject* native_fn;
+        Jn_Native* native_fn;
         Jn_Enum* enum_n;
         JnModule* module;
         JnStruct* struct_obj;
@@ -613,14 +613,14 @@ JN_API void Jn_buff_clear(Jn_Buffer* B);
 JN_API char* Jn_buff_to_string(Jn_Buffer* B);
 
 JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...);
-
+JN_API int Jn_vsnprintf(char* buff, size_t size, const char* fmt, va_list ap);
 
 // Stack / Push
 
 JN_API void Jn_pushnone(Jn_State*);
 JN_API void Jn_pushcfunc(Jn_State*, Jn_CFunction);
 JN_API void Jn_pushobject(Jn_State*, JnObject*);
-JN_API void Jn_pushinteger(Jn_State* Jn_Integer);
+JN_API void Jn_pushinteger(Jn_State*, Jn_Integer);
 JN_API void Jn_pushstring(Jn_State*, char*);
 JN_API void Jn_pushfloat(Jn_State*, Jn_Float);
 JN_API void Jn_pushchar(Jn_State*, Jn_Char);
@@ -677,6 +677,7 @@ JnObject* jn_obj_bool(Jn_State*, bool o_bool);
 JnObject* jn_obj_range(Jn_State*, int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(Jn_State*, double o_float);
 JnObject* jn_obj_iter(Jn_State*, JnObject* iter);
+JN_API JnObject* jn_obj_cfn(Jn_State* state, char* name, Jn_CFunction fn);
 JnObject* jn_obj_type(Jn_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
 JnObject* jn_obj_intern(Jn_State* state, JnObject* obj);
 JnObject* jn_obj_module(Jn_State*, char* name, char* path, Jn_environ* env);

@@ -393,3 +393,13 @@ JN_API void Jn_buff_clear(Jn_Buffer* B)
     Jn_free(B->data);
     B->data = NULL;
 }
+
+JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...)
+{
+
+}
+
+JN_API int Jn_vsnprintf(char* buff, size_t size, const char* fmt, va_list ap)
+{
+    
+}

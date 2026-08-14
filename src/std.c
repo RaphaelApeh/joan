@@ -861,11 +861,7 @@ static JnObject* string_ctor(Jn_State* state, JnObject* args)
 JN_API void Jn_register_fn(Jn_State* state, char* name, char* doc, Jn_CFunction fn)
 {
     assert(state != NULL && name != NULL);
-    JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
-    n_fn->fn = fn;
-    n_fn->fnName = strdup(name);
-    JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);
-    obj->native_fn = n_fn;
+    JnObject* obj = jn_obj_cfn(state, name, fn);
     Jn_register(state, name, doc, obj);
 }
 
@@ -880,7 +876,7 @@ JN_API void Jn_register(Jn_State* state, const char* name, const char* doc, JnOb
 
 JN_API void Jn_define_fn(Jn_State* state, const char* name, Jn_CFunction fn)
 {
-    JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
+    Jn_Native* n_fn = Jn_alloc(sizeof(Jn_Native));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
     JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);
@@ -898,7 +894,7 @@ JN_API void Jn_register_module(char* name, Jn_State* state, Jn_CModule* module)
 JN_API JnObject* Jn_make_native(char* name, Jn_State* state, Jn_CFunction fn)
 {
     assert(name && state && fn);
-    JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
+    Jn_Native* n_fn = Jn_alloc(sizeof(Jn_Native));
     n_fn->fn = fn;
     n_fn->fnName = strdup(name);
     JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);

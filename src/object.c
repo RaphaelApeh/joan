@@ -295,6 +295,15 @@ void jn_obj_reassign(JnObject* dest, JnObject* src)
     #undef _SET_TYPE
 }
 
+JN_API JnObject* jn_obj_cfn(Jn_State* state, char* name, Jn_CFunction fn)
+{
+    JnObject* obj = jn_obj_new(state, JN_NATIVE_TYPE);
+    obj->native_fn = Jn_alloc(sizeof(Jn_Native));
+    obj->native_fn->fnName = strdup(name);
+    obj->native_fn->fn = fn;
+    return JN_INTERN_OBJECT(obj);
+}
+
 uint64_t Jn_object_hash(JnObject* obj)
 {
     #define HASH_MIX_STRING(str)  hash_mix(djb2_hash((const unsigned char *)(str)))

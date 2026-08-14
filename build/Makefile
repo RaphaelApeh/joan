@@ -634,6 +634,33 @@ src/token.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/token.c.s
 .PHONY : src/token.c.s
 
+src/typechecker.obj: src/typechecker.c.obj
+.PHONY : src/typechecker.obj
+
+# target to build an object file
+src/typechecker.c.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/typechecker.c.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/typechecker.c.obj
+.PHONY : src/typechecker.c.obj
+
+src/typechecker.i: src/typechecker.c.i
+.PHONY : src/typechecker.i
+
+# target to preprocess a source file
+src/typechecker.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/typechecker.c.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/typechecker.c.i
+.PHONY : src/typechecker.c.i
+
+src/typechecker.s: src/typechecker.c.s
+.PHONY : src/typechecker.s
+
+# target to generate assembly for a file
+src/typechecker.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan.dir\build.make CMakeFiles/joan.dir/src/typechecker.c.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\joan_shared.dir\build.make CMakeFiles/joan_shared.dir/src/typechecker.c.s
+.PHONY : src/typechecker.c.s
+
 src/visits.obj: src/visits.c.obj
 .PHONY : src/visits.obj
 
@@ -753,6 +780,9 @@ help:
 	@echo ... src/token.obj
 	@echo ... src/token.i
 	@echo ... src/token.s
+	@echo ... src/typechecker.obj
+	@echo ... src/typechecker.i
+	@echo ... src/typechecker.s
 	@echo ... src/visits.obj
 	@echo ... src/visits.i
 	@echo ... src/visits.s

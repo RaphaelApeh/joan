@@ -98,6 +98,7 @@ void Jn_freeObject(JnObject* obj)
             free(obj->fn);
             break;
         case JN_NATIVE_TYPE:
+            free(obj->native_fn->fnName);
             free(obj->native_fn);
             break;
         case JN_ITER_TYPE:

@@ -379,13 +379,6 @@ JN_API JnObject* Jn_import_module(Jn_State* state, char* path, int is_std)
     return obj;
 }
 
-JN_API void Jn_pushnone(Jn_State*);
-JN_API void Jn_pushcfunc(Jn_State*, Jn_CFunction);
-JN_API void Jn_pushobject(Jn_State*, JnObject*);
-JN_API void Jn_pushinteger(Jn_State* Jn_Integer);
-JN_API void Jn_pushstring(Jn_State*, char*);
-JN_API void Jn_pushfloat(Jn_State*, Jn_Float);
-JN_API void Jn_pushchar(Jn_State*, Jn_Char);
 
 JN_API void Jn_program_close(Jn_State* state)
 {
