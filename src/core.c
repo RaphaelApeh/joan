@@ -272,14 +272,24 @@ JN_API int Jn_exec_from_file(J_State* state, char* filename, FILE* fptr)
     if (filename)
         state->cxt.source.filename = strdup(filename);
     state->cxt.source.source = b.data; 
+    state->cxt.argv = NULL;
+    state->cxt.argc = 0;
     int exit_code = Jn_exec_program(state, filename, b.data);    
     return exit_code;
 }
 
 JN_API int Jn_exec_string(J_State* state, const char* string)
 {
-    // TODO:
-    assert(false && "Not yet Implemented.");
+    if (!string) return -1;
+    Jn_Buffer b;
+    Jn_buff_init(&b);
+    Jn_buff_add_string(&b, string);
+    Jn_buff_to_string(&b);
+    state->cxt.source.source = b.data; 
+    state->cxt.argv = NULL;
+    state->cxt.argc = 0;
+    int exit_code = Jn_exec_program(state, NULL, b.data);    
+    return exit_code;
 }
 
 JN_API int Jn_exec_REPL(J_State* state, const char* source)
