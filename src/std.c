@@ -876,12 +876,7 @@ JN_API void Jn_register(Jn_State* state, const char* name, const char* doc, JnOb
 
 JN_API void Jn_define_fn(Jn_State* state, const char* name, Jn_CFunction fn)
 {
-    Jn_Native* n_fn = Jn_alloc(sizeof(Jn_Native));
-    n_fn->fn = fn;
-    n_fn->fnName = strdup(name);
-    JnObject* obj = JN_OBJECT(state, JN_NATIVE_TYPE);
-    obj->native_fn = n_fn;
-    Jn_register(state, name, NULL, obj);
+    Jn_register_fn(state, (char *)name, NULL, fn);
 }
 
 
@@ -984,6 +979,9 @@ JN_API void Jn_load_repl_functions(Jn_State* state)
 
 JN_API void Jn_load_Cfunctions(Jn_State* state)
 {
+    // To be modify later.
+    JnObject* arr_obj = jn_obj_array(state);
+    Jn_register(state, "argv", "Command line arguments.", arr_obj);
 #ifdef JN_WINDOWS
     Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_TRUE(state));
 #elif JN_APPLE

@@ -121,6 +121,11 @@ void ast_array_add(Jn_Node* arr, Jn_Node* element)
     arr->array.elements[arr->array.count++] = element;
 }
 
+Jn_Node* ast_program(JnParser* p)
+{
+    return NULL;
+}
+
 
 Jn_Node* ast_assign(
     JnParser* p,

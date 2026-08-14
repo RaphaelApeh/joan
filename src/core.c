@@ -257,6 +257,15 @@ JN_API int Jn_execute_main(Jn_State* state, const char* filepath, char** argv, i
     state->cxt.source = src;
     state->cxt.argv = argv;
     state->cxt.argc = argc;
+    JnObject* arr_obj = Jn_get_global(state, "argv");
+    if (argc && (arr_obj != NULL))
+    {
+        for (int i = 0; i < argc; ++i)
+        {
+            if (!argv[i]) continue;
+            jn_arr_append(arr_obj, jn_obj_string(state, argv[i]));
+        }
+    }
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, (char *)filepath));
     int exit_code = Jn_exec_program(state, filepath, src.source);
     return exit_code;
@@ -285,10 +294,10 @@ JN_API int Jn_exec_string(Jn_State* state, const char* string)
     Jn_buff_init(&b);
     Jn_buff_add_string(&b, string);
     Jn_buff_to_string(&b);
-    state->cxt.source.source = b.data; 
+    state->cxt.source.source = b.data;
     state->cxt.argv = NULL;
     state->cxt.argc = 0;
-    int exit_code = Jn_exec_program(state, NULL, b.data);    
+    int exit_code = Jn_exec_program(state, NULL, b.data);
     return exit_code;
 }
 

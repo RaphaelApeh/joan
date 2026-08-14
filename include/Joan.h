@@ -677,6 +677,7 @@ JnObject* jn_obj_bool(Jn_State*, bool o_bool);
 JnObject* jn_obj_range(Jn_State*, int64_t start, int64_t stop, int64_t step);
 JnObject* jn_obj_float(Jn_State*, double o_float);
 JnObject* jn_obj_iter(Jn_State*, JnObject* iter);
+JN_API JnObject* jn_obj_array(Jn_State* state);
 JN_API JnObject* jn_obj_cfn(Jn_State* state, char* name, Jn_CFunction fn);
 JnObject* jn_obj_type(Jn_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
 JnObject* jn_obj_intern(Jn_State* state, JnObject* obj);

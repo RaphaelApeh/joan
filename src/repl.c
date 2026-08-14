@@ -26,7 +26,7 @@ struct Command parse_args(char** args, int argc)
         c.type = C_REPL;
         return c;
     }
-    if (argc == 2 && *(args[1]) != '-' )
+    if (argc > 1 && *(args[1]) != '-' )
     {
         c.filename = args[1];
         c.type = C_RUN;

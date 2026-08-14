@@ -525,6 +525,16 @@ JnObject* jn_obj_instance(Jn_State* state, JnObject* from_obj, Jn_environ* field
     return JN_INTERN_OBJECT(obj);
 }
 
+JN_API JnObject* jn_obj_array(Jn_State* state)
+{
+    JnObject* obj = jn_obj_new(state, JN_ARRAY_TYPE);
+    obj->arr = Jn_alloc(sizeof(Jn_Array));
+    obj->arr->size = 0;
+    obj->arr->capacity = JN_INITIAL_CAPACITY;
+    obj->arr->items = Jn_alloc(sizeof(*obj) * JN_INITIAL_CAPACITY);
+    return obj;
+}
+
 JnObject* jn_obj_module(Jn_State* state, char* name, char* path, Jn_environ* env)
 {
     JnObject* obj = jn_obj_new(state, JN_MODULE_TYPE);
@@ -768,8 +778,6 @@ void jn_arr_append(JnObject* arr_obj, JnObject* value)
     if (jn_arr_grow(arr_obj, 0) == -1) return;
     Jn_Array* iter = JN_IS_ARRAY(arr_obj) ? JN_AS_ARRAY(arr_obj) : JN_AS_TUPLE(arr_obj);
     iter->items[iter->size++] = value;
-    memmove(iter->items + iter->size, value, sizeof(JnObject));
-    iter->size++;
 }
 
 void jn_arr_append_many(JnObject* arr_obj, JnObject** argv, size_t argc)

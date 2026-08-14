@@ -59,9 +59,9 @@ void version(void)
 
 int main(int argc, char** argv)
 {
-    char** new_argv = argv + 1;
-    int new_argc = argc - 1;
     char* source = NULL;
+    char** nw_argv = argc > 0 ? argv + 1 : argv;
+    int nw_argc = argc > 0 ? argc - 1 : 0;
     int exit_code;
     struct Command c = parse_args(argv, argc);
     Jn_State state = {0};
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
     execute:
         Jn_program_init(&state);
         if (!c.filename)   return -1;
-        exit_code = Jn_execute_main(&state, c.filename, new_argv, new_argc);
+        exit_code = Jn_execute_main(&state, c.filename, nw_argv, nw_argc);
         Jn_program_close(&state);
         return exit_code;
     interative:

@@ -1,5 +1,12 @@
-if true {
-    printf("Hello World");
-} else {
-    printf("TODO");
+printf("Args = %v, len = %d", argv, len(argv));
+if (len(argv) <= 1) then
+    exit(1);
+
+if argv[1] == "hello"
+{
+    printf("Hello world\n");
+}
+elseif argv[1] == "world"
+{
+    printf("World World\n");
 }
