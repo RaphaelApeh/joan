@@ -72,6 +72,6 @@ void vm_free(JnVM* vm);
 void reset_vm(JnVM* vm);
 void chuck_free(Chuck* chuck);
 
-int vm_run(J_State* state, JnVM* vm);
+int vm_run(Jn_State* state, JnVM* vm);
 
 #endif

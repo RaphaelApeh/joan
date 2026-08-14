@@ -18,7 +18,7 @@
 #define MAX_OBJECT_ARGS 50
 
 
-JN_API JnObject* Jn_make_args(J_State* state, size_t capacity)
+JN_API JnObject* Jn_make_args(Jn_State* state, size_t capacity)
 {
     assert(capacity < MAX_OBJECT_ARGS);
     JnObject** objs = malloc(sizeof(JnObject *) * capacity);
@@ -41,21 +41,21 @@ struct JnObjectMethod {
     JN_CMethod method;
 };
 
-static JnObject* push_method(J_State* state, JnObject* self, JnObject* args);
+static JnObject* push_method(Jn_State* state, JnObject* self, JnObject* args);
 
 // Hashmap methods
-static JnObject* hashmap_from_idx(J_State* state, JnObject* self, JnObject* args);
+static JnObject* hashmap_from_idx(Jn_State* state, JnObject* self, JnObject* args);
 
 // String methods
-static JnObject* string_ends(J_State* state, JnObject* self, JnObject* arg);
-static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg);
-static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg);
-static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg);
-static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg);
-static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_ends(Jn_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_starts(Jn_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_split(Jn_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_repl(Jn_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_strip(Jn_State* state, JnObject* self, JnObject* arg);
+static JnObject* string_part(Jn_State* state, JnObject* self, JnObject* arg);
 
 // Static methods
-static JnObject* string_utf8(J_State* state, JnObject* cls);
+static JnObject* string_utf8(Jn_State* state, JnObject* cls);
 
 static struct JnObjectMethod STRING_METHODS[] = {
     {"ends", string_ends},
@@ -123,7 +123,7 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
 }
 
 
-static JnObject* push_method(J_State* state, JnObject* self, JnObject* args)
+static JnObject* push_method(Jn_State* state, JnObject* self, JnObject* args)
 {
     if (!JN_IS_ITERABLE(self))
         return JN_RAISE_EXCPETION(
@@ -172,7 +172,7 @@ static JnObject* push_method(J_State* state, JnObject* self, JnObject* args)
 
 // Hashmap Methods
 
-static JnObject* hashmap_from_idx(J_State* state, JnObject* self, JnObject* args)
+static JnObject* hashmap_from_idx(Jn_State* state, JnObject* self, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count != 1)
@@ -193,7 +193,7 @@ static JnObject* hashmap_remove(Joan* state, JnObject* self, JnObject* args)
 }
 // String Methods
 
-static JnObject* string_ends(J_State* state, JnObject* self, JnObject* args)
+static JnObject* string_ends(Jn_State* state, JnObject* self, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (!JN_IS_STRING(self))
@@ -210,7 +210,7 @@ static JnObject* string_ends(J_State* state, JnObject* self, JnObject* args)
 }
 
 
-static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg)
+static JnObject* string_starts(Jn_State* state, JnObject* self, JnObject* arg)
 {
     int count = JN_ARGS_COUNT(arg);
     if (!JN_IS_STRING(self))
@@ -226,7 +226,7 @@ static JnObject* string_starts(J_State* state, JnObject* self, JnObject* arg)
     return JN_RETURN_BOOL(state, ends);
 }
 
-static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg)
+static JnObject* string_split(Jn_State* state, JnObject* self, JnObject* arg)
 {
     /*
     Example:
@@ -259,7 +259,7 @@ static JnObject* string_split(J_State* state, JnObject* self, JnObject* arg)
     return obj;
 }
 
-static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg)
+static JnObject* string_repl(Jn_State* state, JnObject* self, JnObject* arg)
 {
     /*
     Example:
@@ -283,7 +283,7 @@ static JnObject* string_repl(J_State* state, JnObject* self, JnObject* arg)
 }
 
 
-static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg)
+static JnObject* string_strip(Jn_State* state, JnObject* self, JnObject* arg)
 {
     /*
     Example:
@@ -297,7 +297,7 @@ static JnObject* string_strip(J_State* state, JnObject* self, JnObject* arg)
     return JN_RETURN_STRING(state, res);
 }
 
-static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg)
+static JnObject* string_part(Jn_State* state, JnObject* self, JnObject* arg)
 {
     /*
     Example:
@@ -339,7 +339,7 @@ static JnObject* string_part(J_State* state, JnObject* self, JnObject* arg)
     return ret_obj;
 }
 
-static JnObject* string_utf8(J_State* state, JnObject* cls)
+static JnObject* string_utf8(Jn_State* state, JnObject* cls)
 {
     if (!JN_IS_STRING(cls))
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, ":from_utf8() epected a string");
@@ -351,13 +351,13 @@ static JnObject* string_utf8(J_State* state, JnObject* cls)
 
 
 // Native functions
-static JnObject* native_getattr(J_State* state, JnObject* args)
+static JnObject* native_getattr(Jn_State* state, JnObject* args)
 {
     assert(false);
 }
 
 
-static JnObject* native_format(J_State* state, JnObject* args)
+static JnObject* native_format(Jn_State* state, JnObject* args)
 {
     /*
     Example:
@@ -498,7 +498,7 @@ static JnObject* native_format(J_State* state, JnObject* args)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "%s expected %s.", fmt, typ_str);
 }
 
-static JnObject* native_printf(J_State* state, JnObject* args)
+static JnObject* native_printf(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count < 1)
@@ -576,7 +576,7 @@ static JnObject* native_printf(J_State* state, JnObject* args)
     return JN_RETURN_NONE;
 }
 
-static JnObject* native_assert(J_State* state, JnObject* args)
+static JnObject* native_assert(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count < 1 || count > 2)
@@ -597,7 +597,7 @@ static JnObject* native_assert(J_State* state, JnObject* args)
     return JN_RETURN_NONE;
 }
 
-static JnObject* native_hasattr(J_State* state, JnObject* args)
+static JnObject* native_hasattr(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count != 2)
@@ -634,7 +634,7 @@ static JnObject* native_hasattr(J_State* state, JnObject* args)
     return JN_RAISE_EXCPETION(state, SYS_ERROR, "hasattr() something went wrong.");
 }
 
-static JnObject* native_len(J_State* state, JnObject* args)
+static JnObject* native_len(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1)
@@ -664,7 +664,7 @@ static JnObject* native_len(J_State* state, JnObject* args)
     return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
 }
 
-static JnObject* native_gets(J_State* state, JnObject* args)
+static JnObject* native_gets(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
@@ -689,7 +689,7 @@ static JnObject* native_gets(J_State* state, JnObject* args)
     return JN_RETURN_STRING(state, buff);
 }
 
-static JnObject* native_put(J_State* state, JnObject* args)
+static JnObject* native_put(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
@@ -699,13 +699,13 @@ static JnObject* native_put(J_State* state, JnObject* args)
 }
 
 
-static JnObject* native_typeof(J_State* state, JnObject* args)
+static JnObject* native_typeof(Jn_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1) return JN_RETURN_NONE;
     return JN_RETURN_INT(state, JN_OBJ_TYPE(JN_GET_ARG(args)));
 }
 
-static JnObject* native_toint(J_State* state, JnObject* args)
+static JnObject* native_toint(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
@@ -729,7 +729,7 @@ static JnObject* native_toint(J_State* state, JnObject* args)
     return NULL;
 }
 
-static JnObject* native_tofloat(J_State* state, JnObject* args)
+static JnObject* native_tofloat(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
@@ -751,7 +751,7 @@ static JnObject* native_tofloat(J_State* state, JnObject* args)
     return NULL;
 }
 
-static JnObject* native_tochar(J_State* state, JnObject* args)
+static JnObject* native_tochar(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
@@ -771,7 +771,7 @@ static JnObject* native_tochar(J_State* state, JnObject* args)
     return NULL;
 }
 
-static JnObject* native_isinstance(J_State* state, JnObject* arg)
+static JnObject* native_isinstance(Jn_State* state, JnObject* arg)
 {
     // Example:
     // isinstance("Hello", string) // true
@@ -779,7 +779,7 @@ static JnObject* native_isinstance(J_State* state, JnObject* arg)
     return NULL;
 }
 
-static JnObject* native_exit(J_State* state, JnObject* args)
+static JnObject* native_exit(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     int exit_code = 0;
@@ -797,7 +797,7 @@ static JnObject* native_exit(J_State* state, JnObject* args)
     return JN_RETURN_NONE;
 }
 
-static JnObject* native_defined(J_State* state, JnObject* args)
+static JnObject* native_defined(Jn_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "defined() takes one argument but got (%d).",JN_ARGS_COUNT(args));
@@ -809,7 +809,7 @@ static JnObject* native_defined(J_State* state, JnObject* args)
     return JN_RETURN_BOOL(state, (environ_get(state->vm->env, var) != NULL));
 }
 
-static JnObject* native_sleep(J_State* state, JnObject* args)
+static JnObject* native_sleep(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
     if (count > 1 || count < 1)
@@ -827,7 +827,7 @@ static JnObject* native_sleep(J_State* state, JnObject* args)
 
 
 // Constructor
-static JnObject* bool_ctor(J_State* state, JnObject* args)
+static JnObject* bool_ctor(Jn_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string{} expect one arguement.");
@@ -837,7 +837,7 @@ static JnObject* bool_ctor(J_State* state, JnObject* args)
         return JN_RETURN_TRUE(state);
     return JN_RETURN_FALSE(state);
 }
-static JnObject* string_ctor(J_State* state, JnObject* args)
+static JnObject* string_ctor(Jn_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 1)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "string{} expect one arguement.");
@@ -858,7 +858,7 @@ static JnObject* string_ctor(J_State* state, JnObject* args)
     return JN_RAISE_EXCPETION(state, SYS_ERROR, "String does not support this type.");
 }
 
-JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn)
+JN_API void Jn_register_fn(Jn_State* state, char* name, char* doc, Jn_CFunction fn)
 {
     assert(state != NULL && name != NULL);
     JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
@@ -869,7 +869,7 @@ JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction f
     Jn_register(state, name, doc, obj);
 }
 
-JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj)
+JN_API void Jn_register(Jn_State* state, const char* name, const char* doc, JnObject* obj)
 {
      assert(state != NULL && obj != NULL);
      obj->doc = doc;
@@ -878,7 +878,7 @@ JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObj
 }
 
 
-JN_API void Jn_define_fn(J_State* state, const char* name, Jn_CFunction fn)
+JN_API void Jn_define_fn(Jn_State* state, const char* name, Jn_CFunction fn)
 {
     JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
     n_fn->fn = fn;
@@ -889,13 +889,13 @@ JN_API void Jn_define_fn(J_State* state, const char* name, Jn_CFunction fn)
 }
 
 
-JN_API void Jn_register_module(char* name, J_State* state, Jn_CModule* module)
+JN_API void Jn_register_module(char* name, Jn_State* state, Jn_CModule* module)
 {
     // TODO
     assert(false && "Not yet Impl.");
 }
 
-JN_API JnObject* Jn_make_native(char* name, J_State* state, Jn_CFunction fn)
+JN_API JnObject* Jn_make_native(char* name, Jn_State* state, Jn_CFunction fn)
 {
     assert(name && state && fn);
     JnNativeObject* n_fn = Jn_alloc(sizeof(JnNativeObject));
@@ -907,12 +907,12 @@ JN_API JnObject* Jn_make_native(char* name, J_State* state, Jn_CFunction fn)
 }
 
 
-JN_API bool Jn_has_variable(J_State* state, const char* name)
+JN_API bool Jn_has_variable(Jn_State* state, const char* name)
 {
     return environ_get(state->globals, (char *)name) != NULL;
 }
 
-JN_API JnObject* Jn_get_variable(J_State* state, const char* name)
+JN_API JnObject* Jn_get_variable(Jn_State* state, const char* name)
 {
     assert(state && name);
     Jn_environ_E* ent = environ_get(state->globals, (char*)name);
@@ -921,7 +921,7 @@ JN_API JnObject* Jn_get_variable(J_State* state, const char* name)
     return ent->value;
 }
 
-JN_API JnObject* Jn_call_fn(J_State* state, char* fn_name, JnObject* args)
+JN_API JnObject* Jn_call_fn(Jn_State* state, char* fn_name, JnObject* args)
 {
     Jn_environ_E* entt = environ_get(state->globals, fn_name);
     if (!entt || !entt->value)
@@ -948,7 +948,7 @@ JN_API JnObject* Jn_call_fn(J_State* state, char* fn_name, JnObject* args)
 }
 
 
-static JnObject* license_fn(J_State* state, JnObject* args)
+static JnObject* license_fn(Jn_State* state, JnObject* args)
 {
     if (JN_ARGS_COUNT(args) != 0)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "license() expected no argument (but got %d).", JN_ARGS_COUNT(args));
@@ -980,13 +980,13 @@ static JnObject* license_fn(J_State* state, JnObject* args)
     return NULL;
 }
 
-JN_API void Jn_load_repl_functions(J_State* state)
+JN_API void Jn_load_repl_functions(Jn_State* state)
 {
     Jn_register_fn(state, "license", "print program license.", license_fn);
     Jn_register_fn(state, "licence", "print prgram licence.", license_fn);
 }
 
-JN_API void Jn_load_Cfunctions(J_State* state)
+JN_API void Jn_load_Cfunctions(Jn_State* state)
 {
 #ifdef JN_WINDOWS
     Jn_register(state, "__WINDOWS__", "Check if it is a Windows system.", JN_RETURN_TRUE(state));

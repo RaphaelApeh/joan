@@ -68,14 +68,6 @@ static void visit_var(JnSemantic* sem, Jn_Node* node)
     if (ret) error(sem, node, "variable already declared.");
 }
 
-static void visit_println(JnSemantic* sem, Jn_Node* node)
-{
-    #ifndef JN_DEBUG
-        warning(sem, node, "It is not recommended to use println, use printf.");
-    #endif
-    return;
-}
-
 static void visit_fn(JnSemantic* sem, Jn_Node* node)
 {
     scope_insert(sem->scope, node->fn_node.name, SYMBOL_FN, true);
@@ -168,8 +160,6 @@ void Jn_visit(JnSemantic* sem, Jn_Node* node)
         visit_reassign(sem, node); break;
     case AST_BINARY:
         visit_binary(sem, node); break;
-    case AST_PRINTLN:
-        visit_println(sem, node); break;
     case AST_WHILE:
 	visit_while(sem, node); break;
     case AST_ERROR:

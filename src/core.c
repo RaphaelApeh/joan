@@ -100,20 +100,20 @@ JN_API void Jn_mem_zero(void* ptr, size_t size)
     memset(ptr, 0, size);
 }
 
-JN_API J_Context* Jn_get_context(J_State* state) { return &state->cxt; }
+JN_API J_Context* Jn_get_context(Jn_State* state) { return &state->cxt; }
 
-JN_API Jn_Error* Jn_get_error(J_State* state)
+JN_API Jn_Error* Jn_get_error(Jn_State* state)
 {
     assert(state != NULL);
     return &state->error;
 }
 
-JN_API void Jn_set_global(J_State* state, char* name, JnObject* obj)
+JN_API void Jn_set_global(Jn_State* state, char* name, JnObject* obj)
 {
     environ_insert(state->globals, name, obj);
 }
 
-JN_API JnObject* Jn_get_global(J_State* state, char* name)
+JN_API JnObject* Jn_get_global(Jn_State* state, char* name)
 {
     Jn_environ_E* ett = environ_get(state->globals, name);
     if (ett->key == NULL || ett->value == NULL) return NULL;
@@ -121,7 +121,7 @@ JN_API JnObject* Jn_get_global(J_State* state, char* name)
 }
 
 
-void set_symbols(J_State* state, const char* str)
+void set_symbols(Jn_State* state, const char* str)
 {
     assert(state != NULL);
     assert(state->symbols != NULL);
@@ -133,7 +133,7 @@ void set_symbols(J_State* state, const char* str)
     state->symbols[state->symbols_count++] = str;
 }
 
-JN_API void Jn_program_init(J_State* state)
+JN_API void Jn_program_init(Jn_State* state)
 {
     state->vm = malloc(sizeof(JnVM));
     state->gc = malloc(sizeof(Jn_GC));
@@ -171,7 +171,7 @@ JN_API void Jn_program_init(J_State* state)
 }
 
 
-JN_API int Jn_compile(J_State* state)
+JN_API int Jn_compile(Jn_State* state)
 {
     JnSemantic sem;
     JnParser* p = state->parser;
@@ -189,7 +189,7 @@ JN_API int Jn_compile(J_State* state)
     return 0;
 }
 
-JN_API int Jn_exec(J_State* state)
+JN_API int Jn_exec(Jn_State* state)
 {
     int i = vm_run(state, state->vm);
     if (
@@ -207,7 +207,7 @@ JN_API int Jn_exec(J_State* state)
 }
 
 
-JN_API int Jn_exec_program(J_State* state, const char* filename, const char* source)
+JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* source)
 {
     if (source == NULL) return -1;
     if (!filename)
@@ -245,7 +245,7 @@ JN_API int Jn_exec_program(J_State* state, const char* filename, const char* sou
     return exit_code;
 }
 
-JN_API int Jn_execute_main(J_State* state, const char* filepath, char** argv, int argc)
+JN_API int Jn_execute_main(Jn_State* state, const char* filepath, char** argv, int argc)
 {
     if (!filepath)
     {
@@ -263,9 +263,9 @@ JN_API int Jn_execute_main(J_State* state, const char* filepath, char** argv, in
 }
 
 
-JN_API int Jn_exec_from_file(J_State* state, char* filename, FILE* fptr) 
+JN_API int Jn_exec_from_file(Jn_State* state, char* filename, FILE* fptr) 
 {
-    if (!fptr) return NULL;
+    if (!fptr) return -1;
     Jn_Buffer b;
     Jn_buff_init(&b);
     read_from_fptr(fptr, &b);
@@ -278,7 +278,7 @@ JN_API int Jn_exec_from_file(J_State* state, char* filename, FILE* fptr)
     return exit_code;
 }
 
-JN_API int Jn_exec_string(J_State* state, const char* string)
+JN_API int Jn_exec_string(Jn_State* state, const char* string)
 {
     if (!string) return -1;
     Jn_Buffer b;
@@ -292,7 +292,7 @@ JN_API int Jn_exec_string(J_State* state, const char* string)
     return exit_code;
 }
 
-JN_API int Jn_exec_REPL(J_State* state, const char* source)
+JN_API int Jn_exec_REPL(Jn_State* state, const char* source)
 {
     if (!source) return -1;
     state->cxt.source.filename = NULL;
@@ -325,7 +325,7 @@ static JnObject* find_module(char* name)
 }
 
 
-JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
+JN_API JnObject* Jn_import_module(Jn_State* state, char* path, int is_std)
 {
     assert(state != NULL);
     char buff[100];
@@ -344,7 +344,7 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     JnObject* mod = find_module(filename);
     if (NULL != mod)
         return mod;
-    J_State st = {0};
+    Jn_State st = {0};
     J_Context* cxt = Jn_get_context(state);
     J_Source old = cxt->source;
     J_Source src = read_source_file(filename);
@@ -379,15 +379,15 @@ JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std)
     return obj;
 }
 
-JN_API void Jn_pushnone(J_State*);
-JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
-JN_API void Jn_pushobject(J_State*, JnObject*);
-JN_API void Jn_pushinteger(J_State* Jn_Integer);
-JN_API void Jn_pushstring(J_State*, char*);
-JN_API void Jn_pushfloat(J_State*, Jn_Float);
-JN_API void Jn_pushchar(J_State*, Jn_Char);
+JN_API void Jn_pushnone(Jn_State*);
+JN_API void Jn_pushcfunc(Jn_State*, Jn_CFunction);
+JN_API void Jn_pushobject(Jn_State*, JnObject*);
+JN_API void Jn_pushinteger(Jn_State* Jn_Integer);
+JN_API void Jn_pushstring(Jn_State*, char*);
+JN_API void Jn_pushfloat(Jn_State*, Jn_Float);
+JN_API void Jn_pushchar(Jn_State*, Jn_Char);
 
-JN_API void Jn_program_close(J_State* state)
+JN_API void Jn_program_close(Jn_State* state)
 {
     assert(state->running && "Program has already stopped."); // TOD: better msg
     state->running = false;

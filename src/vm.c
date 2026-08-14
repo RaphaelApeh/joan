@@ -88,7 +88,7 @@ static inline int vm_column(JnVM* vm)
     return vm->chuck->columns[ip - 1];
 }
 
-static int vm_error(J_State* state, JnVM* vm, JnObject* obj)
+static int vm_error(Jn_State* state, JnVM* vm, JnObject* obj)
 {
     assert(obj != NULL && JN_IS_ERROR(obj));
     J_Context* ctx = Jn_get_context(state);
@@ -130,7 +130,7 @@ static int vm_error(J_State* state, JnVM* vm, JnObject* obj)
     return JN_INTERPRET_ERROR;
 }
 
-static int die(J_State* state, JnVM* vm, const char* msg, ...)
+static int die(Jn_State* state, JnVM* vm, const char* msg, ...)
 {
     J_Context* ctx = Jn_get_context(state);
     ctx->cur_line = vm_line(vm);
@@ -159,7 +159,7 @@ static JnObject* vm_peek(JnVM* vm, int d) {return vm->sp[-1 - d];}
 static JnObject* pop(JnVM* vm){ return *--vm->sp; }
 
 
-static JnObject* call_function(J_State* state, JnVM* vm, JnObject* obj, JnObject** args)
+static JnObject* call_function(Jn_State* state, JnVM* vm, JnObject* obj, JnObject** args)
 {
     JnFunctionObject* fn = obj->fn;
     JnVM child;
@@ -178,7 +178,7 @@ static JnObject* call_function(J_State* state, JnVM* vm, JnObject* obj, JnObject
 
 static JnObject *a, *b, *key, *value, *array, *pos;
 
-int vm_run(J_State* state, JnVM* vm)
+int vm_run(Jn_State* state, JnVM* vm)
 {
     #define READ_BYTE() (*vm->ip++)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
@@ -573,11 +573,6 @@ int vm_run(J_State* state, JnVM* vm)
                 assert(ent->value != NULL);
                 PUSH(vm, ent->value);
                 break;
-            case OP_PRINTLN:
-                JnObject* out = pop(vm);
-                jn_obj_print(out);
-                putchar('\n');
-                break;
             case OP_PLUS_PLUS:
                 o = pop(vm);
                 if (!JN_IS_INT(o))
@@ -922,10 +917,6 @@ void compile(Jn_Node* node, Chuck* chuck)
             // WRITE_CHUCK(chuck, OP_POP);
         }
         write_chuck_loc(chuck, OP_SCOPE_EXIT, line, column);
-        break;
-    case AST_PRINTLN:
-        compile(node->println.out, chuck);
-        write_chuck_loc(chuck, OP_PRINTLN, line, column);
         break;
     case AST_UNARY:
         compile(node->unary.right, chuck);

@@ -64,7 +64,7 @@ int main(int argc, char** argv)
     char* source = NULL;
     int exit_code;
     struct Command c = parse_args(argv, argc);
-    J_State state = {0};
+    Jn_State state = {0};
     switch (c.type)
     {
         case C_ERROR:

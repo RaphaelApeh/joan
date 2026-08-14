@@ -151,21 +151,22 @@ typedef enum{
     JN_ERROR_TYPE,
 } JnTypeObject;
 
-typedef struct J_State Joan;
+typedef struct Jn_State Joan;
 typedef struct Jn_GC Jn_GC;
 typedef struct JnInternEntry JnInternEntry;
 typedef struct JnParser JnParser;
 typedef struct Jn_Arena Jn_Arena;
 typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
-typedef struct J_State J_State;
+typedef struct Jn_State Jn_State;
 typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
 typedef struct Jn_Buffer Jn_Buffer;
-typedef JnObject* (*Jn_CFunction)(J_State* state, JnObject* args);
-typedef JnObject* (*JN_CMethod) (J_State* state, JnObject* self, JnObject* args);
+typedef struct Jn_Node Jn_Node;
+typedef JnObject* (*Jn_CFunction)(Jn_State* state, JnObject* args);
+typedef JnObject* (*JN_CMethod) (Jn_State* state, JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
-typedef JnObject* (*JnForeignHandler)(J_State* state, const char* fn_name, int params, JnObject* args);
+typedef JnObject* (*JnForeignHandler)(Jn_State* state, const char* fn_name, int params, JnObject* args);
 typedef struct Jn_CModule Jn_CModule;
 typedef struct Jn_environ_E Jn_environ_E;
 typedef struct Jn_environ Jn_environ;
@@ -379,7 +380,7 @@ typedef struct {
     JN_CERROR_TYPE type;
 } Jn_Error;
 
-typedef struct J_State
+typedef struct Jn_State
 {
     JnVM* vm;
     Jn_GC* gc;
@@ -394,10 +395,10 @@ typedef struct J_State
     J_Context cxt;
     size_t symbols_count, symbols_capacity;
     int running;
-} J_State;
+} Jn_State;
 
 
-void set_symbols(J_State* state, const char* str);
+void set_symbols(Jn_State* state, const char* str);
 /*
 
 Jn_CModule math_mod[] = {
@@ -422,8 +423,8 @@ typedef struct {
     char* mod_name;
 } Jn_CRegistry;
 
-JN_API JnObject* Jn_make_native(char* name, J_State* state, Jn_CFunction fn);
-JN_API void Jn_register_module(char* name, J_State* state, Jn_CModule* module);
+JN_API JnObject* Jn_make_native(char* name, Jn_State* state, Jn_CFunction fn);
+JN_API void Jn_register_module(char* name, Jn_State* state, Jn_CModule* module);
 
 // Object Type
 typedef struct Chuck Chuck;
@@ -549,10 +550,10 @@ typedef struct JnObject{
 
 
 // Run REPL
-JN_API void Jn_repl(J_State* state);
+JN_API void Jn_repl(Jn_State* state);
 
 // Execute and run repl
-JN_API void Jn_run_iterative(J_State* state, const char* filename);
+JN_API void Jn_run_iterative(Jn_State* state, const char* filename);
 
 // Main Allocator
 JN_API void* Jn_alloc(size_t size);
@@ -561,17 +562,21 @@ JN_API void* Jn_alloc_dup(void* ptr, size_t size);
 JN_API void Jn_free(void* ptr);
 JN_API void Jn_mem_zero(void* ptr, size_t size);
 
+
+// Parser
+Jn_Node* Jn_parse_file(Jn_State* state, const char* filename);
+
 // Object Argument helper
-JN_API JnObject* Jn_make_args(J_State* state, size_t capacity);
+JN_API JnObject* Jn_make_args(Jn_State* state, size_t capacity);
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
 
 // Set a custom foreign handler
-JN_API void Jn_add_handler(J_State* state, JnForeignHandler fn);
+JN_API void Jn_add_handler(Jn_State* state, JnForeignHandler fn);
 
 // Defualt foreign handler
-JN_API void* Jn_defualt_handler(J_State* state, const char* fn_name, int params, JnObject* args);
+JN_API void* Jn_defualt_handler(Jn_State* state, const char* fn_name, int params, JnObject* args);
 
-JN_API JnObject* Jn_import_module(J_State* state, char* path, int is_std);
+JN_API JnObject* Jn_import_module(Jn_State* state, char* path, int is_std);
 
 // IO
 
@@ -588,9 +593,9 @@ JN_API void Jn_color_fprintf(FILE* _Std, int color, const char* fmt, ...);
 #define Jn_error_printf(fmt, ...) Jn_color_fprintf(stderr, JN_COLOR_RED, (fmt), ##__VA_ARGS__)
 
 // Register native function
-JN_API void Jn_define_fn(J_State* state, const char*, Jn_CFunction);
-JN_API void Jn_register_fn(J_State* state, char* name, char* doc, Jn_CFunction fn);
-JN_API void Jn_register(J_State* state, const char* name, const char* doc, JnObject* obj);
+JN_API void Jn_define_fn(Jn_State* state, const char*, Jn_CFunction);
+JN_API void Jn_register_fn(Jn_State* state, char* name, char* doc, Jn_CFunction fn);
+JN_API void Jn_register(Jn_State* state, const char* name, const char* doc, JnObject* obj);
 
 
 // Buffer
@@ -602,8 +607,8 @@ struct Jn_Buffer {
 
 JN_API int Jn_buff_init(Jn_Buffer* B);
 JN_API void Jn_buff_add_char(Jn_Buffer* B, char c);
-JN_API void Jn_buff_add_string(Jn_Buffer* B, char* str);
-JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len);
+JN_API void Jn_buff_add_string(Jn_Buffer* B, const char* str);
+JN_API void Jn_buff_add_nstring(Jn_Buffer* B, const char* str, size_t len);
 JN_API void Jn_buff_clear(Jn_Buffer* B);
 JN_API char* Jn_buff_to_string(Jn_Buffer* B);
 
@@ -612,73 +617,73 @@ JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...);
 
 // Stack / Push
 
-JN_API void Jn_pushnone(J_State*);
-JN_API void Jn_pushcfunc(J_State*, Jn_CFunction);
-JN_API void Jn_pushobject(J_State*, JnObject*);
-JN_API void Jn_pushinteger(J_State* Jn_Integer);
-JN_API void Jn_pushstring(J_State*, char*);
-JN_API void Jn_pushfloat(J_State*, Jn_Float);
-JN_API void Jn_pushchar(J_State*, Jn_Char);
+JN_API void Jn_pushnone(Jn_State*);
+JN_API void Jn_pushcfunc(Jn_State*, Jn_CFunction);
+JN_API void Jn_pushobject(Jn_State*, JnObject*);
+JN_API void Jn_pushinteger(Jn_State* Jn_Integer);
+JN_API void Jn_pushstring(Jn_State*, char*);
+JN_API void Jn_pushfloat(Jn_State*, Jn_Float);
+JN_API void Jn_pushchar(Jn_State*, Jn_Char);
 
-JN_API JnObject* Jn_gettop(J_State*);
-JN_API int Jn_settop(J_State*, JnObject*);
-JN_API void Jn_setinst(J_State*, int);
-JN_API JnObject* Jn_pop(J_State*);
+JN_API JnObject* Jn_gettop(Jn_State*);
+JN_API int Jn_settop(Jn_State*, JnObject*);
+JN_API void Jn_setinst(Jn_State*, int);
+JN_API JnObject* Jn_pop(Jn_State*);
 
 
 // Globals
 
-JN_API void Jn_set_global(J_State*, char*, JnObject*);
-JN_API JnObject* Jn_get_global(J_State*, char*);
+JN_API void Jn_set_global(Jn_State*, char*, JnObject*);
+JN_API JnObject* Jn_get_global(Jn_State*, char*);
 
 // Variable stuff
-JN_API JnObject* Jn_get_variable(J_State* state, const char* name);
-JN_API bool Jn_has_variable(J_State* state, const char* name);
+JN_API JnObject* Jn_get_variable(Jn_State* state, const char* name);
+JN_API bool Jn_has_variable(Jn_State* state, const char* name);
 
 // Compile & Run
-JN_API int Jn_compile(J_State*);
-JN_API int Jn_exec(J_State*);
+JN_API int Jn_compile(Jn_State*);
+JN_API int Jn_exec(Jn_State*);
 
 // Load builtin function
-JN_API void Jn_load_Cfunctions(J_State* state);
+JN_API void Jn_load_Cfunctions(Jn_State* state);
 // Load repl funtions
-JN_API void Jn_load_repl_functions(J_State* state);
+JN_API void Jn_load_repl_functions(Jn_State* state);
 // Call user-define functions
-JN_API JnObject* Jn_call_fn(J_State*, char* fn_name, JnObject* args);
+JN_API JnObject* Jn_call_fn(Jn_State*, char* fn_name, JnObject* args);
 // State Context
-JN_API J_Context* Jn_get_context(J_State*);
+JN_API J_Context* Jn_get_context(Jn_State*);
 // Jn_exec_from_file(FILE* fptr);
-JN_API void Jn_program_init(J_State*);
-JN_API int Jn_exec_program(J_State* state, const char* filename, const char* source);
-JN_API int Jn_exec_string(J_State*, const char*);
-JN_API int Jn_exec_REPL(J_State*, const char* source);
+JN_API void Jn_program_init(Jn_State*);
+JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* source);
+JN_API int Jn_exec_string(Jn_State*, const char*);
+JN_API int Jn_exec_REPL(Jn_State*, const char* source);
 // Main Execution function
-JN_API int Jn_execute_main(J_State*, const char*, char**, int);
+JN_API int Jn_execute_main(Jn_State*, const char*, char**, int);
 // Execute for FILE ptr.
-JN_API int Jn_exec_from_file(J_State*, char*, FILE*);
+JN_API int Jn_exec_from_file(Jn_State*, char*, FILE*);
 
-JN_API void Jn_program_close(J_State*);
+JN_API void Jn_program_close(Jn_State*);
 
 JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
 
 // Object functions
-JN_API JnObject* jn_obj_new(J_State*, JnTypeObject type);
-JN_API JnObject* jn_obj_int(J_State*, long o_int);
-JN_API JnObject* jn_obj_string(J_State*, char* str);
+JN_API JnObject* jn_obj_new(Jn_State*, JnTypeObject type);
+JN_API JnObject* jn_obj_int(Jn_State*, long o_int);
+JN_API JnObject* jn_obj_string(Jn_State*, char* str);
 JnObject* jn_obj_copy(JnObject* src);
-JnObject* jn_obj_char(J_State*, char c);
+JnObject* jn_obj_char(Jn_State*, char c);
 JnObject* jn_obj_none(void);
-JnObject* jn_obj_bool(J_State*, bool o_bool);
-JnObject* jn_obj_range(J_State*, int64_t start, int64_t stop, int64_t step);
-JnObject* jn_obj_float(J_State*, double o_float);
-JnObject* jn_obj_iter(J_State*, JnObject* iter);
-JnObject* jn_obj_type(J_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
-JnObject* jn_obj_intern(J_State* state, JnObject* obj);
-JnObject* jn_obj_module(J_State*, char* name, char* path, Jn_environ* env);
-JnObject* jn_obj_struct(J_State*, char* name, char** fields);
-JnObject* jn_obj_arg(J_State*, JnObject** args, char** arg_names, size_t count);
-JnObject* jn_obj_method(J_State*, JnObject* obj, JN_CMethod method);
-JnObject* jn_obj_instance(J_State*, JnObject* obj, Jn_environ* fields);
+JnObject* jn_obj_bool(Jn_State*, bool o_bool);
+JnObject* jn_obj_range(Jn_State*, int64_t start, int64_t stop, int64_t step);
+JnObject* jn_obj_float(Jn_State*, double o_float);
+JnObject* jn_obj_iter(Jn_State*, JnObject* iter);
+JnObject* jn_obj_type(Jn_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
+JnObject* jn_obj_intern(Jn_State* state, JnObject* obj);
+JnObject* jn_obj_module(Jn_State*, char* name, char* path, Jn_environ* env);
+JnObject* jn_obj_struct(Jn_State*, char* name, char** fields);
+JnObject* jn_obj_arg(Jn_State*, JnObject** args, char** arg_names, size_t count);
+JnObject* jn_obj_method(Jn_State*, JnObject* obj, JN_CMethod method);
+JnObject* jn_obj_instance(Jn_State*, JnObject* obj, Jn_environ* fields);
 bool jn_obj_equals(JnObject* obj, JnObject* other);
 bool jn_obj_match(JnObject* obj, JnObject* other);
 uint64_t Jn_object_hash(JnObject* obj);
@@ -686,7 +691,7 @@ char* jn_obj_to_string(JnObject* obj);
 char* jn_obj_cstring(JnObject* obj);
 int jn_obj_count(JnObject* obj);
 JnObject* jn_obj_array_get(Jn_Array* arr, int idx);
-JnObject* jn_obj_error(J_State*, int type, char* msg, ...);
+JnObject* jn_obj_error(Jn_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool jn_obj_truthy(JnObject* obj);
 void jn_obj_print(JnObject* obj);

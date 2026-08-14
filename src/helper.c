@@ -368,12 +368,12 @@ JN_API void Jn_buff_add_char(Jn_Buffer* B, char c)
     B->data[B->len++] = c;
 }
 
-JN_API void Jn_buff_add_string(Jn_Buffer* B, char* str)
+JN_API void Jn_buff_add_string(Jn_Buffer* B, const char* str)
 {
     Jn_buff_add_nstring(B, str, strlen(str));
 }
 
-JN_API void Jn_buff_add_nstring(Jn_Buffer* B, char* str, size_t len)
+JN_API void Jn_buff_add_nstring(Jn_Buffer* B, const char* str, size_t len)
 {
     if (NULL == str || len == 0) return;
     buff__gw(B, len);

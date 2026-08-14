@@ -4,7 +4,7 @@
 #include "gc.h"
 
 
-void* gc_alloc(J_State* state, size_t size, JnTypeObject type)
+void* gc_alloc(Jn_State* state, size_t size, JnTypeObject type)
 {
     Jn_GC* gc = state->gc;
     JnObject* obj = malloc(size);
@@ -126,7 +126,7 @@ void Jn_freeObject(JnObject* obj)
     obj = NULL;
 }
 
-void sweep(J_State* state){
+void sweep(Jn_State* state){
     JnObject** obj = &state->gc->objects;
     long count = 0;
     while (*obj)
@@ -145,7 +145,7 @@ void sweep(J_State* state){
         }
     }
 }
-void gc_collect(J_State* state)
+void gc_collect(Jn_State* state)
 {
     mark_roots(state->vm);
     sweep(state);

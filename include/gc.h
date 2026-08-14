@@ -11,9 +11,9 @@ typedef struct Jn_GC{
 } Jn_GC;
 
 
-void* gc_alloc(J_State* state, size_t size, JnTypeObject type);
+void* gc_alloc(Jn_State* state, size_t size, JnTypeObject type);
 void mark_object(JnObject* obj);
 void mark_roots(JnVM* vm);
-void sweep(J_State* state);
-void gc_collect(J_State* state);
+void sweep(Jn_State* state);
+void gc_collect(Jn_State* state);
 #endif // JOAN_Jn_GC_H

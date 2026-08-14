@@ -14,14 +14,14 @@
 
 
 
-JN_API JnObject* Jn_gettop(J_State* state)
+JN_API JnObject* Jn_gettop(Jn_State* state)
 {
     if (state->vm->sp <= 0)
         return NULL;
     return *state->vm->sp;
 }
 
-JN_API int Jn_settop(J_State* state, JnObject* obj)
+JN_API int Jn_settop(Jn_State* state, JnObject* obj)
 {
     if (state->vm->sp - state->vm->stack >= JN_STACK_MAX)
         return -1;
@@ -29,7 +29,7 @@ JN_API int Jn_settop(J_State* state, JnObject* obj)
     return 0;
 }
 
-JN_API void Jn_setinst(J_State* state, int ip)
+JN_API void Jn_setinst(Jn_State* state, int ip)
 {
     write_chuck_loc(
         state->vm->chuck, 
@@ -39,7 +39,7 @@ JN_API void Jn_setinst(J_State* state, int ip)
     );
 }
 
-JN_API JnObject* Jn_pop(J_State* state)
+JN_API JnObject* Jn_pop(Jn_State* state)
 {
     if (state->vm->sp - state->vm->stack >= JN_STACK_MAX)
     return NULL;

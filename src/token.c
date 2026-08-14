@@ -13,7 +13,7 @@
 
 static JnToken make_error(Jn_Lexer* l, char* msg, ...);
 
-#define KEYWORD_S struct {const char* keyword; J_TokenType token; }
+#define KEYWORD_S struct {const char* keyword; JnTokenType token; }
 
 KEYWORD_S Keywords[] = {
     // Keywords
@@ -30,13 +30,12 @@ KEYWORD_S Keywords[] = {
     {"and", TOK_AND},
     {"or", TOK_OR},
     {"not", TOK_NOT},
-    {"const", TOK_CONST}, // Deprecated: remove soon.
-    {"let", TOK_LET}, // Deprecated: remove soon
+    {"const", TOK_CONST},
+    {"let", TOK_LET},
     {"while", TOK_WHILE},
     {"for", TOK_FOR},
     {"loop", TOK_LOOP}, // Deprecated: remove soon
     {"then", TOK_THEN},
-    {"println", TOK_PRINTLN}, // Deprecated: remove soon.
     {"class", TOK_CLASS},
     {"match", TOK_MATCH},
 
@@ -361,7 +360,7 @@ static JnToken make_error(Jn_Lexer* l, char* msg, ...)
     return t;
 }
 
-JnToken make_token(Jn_Lexer* l, J_TokenType type)
+JnToken make_token(Jn_Lexer* l, JnTokenType type)
 {
     JnToken t;
     t.type = type;

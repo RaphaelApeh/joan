@@ -100,16 +100,15 @@ typedef enum {  TOK_EOF, TOK_NEWLINE,
     TOK_MATCH,
     TOK_CONTINUE,
     TOK_BREAK,
-    TOK_PRINTLN,
     
     TOK_COMMENT,
 
     TOK_ERROR,
-} J_TokenType;
+} JnTokenType;
 
 typedef struct JnToken{
     char* lexeme;
-    J_TokenType type;
+    JnTokenType type;
     union{
         double d;
         long i;
@@ -122,7 +121,7 @@ typedef struct JnToken{
 
 JnToken clean_token(Jn_Lexer * l);
 
-JnToken make_token(Jn_Lexer * l, J_TokenType type);
+JnToken make_token(Jn_Lexer * l, JnTokenType type);
 
 JnToken next_token(Jn_Lexer * l);
 

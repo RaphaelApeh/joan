@@ -68,14 +68,14 @@ static bool array_contains(JnObject* key, Jn_Array* arr)
     return false;
 }
 
-static JnObject* eval_int(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_char(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_bool(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_string(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_float(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_array(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_hashmap(J_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_default(J_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_int(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_char(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_bool(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_string(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_float(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_array(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_hashmap(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
+static JnObject* eval_default(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
 
 
 bool jn_obj_match(JnObject* obj, JnObject* other)
@@ -102,7 +102,7 @@ bool jn_obj_match(JnObject* obj, JnObject* other)
     return false;
 }
 
-JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
+JnObject* eval_binary(Jn_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
 {
     bool is_true = false;
     switch (op)
@@ -153,7 +153,7 @@ JnObject* eval_binary(J_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op)
 }
 
 
-static JnObject* eval_int(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_int(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     
     switch (op)
@@ -207,7 +207,7 @@ static JnObject* eval_int(J_State* state, JnObject* lhs, JnObject* rhs, int op)
     }
 }
 
-static JnObject* eval_char(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_char(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     if (isnumber_c(lhs) && isnumber_c(rhs))
     {
@@ -273,7 +273,7 @@ static JnObject* eval_char(J_State* state, JnObject* lhs, JnObject* rhs, int op)
     }
 }
 
-static JnObject* eval_bool(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_bool(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     switch (op)
     {
@@ -288,7 +288,7 @@ static JnObject* eval_bool(J_State* state, JnObject* lhs, JnObject* rhs, int op)
     }
 }
 
-static JnObject* eval_string(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_string(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     char* str;
     switch (op)
@@ -313,7 +313,7 @@ static JnObject* eval_string(J_State* state, JnObject* lhs, JnObject* rhs, int o
     }
 }
 
-static JnObject* eval_float(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_float(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     switch (op)
     {
@@ -345,7 +345,7 @@ static JnObject* eval_float(J_State* state, JnObject* lhs, JnObject* rhs, int op
 
 }
 
-static JnObject* eval_array(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_array(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     switch (op)
     {
@@ -362,7 +362,7 @@ static JnObject* eval_array(J_State* state, JnObject* lhs, JnObject* rhs, int op
     }
 }
 
-static JnObject* eval_hashmap(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_hashmap(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     switch (op)
     {
@@ -378,7 +378,7 @@ static JnObject* eval_hashmap(J_State* state, JnObject* lhs, JnObject* rhs, int 
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Invalid operation.");
     }
 }
-static JnObject* eval_default(J_State* state, JnObject* lhs, JnObject* rhs, int op)
+static JnObject* eval_default(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
 {
     assert(false && "TODO");
 }

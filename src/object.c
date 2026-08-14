@@ -40,21 +40,21 @@ JN_INLINE uint64_t hash_combine(uint64_t a, uint64_t b)
             (a << 6) + (a >> 2)));
 }
 
-JnObject* jn_obj_new(J_State* state, JnTypeObject type)
+JnObject* jn_obj_new(Jn_State* state, JnTypeObject type)
 {
     JnObject* obj = gc_alloc(state, sizeof(JnObject), type);
     assert(obj != NULL);
     return obj;
 }
 
-JnObject* jn_obj_int(J_State* state, long int_val)
+JnObject* jn_obj_int(Jn_State* state, long int_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_INT_TYPE);
     obj->int_val = int_val;
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_string(J_State* state, char* str)
+JnObject* jn_obj_string(Jn_State* state, char* str)
 {
     JnObject* obj =  jn_obj_new(state, JN_STRING_TYPE);
     Jn_String* strObj = Jn_alloc(sizeof(Jn_String));
@@ -66,21 +66,21 @@ JnObject* jn_obj_string(J_State* state, char* str)
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_char(J_State* state, char c)
+JnObject* jn_obj_char(Jn_State* state, char c)
 {
     JnObject* obj =  jn_obj_new(state, JN_CHAR_TYPE);
     obj->j_char = c;
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_bool(J_State* state, bool bool_val)
+JnObject* jn_obj_bool(Jn_State* state, bool bool_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_BOOL_TYPE);
     obj->bool_val = bool_val;
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_float(J_State* state, double float_val)
+JnObject* jn_obj_float(Jn_State* state, double float_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_FLOAT_TYPE);
     obj->float_val = float_val;
@@ -95,7 +95,7 @@ JnObject* jn_obj_none(void)
     return &NoneObj;
 }
 
-JnObject* jn_obj_iter(J_State* state, JnObject* obj)
+JnObject* jn_obj_iter(Jn_State* state, JnObject* obj)
 {
     JnObject* new_obj = jn_obj_new(state, JN_ITER_TYPE);
     Jn_Iter* iter = malloc(sizeof(Jn_Iter)); // TODO
@@ -123,7 +123,7 @@ int64_t range_at(JnRange* r, int64_t idx)
     return r->start + (idx * r->step);
 }
 
-JnObject* jn_obj_range(J_State* state, int64_t start, int64_t stop, int64_t step)
+JnObject* jn_obj_range(Jn_State* state, int64_t start, int64_t stop, int64_t step)
 {
     JnObject* obj = jn_obj_new(state, JN_RANGE_TYPE);
     obj->range.start = start;
@@ -132,7 +132,7 @@ JnObject* jn_obj_range(J_State* state, int64_t start, int64_t stop, int64_t step
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t count)
+JnObject* jn_obj_arg(Jn_State* state, JnObject** args, char** arg_names, size_t count)
 {
     JnObject* obj = jn_obj_new(state, JN_ARG_TYPE);
     obj->arg.args = args;
@@ -141,7 +141,7 @@ JnObject* jn_obj_arg(J_State* state, JnObject** args, char** arg_names, size_t c
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_error(J_State* state, int type, char* msg, ...)
+JnObject* jn_obj_error(Jn_State* state, int type, char* msg, ...)
 {
     char buffer[1 << 10];
     JnObject* obj = jn_obj_new(state, JN_ERROR_TYPE);
@@ -193,7 +193,7 @@ char* jn_obj_cstring(JnObject* obj)
     return buffer;
 }
 
-JnObject* jn_obj_type(J_State* state, char* type_name, JnTypeObject type, Jn_CFunction fn)
+JnObject* jn_obj_type(Jn_State* state, char* type_name, JnTypeObject type, Jn_CFunction fn)
 {
     JnObject* obj = jn_obj_new(state, JN_OBJECT_TYPE);
     obj->type_val.typename = type_name;
@@ -202,7 +202,7 @@ JnObject* jn_obj_type(J_State* state, char* type_name, JnTypeObject type, Jn_CFu
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_method(J_State* state, JnObject* obj, JN_CMethod method)
+JnObject* jn_obj_method(Jn_State* state, JnObject* obj, JN_CMethod method)
 {
     JnObject* new_obj = jn_obj_new(state, JN_METHOD_TYPE);
     new_obj->method.fn = method;
@@ -390,7 +390,7 @@ uint64_t Jn_object_hash(JnObject* obj)
     #undef HASH_MIX_STRING
 }
 
-JnObject* jn_obj_intern(J_State* state, JnObject* obj)
+JnObject* jn_obj_intern(Jn_State* state, JnObject* obj)
 {
     if (JN_IS_ARRAY(obj) || JN_IS_NATIVE(obj) || JN_IS_HASHMAP(obj) || JN_IS_STRUCT(obj))
         return obj;
@@ -423,7 +423,7 @@ bool jn_obj_equals(JnObject* obj, JnObject* other)
     );
 }
 
-JnObject* jn_obj_lambda(J_State* state, Jn_Node* expr, char** params, int arity, Jn_environ* env)
+JnObject* jn_obj_lambda(Jn_State* state, Jn_Node* expr, char** params, int arity, Jn_environ* env)
 {
     Chuck* chuck = JN_ALLOC(sizeof(Chuck));
     chuck_init(chuck);
@@ -447,7 +447,7 @@ JnObject* jn_obj_lambda(J_State* state, Jn_Node* expr, char** params, int arity,
 }
 
 JnObject* jn_obj_function(
-    J_State* state,
+    Jn_State* state,
     Jn_Node* block,
     Jn_environ* env,
     char** params, 
@@ -473,7 +473,7 @@ JnObject* jn_obj_function(
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_struct(J_State* state, char* name, char** fields)
+JnObject* jn_obj_struct(Jn_State* state, char* name, char** fields)
 {
     JnObject* obj = jn_obj_new(state, JN_STRUCT_TYPE);
     JnStruct* struct_obj = JN_ALLOC(sizeof(JnStruct));
@@ -483,7 +483,7 @@ JnObject* jn_obj_struct(J_State* state, char* name, char** fields)
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* bind_argument(J_State* state, JnObject* obj, char** fields, JnObject** values, long count)
+JnObject* bind_argument(Jn_State* state, JnObject* obj, char** fields, JnObject** values, long count)
 {
     Jn_environ* env = Jn_environ_init(NULL);
     for (int i = 0; i < obj->struct_obj->field_count; ++i)
@@ -506,7 +506,7 @@ JnObject* bind_argument(J_State* state, JnObject* obj, char** fields, JnObject**
     return jn_obj_instance(state, obj, env);
 }
 
-JnObject* jn_obj_instance(J_State* state, JnObject* from_obj, Jn_environ* fields)
+JnObject* jn_obj_instance(Jn_State* state, JnObject* from_obj, Jn_environ* fields)
 {
     JnObject* obj = jn_obj_new(state, JN_INSTANCE_TYPE);
     JnInstance* instance = JN_ALLOC(sizeof(JnInstance));
@@ -516,7 +516,7 @@ JnObject* jn_obj_instance(J_State* state, JnObject* from_obj, Jn_environ* fields
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_module(J_State* state, char* name, char* path, Jn_environ* env)
+JnObject* jn_obj_module(Jn_State* state, char* name, char* path, Jn_environ* env)
 {
     JnObject* obj = jn_obj_new(state, JN_MODULE_TYPE);
     JnModule* mod = malloc(sizeof(JnModule));

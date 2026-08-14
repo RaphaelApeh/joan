@@ -26,22 +26,22 @@
 #define skip SKIP
 
 
-static Jn_Node* parse_unary(JnParser* p, J_TokenType op);
+static Jn_Node* parse_unary(JnParser* p, JnTokenType op);
 static Jn_Node* parse_block(JnParser* p);
 
-int check(JnParser* p, J_TokenType type)
+int check(JnParser* p, JnTokenType type)
 {
     return _check(p, type, false);
 }
 
-static bool match(JnParser* p, J_TokenType type)
+static bool match(JnParser* p, JnTokenType type)
 {
     if (p->curr.type != type) return false;
     next_parser(p);
     return true;
 }
 
-static bool expect(JnParser* p, J_TokenType token, const char* msg, ...)
+static bool expect(JnParser* p, JnTokenType token, const char* msg, ...)
 {
     if (check(p, token)) return true;
     char buffer[256];
@@ -61,7 +61,7 @@ JN_INLINE JnToken previous(JnParser* p)
     return p->prev;
 }
 
-JN_INLINE void consume(JnParser* p, J_TokenType token)
+JN_INLINE void consume(JnParser* p, JnTokenType token)
 {
     if (!check(p, token)) 
     {
@@ -78,7 +78,7 @@ static char* get_lexeme(JnParser* p)
     return lex;
 }
 
-static bool is_assign_token(J_TokenType type)
+static bool is_assign_token(JnTokenType type)
 {
     switch (type)
     {
@@ -142,12 +142,12 @@ void advance_parser(JnParser* p)
     p->next = next_token(p->l);
 }
 
-JN_INLINE bool check_next(JnParser* p, J_TokenType type)
+JN_INLINE bool check_next(JnParser* p, JnTokenType type)
 {
     return peek_parser(p).type == type;
 }
 
-JN_INLINE char* consume_token(JnParser* p, J_TokenType token)
+JN_INLINE char* consume_token(JnParser* p, JnTokenType token)
 {
     if (!check(p, token)) return NULL;
     return get_lexeme(p);
@@ -190,7 +190,7 @@ void J_parse_file(JnParser* p, char* restrict filecontent)
     p->next = next_token(&l);
 }
 
-precedence get_prec(J_TokenType type)
+precedence get_prec(JnTokenType type)
 {
     switch (type)
     {
@@ -473,7 +473,7 @@ static Jn_Node* parse_assign(JnParser* p)
 
 static Jn_Node* parse_reassign(JnParser* p, Jn_Node* node)
 {
-    J_TokenType op = p->curr.type;
+    JnTokenType op = p->curr.type;
     Jn_Node* ast = ast_create(p, AST_REASSIGN);
     next_parser(p); // += reassign operator
     //x += 4;
@@ -525,8 +525,7 @@ static Jn_Node* parse_for_each(JnParser* p)
             printf("Hello World")
         }
     */
-    next_parser(p); // for
-
+    consume(p, TOK_FOR);
     if (!check(p, TOK_IDENT))
         return parse_error(p, "Expected an identifier.");
     
@@ -609,7 +608,7 @@ static Jn_Node* parse_instance(JnParser* p, Jn_Node* instance_obj);
 static Jn_Node* parse_member(JnParser* p, Jn_Node* obj)
 {
     // obj.field or obj.field()
-    J_TokenType tok = p->curr.type;
+    JnTokenType tok = p->curr.type;
     next_parser(p);
 
     if (check(p, TOK_LBRACE))
@@ -1083,7 +1082,7 @@ static Jn_Node* parse_tuple(JnParser* p)
 }
 
 
-static Jn_Node* parse_unary(JnParser* p, J_TokenType op)
+static Jn_Node* parse_unary(JnParser* p, JnTokenType op)
 {
     consume(p, op);
     Jn_Node* ast = ast_create(p, AST_UNARY);
@@ -1122,6 +1121,11 @@ static Jn_Node* parse_literal(JnParser* p, JnObject* obj)
     next_parser(p);
     return ast_literal(p, obj);
 }
+static Jn_Node* parse_node(JnParser* p, Jn_Node* node)
+{
+    next_parser(p);
+    return node;
+}
 
 Jn_Node* parse_primary(JnParser* p)
 {
@@ -1145,7 +1149,7 @@ Jn_Node* parse_primary(JnParser* p)
             double d = t.d;
             return parse_literal(p, jn_obj_float(p->state, d));
         case TOK_HASH:
-            next_parser(p);
+            consume(p, TOK_HASH);
             if (check(p, TOK_LBRACE))
                 return parse_hashmap(p);
             else if (check(p, TOK_FOR))
@@ -1170,15 +1174,11 @@ Jn_Node* parse_primary(JnParser* p)
             ast->return_stmt.value = parse_expr(p);
             return ast;
         case TOK_IDENT:
-            ast = ast_identifier(p, t.lexeme);
-            next_parser(p);
-            return ast;
+            return parse_node(p, ast_identifier(p, t.lexeme));
         case TOK_CONTINUE:
-            next_parser(p);
-            return ast_continue(p);
+            return parse_node(p, ast_continue(p));
         case TOK_BREAK:
-            next_parser(p);
-            return ast_break(p);
+            return parse_node(p, ast_break(p));
         case TOK_NEWLINE:
             next_parser(p);
             return parse_primary(p);
@@ -1200,13 +1200,6 @@ Jn_Node* parse_primary(JnParser* p)
             return parse_lambda(p);
         case TOK_IMPORT:
             return parse_import(p);
-        case TOK_PRINTLN: {
-            next_parser(p);
-            Jn_Node* out = NULL;
-            if (!check(p, TOK_NEWLINE))
-                out = parse_expr(p);
-            return ast_println(p, out);
-        }
         case TOK_STRUCT:
             return parse_struct(p);
         case TOK_ERROR: {
@@ -1224,7 +1217,7 @@ Jn_Node* parse_prec(JnParser* p, precedence prec)
     {
         left = parse_postfix(p, left);
         precedence next_pr;
-        J_TokenType op;
+        JnTokenType op;
         bool comp = false;
         if (p->curr.type == TOK_IN && p->next.type == TOK_NOT)
             return parse_error(p, "Invalid operator order: did you mean 'not in'?.");

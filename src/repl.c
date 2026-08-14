@@ -129,7 +129,7 @@ static void print_help(void)
     );
 }
 
-JN_API void Jn_run_iterative(J_State* state, const char* filename)
+JN_API void Jn_run_iterative(Jn_State* state, const char* filename)
 {
     int exit_code = Jn_execute_main(state, filename, NULL, 0);
     if (exit_code != 0)
@@ -139,7 +139,7 @@ JN_API void Jn_run_iterative(J_State* state, const char* filename)
     Jn_repl(state);
 }
 
-JN_API void Jn_repl(J_State* state)
+JN_API void Jn_repl(Jn_State* state)
 {
     char line[256];
     fprintf(stderr, 

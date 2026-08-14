@@ -9,7 +9,7 @@
 #include "parse.h"
 
 
-Jn_Node* ast_create(JnParser* p, AST_TYPE type)
+Jn_Node* ast_create(JnParser* p, Jn_NodeType type)
 {
     assert(p != NULL);
     assert(p->arena != NULL);
@@ -75,7 +75,7 @@ Jn_Node* ast_identifier(JnParser* p, const char* identifier)
     return ast;
 }
 
-Jn_Node* ast_unary(JnParser* p, J_TokenType op, Jn_Node* right)
+Jn_Node* ast_unary(JnParser* p, JnTokenType op, Jn_Node* right)
 {
     Jn_Node* ast = ast_create(p, AST_UNARY);
 
@@ -84,7 +84,7 @@ Jn_Node* ast_unary(JnParser* p, J_TokenType op, Jn_Node* right)
     return ast;
 }
 
-Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, J_TokenType op, Jn_Node* rhs)
+Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, JnTokenType op, Jn_Node* rhs)
 {
     Jn_Node* ast = ast_create(p, AST_BINARY);
 
@@ -94,13 +94,6 @@ Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, J_TokenType op, Jn_Node* rhs)
     return ast;
 }
 
-Jn_Node* ast_println(JnParser* p, Jn_Node* out)
-{
-    Jn_Node* ast = ast_create(p, AST_PRINTLN);
-
-    ast->println.out = out;
-    return ast;
-}
 
 Jn_Node* ast_array(JnParser* p)
 {

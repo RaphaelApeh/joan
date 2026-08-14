@@ -26,7 +26,7 @@ struct JnScope {
 };
 
 struct JnSemantic {
-    J_State* state;
+    Jn_State* state;
     JnScope* scope;
     int loop_depth, fnc_depth, errors, warnings;
 };
@@ -37,7 +37,7 @@ void Jn_visit(JnSemantic*, Jn_Node*);
 // Semantic
 void error(JnSemantic* sem, Jn_Node* node, const char* msg, ...);
 void warning(JnSemantic* sem, Jn_Node* node, const char* msg, ...);
-void Jn_semantic_init(J_State*, JnSemantic*);
+void Jn_semantic_init(Jn_State*, JnSemantic*);
 void Jn_semantic_check(JnSemantic* sem, Jn_Node* node);
 
 

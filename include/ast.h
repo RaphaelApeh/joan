@@ -51,30 +51,31 @@ typedef enum{
     AST_STRUCT,
     AST_RETURN,
     AST_BREAK,
-    AST_PRINTLN,
     AST_CONTINUE,
     AST_CLASS,
     AST_FOR_EACH,
     AST_IMPORT,
     AST_COMMENT,
 
+    AST_PROGRAM,
+
     AST_ERROR,
-} AST_TYPE;
+} Jn_NodeType;
 
 typedef struct Jn_Node{
-    AST_TYPE type;
+    Jn_NodeType type;
     union {
 
         const char* identifier;
         JnObject* literal;
         struct {
             Jn_Node* left;
-            J_TokenType op;
+            JnTokenType op;
             Jn_Node* right;
         } binary;
 
         struct {
-            J_TokenType op;
+            JnTokenType op;
             Jn_Node* right;
         } unary;
         // let x, y, z = 0
@@ -104,7 +105,7 @@ typedef struct Jn_Node{
             Jn_Node* callie;
             Jn_Node* setter;
             Jn_Node* field;
-            J_TokenType tok;
+            JnTokenType tok;
             bool is_setter;
             bool is_call;
         } member;
@@ -166,7 +167,7 @@ typedef struct Jn_Node{
         struct {
             Jn_Node* expr;
             Jn_Node* value;
-            J_TokenType op; // +=, -=, ...
+            JnTokenType op; // +=, -=, ...
         } reassign;
 
         struct {
@@ -254,12 +255,12 @@ typedef struct Jn_Node{
         char* comment;
         const char* error_msg;
     };
-    J_State* state;
+    Jn_State* state;
     char* filename;
     int line, col;
 } Jn_Node;
 
-Jn_Node* ast_create(JnParser* p, AST_TYPE type);
+Jn_Node* ast_create(JnParser* p, Jn_NodeType type);
 
 Jn_Node* new_block(JnParser* p);
 
@@ -267,9 +268,9 @@ void add_block(Jn_Node* ast, Jn_Node* node);
 // LITERAL: -> true, false, None
 Jn_Node* ast_literal(JnParser* p, JnObject* object);
 
-Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, J_TokenType op, Jn_Node* rhs);
+Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, JnTokenType op, Jn_Node* rhs);
 
-Jn_Node* ast_unary(JnParser* p, J_TokenType op, Jn_Node* right);
+Jn_Node* ast_unary(JnParser* p, JnTokenType op, Jn_Node* right);
 
 Jn_Node* ast_println(JnParser* p, Jn_Node* out);
 

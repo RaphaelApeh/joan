@@ -44,7 +44,7 @@
 			"patterns": [
 				{
 					"name": "typewords.joan",
-					"match": "\\b(None|true|false|println|Array|Hashmap|string|int|float|bool)\\b"
+					"match": "\\b(None|true|false|Array|Hashmap|string|int|float|bool)\\b"
 				}
 			]
 		},

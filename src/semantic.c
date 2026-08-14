@@ -7,7 +7,7 @@
 #endif
 
 
-void Jn_semantic_init(J_State* state, JnSemantic* sem)
+void Jn_semantic_init(Jn_State* state, JnSemantic* sem)
 {
     assert(sem);
     sem->scope = scope_new(NULL);

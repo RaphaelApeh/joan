@@ -40,7 +40,7 @@ typedef enum{
 } precedence;
 
 typedef struct JnParser{
-    J_State* state;
+    Jn_State* state;
     Jn_Lexer* l;
     Jn_Arena* arena;
     JnToken prev;
