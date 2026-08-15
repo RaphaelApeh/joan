@@ -108,6 +108,14 @@ JN_API Jn_Error* Jn_get_error(Jn_State* state)
     return &state->error;
 }
 
+JN_API void Jn_read_file(Jn_Buffer* Out, const char* filename)
+{
+    FILE* fptr = fopen(filename, "rb");
+    if (!fptr || !Out) return;
+    read_from_fptr(fptr, Out);
+    Jn_buff_add_char(Out, 0);
+}
+
 JN_API void Jn_set_global(Jn_State* state, char* name, JnObject* obj)
 {
     environ_insert(state->globals, name, obj);
@@ -348,7 +356,7 @@ JN_API JnObject* Jn_import_module(Jn_State* state, char* path, int is_std)
     else
         filename = strdup(buff);
     
-    bool exists = file_exists(filename);
+    bool exists = Jn_file_exists(filename);
     if (!exists)
         return  JN_RAISE_EXCPETION(state, IMPORT_ERROR, "cannot import %s.", filename);
     JnObject* mod = find_module(filename);

@@ -236,7 +236,7 @@ void print_source_line(char* source, int line, int column)
     Jn_color_printf(JN_COLOR_GREEN, "^\n");
 }
 
-bool file_exists(const char* filename)
+bool Jn_file_exists(const char* filename)
 {
     struct stat st;
     return stat(filename, &st) == 0;
@@ -396,10 +396,13 @@ JN_API void Jn_buff_clear(Jn_Buffer* B)
 
 JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...)
 {
-
+    va_list arg; va_start(arg, fmt);
+    int ret = Jn_vsnprintf(buff, size, fmt, arg);
+    va_end(arg);
+    return ret;
 }
 
 JN_API int Jn_vsnprintf(char* buff, size_t size, const char* fmt, va_list ap)
 {
-    
+    return -1;
 }

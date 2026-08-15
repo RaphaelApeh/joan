@@ -332,7 +332,7 @@ int vm_run(Jn_State* state, JnVM* vm)
             case OP_IMPORT: 
                 char* lib = READ_IDENT();
                 bool is_std = READ_BYTE();
-                bool exists = file_exists(lib);
+                bool exists = Jn_file_exists(lib);
                 o = Jn_import_module(NULL, lib, is_std);
                 if (o == NULL) return die(state,vm, "Import error.");
                 PUSH(vm, o);

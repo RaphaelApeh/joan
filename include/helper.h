@@ -75,7 +75,6 @@ unsigned long djb2_hash(unsigned const char* str);
 
 void print_source_lines(char* source, int line, int column, int context);
 void print_source_line(char* source, int line, int column);
-bool file_exists(const char* filename);
 void runtime_error(char* msg, ...);
 void call_add_pos(Jn_Node* call, Jn_Node* arg);
 case_t* init_case(Jn_Arena* arena);

@@ -568,9 +568,10 @@ JN_API void* Jn_alloc_dup(void* ptr, size_t size);
 JN_API void Jn_free(void* ptr);
 JN_API void Jn_mem_zero(void* ptr, size_t size);
 
-
+JN_API bool Jn_file_exists(const char* filename);
 // Parser
-Jn_Node* Jn_parse_file(Jn_State* state, const char* filename);
+JN_API void Jn_read_file(Jn_Buffer* Out, const char* filename);
+JN_API Jn_Node* Jn_parse_file(Jn_State* state, const char* filename);
 
 // Object Argument helper
 JN_API JnObject* Jn_make_args(Jn_State* state, size_t capacity);

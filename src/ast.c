@@ -56,7 +56,7 @@ Jn_Node* ast_literal(JnParser* p, JnObject* object)
 
 Jn_Node* ast_decl(JnParser* p, const char* ident, Jn_Node* value, bool is_const)
 {
-    
+    return NULL;
 }
 
 Jn_Node* ast_while(JnParser* p, Jn_Node* cond, Jn_Node* block)
@@ -123,7 +123,21 @@ void ast_array_add(Jn_Node* arr, Jn_Node* element)
 
 Jn_Node* ast_program(JnParser* p)
 {
-    return NULL;
+    Jn_Node* node = ast_create(p, AST_PROGRAM);
+    node->program_node.count = 0;
+    node->program_node.items = arena_alloc(p->arena, sizeof(*node) * 100);
+    node->program_node.capacity = 100;
+    return node;
+}
+
+void ast_program_add(JnParser* p, Jn_Node* prog, Jn_Node* node)
+{
+    if (prog->program_node.count > prog->program_node.capacity)
+    {
+        prog->program_node.capacity *= 2;
+        prog->program_node.items = arena_realloc(p->arena, prog->program_node.items, prog->program_node.count * sizeof(*prog), prog->program_node.capacity * sizeof(*prog));
+    }
+    prog->program_node.items[prog->program_node.count++] = node;
 }
 
 Jn_Node* ast_yield(JnParser* p, Jn_Node* node)

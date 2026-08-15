@@ -182,13 +182,28 @@ void jn_init_parser(JnParser* p, Jn_Lexer* l)
     next_parser(p);
 }
 
-void J_parse_file(JnParser* p, char* restrict filecontent)
+
+Jn_Node* Jn_parse_file(Jn_State* state, const char* filename)
 {
-    Jn_Lexer l;
-    J_init_lexer(&l, filecontent, "main");
-    p->l = &l;
-    p->next = next_token(&l);
+    Jn_Lexer l = {0};
+    Jn_Buffer b;
+    Jn_buff_init(&b);
+    Jn_read_file(&b, filename);
+    J_init_lexer(&l, b.data, filename);
+    jn_init_parser(state->parser, &l);
+    JnParser* p = state->parser;
+    JnToken curr_tok = p->curr;
+    Jn_Node* program = ast_program(p);
+    Jn_Node* stmt = NULL;
+    while (curr_tok.type != TOK_EOF)
+    {
+        stmt = parse_stmt(p);
+        if (NULL == stmt) return NULL;
+        ast_program_add(p, program, stmt);
+    }
+    return program;
 }
+
 
 precedence get_prec(JnTokenType type)
 {
@@ -1130,7 +1145,7 @@ static Jn_Node* parse_node(JnParser* p, Jn_Node* node)
 static Jn_Node* parse_yield(JnParser* p)
 {
     consume(p, TOK_YIELD);
-    if (is_smt_end(p))
+    if (is_stmt_end(p))
     {
         return ast_yield(p, NULL);
     }

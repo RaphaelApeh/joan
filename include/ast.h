@@ -7,13 +7,13 @@
 #include "object.h"
 #include "arena.h"
 
-typedef uint64_t u64;
 typedef struct case_t case_t;
 typedef struct case_o case_o;
 typedef struct elseif elseif;
 typedef struct JnParser JnParser;
 typedef struct attr_t attr_t;
 typedef struct Jn_Node Jn_Node;
+
 
 typedef enum{
     GETTER_CALL,
@@ -68,7 +68,13 @@ typedef struct Jn_Node{
     union {
 
         const char* identifier;
+        
         JnObject* literal;
+        
+        struct {
+            Jn_Node** items;
+            size_t count, capacity;
+        } program_node;
         struct {
             Jn_Node* left;
             JnTokenType op;
@@ -121,10 +127,6 @@ typedef struct Jn_Node{
             Jn_Node* cond;
             Jn_Node* otherwise;
         } inline_if_stmt;
-
-        struct {
-            Jn_Node* out;
-        } println;
 
         struct {
             char* ident;
@@ -277,8 +279,8 @@ Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, JnTokenType op, Jn_Node* rhs);
 
 Jn_Node* ast_unary(JnParser* p, JnTokenType op, Jn_Node* right);
 
-Jn_Node* ast_println(JnParser* p, Jn_Node* out);
-
+Jn_Node* ast_program(JnParser* p);
+void ast_program_add(JnParser* p, Jn_Node* prog, Jn_Node* node);
 //ARRAY: Jn_Node functions
 Jn_Node* ast_array(JnParser* p);
 void ast_array_add(Jn_Node* arr, Jn_Node* element);
