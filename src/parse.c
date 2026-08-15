@@ -1194,6 +1194,8 @@ Jn_Node* parse_primary(JnParser* p)
             return parse_literal(p, JN_RETURN_NONE);
         case TOK_FALSE:
             return parse_literal(p, JN_RETURN_FALSE(p->state));
+        case TOK_YIELD:
+            return parse_yield(p);
         case TOK_LBRACKET:
             return parse_array(p);
         case TOK_BITOR:

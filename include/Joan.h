@@ -163,6 +163,7 @@ typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
 typedef struct Jn_Buffer Jn_Buffer;
 typedef struct Jn_Node Jn_Node;
+typedef struct Jn_Gen Jn_Gen;
 typedef JnObject* (*Jn_CFunction)(Jn_State* state, JnObject* args);
 typedef JnObject* (*JN_CMethod) (Jn_State* state, JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);

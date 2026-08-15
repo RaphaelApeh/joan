@@ -36,6 +36,7 @@ KEYWORD_S Keywords[] = {
     {"for", TOK_FOR},
     {"loop", TOK_LOOP}, // Deprecated: remove soon
     {"then", TOK_THEN},
+    {"yield", TOK_YIELD},
     {"class", TOK_CLASS},
     {"match", TOK_MATCH},
 
