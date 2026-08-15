@@ -133,7 +133,7 @@ void set_symbols(Jn_State* state, const char* str)
     state->symbols[state->symbols_count++] = str;
 }
 
-JN_API void Jn_program_init(Jn_State* state)
+JN_API void Jn_program_init(Jn_State* state, char** argv, int argc)
 {
     state->vm = malloc(sizeof(JnVM));
     state->gc = malloc(sizeof(Jn_GC));
@@ -168,6 +168,18 @@ JN_API void Jn_program_init(Jn_State* state)
     assert(state->vm->chuck->lines);
     assert(state->vm->global != NULL);
     Jn_load_Cfunctions(state);
+    state->cxt.argv = argv;
+    state->cxt.argc = argc;
+    JnObject* arr_obj = Jn_get_global(state, "argv");
+    if (argc && (arr_obj != NULL))
+    {
+        for (int i = 0; i < argc; ++i)
+        {
+            if (!argv[i]) continue;
+            jn_arr_append(arr_obj, jn_obj_string(state, argv[i]));
+        }
+    }
+
 }
 
 
@@ -245,7 +257,7 @@ JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* so
     return exit_code;
 }
 
-JN_API int Jn_execute_main(Jn_State* state, const char* filepath, char** argv, int argc)
+JN_API int Jn_execute_main(Jn_State* state, const char* filepath)
 {
     if (!filepath)
     {
@@ -255,17 +267,6 @@ JN_API int Jn_execute_main(Jn_State* state, const char* filepath, char** argv, i
     J_Source src = read_source_file(filepath);
     assert(src.filename != NULL && src.source != NULL);
     state->cxt.source = src;
-    state->cxt.argv = argv;
-    state->cxt.argc = argc;
-    JnObject* arr_obj = Jn_get_global(state, "argv");
-    if (argc && (arr_obj != NULL))
-    {
-        for (int i = 0; i < argc; ++i)
-        {
-            if (!argv[i]) continue;
-            jn_arr_append(arr_obj, jn_obj_string(state, argv[i]));
-        }
-    }
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, (char *)filepath));
     int exit_code = Jn_exec_program(state, filepath, src.source);
     return exit_code;

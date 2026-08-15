@@ -90,18 +90,18 @@ int main(int argc, char** argv)
     }
     return 0;
     repl:
-        Jn_program_init(&state);
+        Jn_program_init(&state, nw_argv, nw_argc);
         Jn_repl(&state);
         Jn_program_close(&state);
         return 0;
     execute:
-        Jn_program_init(&state);
+        Jn_program_init(&state, nw_argv, nw_argc);
         if (!c.filename)   return -1;
-        exit_code = Jn_execute_main(&state, c.filename, nw_argv, nw_argc);
+        exit_code = Jn_execute_main(&state, c.filename);
         Jn_program_close(&state);
         return exit_code;
     interative:
-        Jn_program_init(&state);
+        Jn_program_init(&state, nw_argv, nw_argc);
         if (!c.filename) return -1;
         Jn_run_iterative(&state, c.filename);
         Jn_program_close(&state);

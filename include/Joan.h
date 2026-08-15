@@ -653,12 +653,12 @@ JN_API JnObject* Jn_call_fn(Jn_State*, char* fn_name, JnObject* args);
 // State Context
 JN_API J_Context* Jn_get_context(Jn_State*);
 // Jn_exec_from_file(FILE* fptr);
-JN_API void Jn_program_init(Jn_State*);
+JN_API void Jn_program_init(Jn_State*, char**, int);
 JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* source);
 JN_API int Jn_exec_string(Jn_State*, const char*);
 JN_API int Jn_exec_REPL(Jn_State*, const char* source);
 // Main Execution function
-JN_API int Jn_execute_main(Jn_State*, const char*, char**, int);
+JN_API int Jn_execute_main(Jn_State*, const char*);
 // Execute for FILE ptr.
 JN_API int Jn_exec_from_file(Jn_State*, char*, FILE*);
 

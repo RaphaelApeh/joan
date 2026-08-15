@@ -36,7 +36,7 @@ const char* source = "printf(\"Hello from C !%s\", TEST)";
 int main(void)
 {
     Jn_State state = {0};
-    Jn_program_init(&state);
+    Jn_program_init(&state, NULL, 0);
     Jn_register(&state, "TEST", "TEST IF IT WORKS.", JN_RETURN_STRING(&state, "IT WORK's."));
     int exit_code = Jn_exec_string(&state, source);
     printf("Exit code = %d\n", exit_code);
