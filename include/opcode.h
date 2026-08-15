@@ -82,6 +82,7 @@ typedef enum{
     OP_MEMBER,
     OP_MEMBER_SET,
     OP_RETURN,
+    OP_YIELD,
     OP_BREAK,
     OP_CONTINUE,
 

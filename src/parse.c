@@ -1127,6 +1127,16 @@ static Jn_Node* parse_node(JnParser* p, Jn_Node* node)
     return node;
 }
 
+static Jn_Node* parse_yield(JnParser* p)
+{
+    consume(p, TOK_YIELD);
+    if (is_smt_end(p))
+    {
+        return ast_yield(p, NULL);
+    }
+    return ast_yield(p, parse_expr(p));
+}
+
 Jn_Node* parse_primary(JnParser* p)
 {
     JnToken t = p->curr;

@@ -126,6 +126,12 @@ Jn_Node* ast_program(JnParser* p)
     return NULL;
 }
 
+Jn_Node* ast_yield(JnParser* p, Jn_Node* node)
+{
+    Jn_Node* ast = ast_create(p, AST_YIELD);
+    ast->yield_node.value = node;
+    return ast;
+}
 
 Jn_Node* ast_assign(
     JnParser* p,

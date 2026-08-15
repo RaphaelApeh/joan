@@ -137,6 +137,7 @@ typedef enum{
     JN_TUPLE_TYPE,
     JN_RANGE_TYPE,
     JN_HASHMAP_TYPE,
+    JN_GENERATOR_TYPE,
     JN_FUNCTION_TYPE,
     JN_NATIVE_TYPE,
     JN_METHOD_TYPE,
@@ -485,6 +486,10 @@ typedef struct Jn_Hashmap{
     size_t size, capacity;
 } Jn_Hashmap;
 
+struct Jn_Gen {
+    JnVM* vm;
+    bool done;
+};
 typedef struct {
     Jn_environ* env;
     const char* ident;

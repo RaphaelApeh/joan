@@ -55,6 +55,7 @@ typedef enum{
     AST_CLASS,
     AST_FOR_EACH,
     AST_IMPORT,
+    AST_YIELD,
     AST_COMMENT,
 
     AST_PROGRAM,
@@ -186,6 +187,10 @@ typedef struct Jn_Node{
         } return_stmt;
 
         struct {
+            Jn_Node* value;
+        } yield_node;
+
+        struct {
             Jn_Node* start;
             Jn_Node* stop;
             Jn_Node* step;
@@ -279,6 +284,8 @@ Jn_Node* ast_array(JnParser* p);
 void ast_array_add(Jn_Node* arr, Jn_Node* element);
 
 Jn_Node* ast_identifier(JnParser* p, const char* identifier);
+
+Jn_Node* ast_yield(JnParser* p, Jn_Node* node);
 
 //ASSIGN: v = true; const x = 4
 Jn_Node* ast_assign(

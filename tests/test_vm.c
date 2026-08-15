@@ -7,7 +7,7 @@ int main(void)
     Jn_pushinteger(&state, 4);
     Jn_pushinteger(&state, 3);
     Jn_setinst(&state, 1);
-    Jn_setinst(&state, 64); // required to exit the vm. TODO
+    Jn_setinst(&state, 65); // required to exit the vm. TODO
     int ret = Jn_exec(&state);
     JnObject* value = Jn_pop(&state);
     if (NULL != value)
