@@ -696,7 +696,7 @@ JnObject* jn_obj_array_get(Jn_Array* arr, int idx);
 JnObject* jn_obj_error(Jn_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 bool jn_obj_truthy(JnObject* obj);
-void jn_obj_print(JnObject* obj);
+JN_API void jn_obj_print(JnObject* obj);
 // Array functions
 void jn_arr_pop(JnObject* arr_obj, JnObject** value);
 void jn_arr_copy(JnObject* dest, JnObject* src);
