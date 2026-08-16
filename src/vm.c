@@ -848,7 +848,8 @@ int vm_run(Jn_State* state, JnVM* vm)
                 vm->exit_code = -1;
                 return JN_INTERPRET_RUNTIME_ERROR;
             default:
-                return die(state,vm, "System error.");
+                JN_LOG("VM got an invalid instruction...");
+                return JN_INTERPRET_ERROR;
         }
     }
     #undef READ_BYTE

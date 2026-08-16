@@ -322,7 +322,7 @@ JN_API int Jn_exec_REPL(Jn_State* state, const char* source)
     if (state->vm->sp > state->vm->stack)
     {
         JnObject* obj = (JnObject *)state->vm->sp[-1];
-        if (obj == NULL) return 0;
+        if (obj == NULL || state->vm->want_exit) return 0;
         jn_obj_print(obj);
         putchar('\n');
         state->vm->sp[-1] = NULL;
