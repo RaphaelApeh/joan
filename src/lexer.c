@@ -1,5 +1,15 @@
 #include <stdint.h>
+#include <Joan.h>
 #include "lexer.h"
+#include "token.h"
+
+
+JN_API bool Jn_get_next_token(Jn_Lexer* lex, JnToken* tok)
+{
+    if (NULL == tok) return false;
+    *tok = next_token(lex);
+    return tok->type != TOK_EOF;
+}
 
 void strip_ws(Jn_Lexer* l)
 {
