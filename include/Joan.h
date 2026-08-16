@@ -569,6 +569,17 @@ JN_API void Jn_free(void* ptr);
 JN_API void Jn_mem_zero(void* ptr, size_t size);
 
 JN_API bool Jn_file_exists(const char* filename);
+
+// Lexer
+// Example:
+// JnToken tok;
+// while (Jn_get_next_token(&lex, &tok))
+//{
+//      printf("Token = %s", tok.lexeme);
+//}
+// WARNING: INTERNAL FUNCTION
+JN_API bool Jn_get_next_token(Jn_Lexer* lex, JnToken* tok);
+
 // Parser
 JN_API void Jn_read_file(Jn_Buffer* Out, const char* filename);
 JN_API Jn_Node* Jn_parse_file(Jn_State* state, const char* filename);

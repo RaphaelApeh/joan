@@ -145,7 +145,14 @@ JnToken number_token(Jn_Lexer* l)
             buff = NULL;
             return t;
         }
-        advance(l);
+        else if (isxdigit(peek(l)) || peek(l) == '_')
+            advance(l);
+        else 
+        {
+            JnToken t = make_token(l, TOK_INT);
+            t.i = 0;
+            return t;
+        }
         if (!isxdigit(peek(l)))
             return make_error(l, "token is not an hex.");
         
