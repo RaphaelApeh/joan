@@ -178,6 +178,7 @@ void jn_init_parser(JnParser* p, Jn_Lexer* l)
 {
     assert(p != NULL && l != NULL);
     p->l = l;
+    p->yields = 0;
     p->next = next_token(l);
     next_parser(p);
 }
@@ -1149,6 +1150,7 @@ static Jn_Node* parse_yield(JnParser* p)
     {
         return ast_yield(p, NULL);
     }
+    p->yields++;
     return ast_yield(p, parse_expr(p));
 }
 

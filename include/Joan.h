@@ -533,6 +533,7 @@ typedef struct JnObject{
         JnModule* module;
         JnStruct* struct_obj;
         JnInstance* instance;
+        Jn_Gen* gen;
         void* ptr_val;
         struct {
             JN_CMethod fn;

@@ -482,6 +482,15 @@ JnObject* jn_obj_function(
     return JN_INTERN_OBJECT(obj);
 }
 
+JnObject* jn_obj_gen(Jn_State* state, JnVM* gvm)
+{
+    JnObject* obj = jn_obj_new(state, JN_GENERATOR_TYPE);
+    obj->gen = Jn_alloc(sizeof(*obj->gen));
+    obj->gen->done = false;
+    obj->gen->vm = gvm;
+    return obj;
+}
+
 JnObject* jn_obj_struct(Jn_State* state, char* name, char** fields)
 {
     JnObject* obj = jn_obj_new(state, JN_STRUCT_TYPE);

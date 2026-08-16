@@ -12,13 +12,6 @@
 #include "eval.h"
 #include "emit.h"
 
-#define WRITE_CHUCK(chuck, OP) write_chuck_loc(chuck, OP, line, column);
-
-#define PUSH(vm, obj)  do { \
-    assert((vm) != NULL || (obj) != NULL);              \
-    if (JN_IS_ERROR((obj))) return vm_error(state, vm, (obj)); \
-    push(vm, (obj));                                  \
-}while(false)
 
 static LoopContext loop_stack[256];
 static int loop_depth = 0;
@@ -34,6 +27,7 @@ void Jnvm_init(JnVM* vm, Chuck* chuck)
     vm->global = chuck->env;
     vm->exit_code = DEFAULT_VM_EXIT_CODE;
     vm->env = vm->global;
+    vm->yielded = NULL;
     vm->want_exit = false;
 }
 
@@ -75,13 +69,13 @@ void reset_vm(JnVM* vm)
     Jnvm_init(vm, vm->chuck);
 }
 
-static inline int vm_line(JnVM* vm)
+JN_INLINE int vm_line(JnVM* vm)
 {
     size_t ip = (size_t)(vm->ip - vm->chuck->code);
     if (ip == 0)  return 0;
     return vm->chuck->lines[ip - 1];
 }
-static inline int vm_column(JnVM* vm)
+JN_INLINE int vm_column(JnVM* vm)
 {
     size_t ip = (size_t)(vm->ip - vm->chuck->code);
     if (ip == 0)  return 0;
@@ -215,6 +209,12 @@ static JnObject *a, *b, *key, *value, *array, *pos;
 
 int vm_run(Jn_State* state, JnVM* vm)
 {
+    #define PUSH(vm, obj)  do { \
+        assert((vm) != NULL || (obj) != NULL);              \
+        if (JN_IS_ERROR((obj))) return vm_error(state, vm, (obj)); \
+        push(vm, (obj));                                  \
+    }while(false)
+
     #define READ_BYTE() (*vm->ip++)
     #define READ_CONST() (vm->chuck->constants[READ_BYTE()])
     #define READ_IDENT() (vm->chuck->idents[READ_BYTE()])
@@ -831,6 +831,12 @@ int vm_run(Jn_State* state, JnVM* vm)
             }
             case OP_NONE:
                 PUSH(vm, JN_RETURN_NONE); break;
+            case OP_YIELD:
+            {
+                o = POP();
+                vm->yielded = o;
+                return JN_INTERPRET_YEILD;
+            }
             case OP_ERROR_MSG:
                 ident = READ_IDENT();
                 return vm_error(state, vm, JN_RAISE_EXCPETION(state, SYNTAX_ERROR, ident));
@@ -860,6 +866,8 @@ int vm_run(Jn_State* state, JnVM* vm)
 
 void compile(Jn_Node* node, Chuck* chuck)
 {
+    #define WRITE_CHUCK(chuck, OP) write_chuck_loc(chuck, OP, line, column);
+
     int id, idx, jump, offset, loop_start, exit_jmp, exit_jump;
     LoopContext* loop;
     int line = node->line;
@@ -898,6 +906,14 @@ void compile(Jn_Node* node, Chuck* chuck)
         WRITE_CHUCK(chuck, OP_TUPLE);
         WRITE_CHUCK(chuck, node->tuple.count);
         break;
+    case AST_YIELD: {
+        if (NULL != node->yield_node.value)
+            compile(chuck, node->yield_node.value);
+        else
+            WRITE_CHUCK(chuck, OP_NONE);
+        
+        WRITE_CHUCK(chuck, OP_YIELD);
+    } break;
     case AST_ARRAY:
         for (size_t i = 0; i < node->array.count; i++)
             compile(node->array.elements[i], chuck);

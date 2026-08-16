@@ -45,6 +45,7 @@ typedef struct JnVM{
     Jn_environ* global;
     Jn_environ* env;
 
+    JnObject* yielded;
     CallFrame frames[JN_FRAME_MAX];
     int frame_count;
 
