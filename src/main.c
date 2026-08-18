@@ -73,6 +73,10 @@ int main(int argc, char** argv)
             usage(); return 0;
         case C_VERSION:
             version(); return 0;
+        case C_SCMD:
+        {
+            goto scmd;
+        }
         case C_REPL:
         {
             goto repl;
@@ -94,6 +98,11 @@ int main(int argc, char** argv)
         Jn_repl(&state);
         Jn_program_close(&state);
         return 0;
+    scmd:
+        Jn_program_init(&state, nw_argv, nw_argc);
+        exit_code = Jn_exec_string(&state, c.cmd_string);
+        Jn_program_close(&state);
+        return exit_code;
     execute:
         Jn_program_init(&state, nw_argv, nw_argc);
         if (!c.filename)   return -1;

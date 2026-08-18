@@ -19,19 +19,18 @@ static int buffer_count = 0;
 
 struct Command parse_args(char** args, int argc)
 {
-    struct Command c = {0};
+    #define VALIDATE_CMD() do{        \
+        if (mode_selected) goto err;\
+        mode_selected = true;       \
+    } while (false)
+    struct Command c = {
+        .type = C_REPL,
+        .filename = NULL,
+        .debug = false,
+        .cmd_string = NULL,
+        .error_msg = NULL,
+    };
     int opt;
-    if (argc == 1) // No Arguments
-    {
-        c.type = C_REPL;
-        return c;
-    }
-    if (argc > 1 && *(args[1]) != '-' )
-    {
-        c.filename = args[1];
-        c.type = C_RUN;
-        return c;
-    }
     struct optparse_long longopts[] = {
         {"help", 'h', OPTPARSE_NONE},
         {"version", 'v', OPTPARSE_NONE},
@@ -42,35 +41,48 @@ struct Command parse_args(char** args, int argc)
         {"interative", 'i', OPTPARSE_REQUIRED},
         {0}
     };
+    int mode_selected = false;
     struct optparse opts;
     optparse_init(&opts, args);
     while ((opt = optparse_long(&opts, longopts, NULL)) != -1)
     {
         switch (opt)
         {
-            case 'h':
+            case 'h':{
+                VALIDATE_CMD();
                 c.type = C_HELP;
                 break;
-            case 'v':
+            }
+            case 'v':{
+                VALIDATE_CMD();
                 c.type = C_VERSION;
                 break;
-            case 'r':
+            }
+            case 'r':{
+                VALIDATE_CMD();
                 c.type = C_REPL;
                 break;
-            case 'f':
+            }
+            case 'f':{
+                VALIDATE_CMD();
                 c.type = C_RUN;
                 c.filename = opts.optarg;
                 break;
-            case 'd':
+            }
+            case 'd':{
                 c.debug = true; break;
-            case 'c':
-                // TODO
-                printf("Command: %s\n", opts.optarg);
+            }
+            case 'c':{
+                VALIDATE_CMD();
+                c.type = C_SCMD;
+                c.cmd_string = strdup(opts.optarg);
                 break;
-            case 'i':
+            }
+            case 'i':{
                 c.type = C_ITERATIVE;
                 c.filename = opts.optarg;
                 break;
+            }
             case '?':
                 fprintf(stderr, "%s: %s\n\n", args[0], opts.errmsg);
                 c.type = C_ERROR;
@@ -79,7 +91,16 @@ struct Command parse_args(char** args, int argc)
                 c.type = C_ERROR;
         }
     }
+    if (!mode_selected && opts.optind < argc)
+    {
+        c.type = C_RUN;
+        c.filename = args[opts.optind];
+    }
     return c;
+    err:
+        c.type = C_ERROR;
+        c.error_msg = "Multiple commands specified.";
+        return c;
 }
 
 static int parse_buffer(char* str)

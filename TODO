@@ -7,3 +7,6 @@
 -Add type-check or something
 -Fix the parser or reimplement it.
 -Add bash script
+-skip commas
+-add OP_SUFFIX and OP_PREFIX
+-impl native_next
