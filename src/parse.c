@@ -179,6 +179,7 @@ void jn_init_parser(Jn_Parser* p, Jn_Lexer* l)
     assert(p != NULL && l != NULL);
     p->l = l;
     p->yields = 0;
+    p->skip_comma = false;
     p->next = next_token(l);
     next_parser(p);
 }
@@ -730,6 +731,9 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
 {
     if (check(p, TOK_PLUS_PLUS))
         return parse_unary(p, TOK_PLUS_PLUS);
+
+    Jn_Node* tpl = NULL;
+    
     while (true)
     {
         if (match(p, TOK_LPARN))

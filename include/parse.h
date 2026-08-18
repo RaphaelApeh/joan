@@ -46,9 +46,8 @@ typedef struct Jn_Parser{
     Jn_Token prev;
     Jn_Token curr;
     Jn_Token next;
-    int yields;
-    bool has_newl;
-    int errors;
+    int yields, errors;
+    bool has_newl, skip_comma;
 } Jn_Parser;
 
 
