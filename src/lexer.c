@@ -4,7 +4,7 @@
 #include "token.h"
 
 
-JN_API bool Jn_get_next_token(Jn_Lexer* lex, JnToken* tok)
+JN_API bool Jn_get_next_token(Jn_Lexer* lex, Jn_Token* tok)
 {
     if (NULL == tok) return false;
     *tok = next_token(lex);

@@ -39,28 +39,28 @@ typedef enum{
     PREC_PRIMARY
 } precedence;
 
-typedef struct JnParser{
+typedef struct Jn_Parser{
     Jn_State* state;
     Jn_Lexer* l;
     Jn_Arena* arena;
-    JnToken prev;
-    JnToken curr;
-    JnToken next;
+    Jn_Token prev;
+    Jn_Token curr;
+    Jn_Token next;
     int yields;
     bool has_newl;
     int errors;
-} JnParser;
+} Jn_Parser;
 
 
-void jn_init_parser(JnParser* p, Jn_Lexer* l);
-void advance_parser(JnParser* p);
+void jn_init_parser(Jn_Parser* p, Jn_Lexer* l);
+void advance_parser(Jn_Parser* p);
 
-JnToken next_parser(JnParser* p);
-Jn_Node* parse_primary(JnParser* p);
+Jn_Token next_parser(Jn_Parser* p);
+Jn_Node* parse_primary(Jn_Parser* p);
 // Main function for the parser.
-Jn_Node* parse_stmt(JnParser* p);
-Jn_Node* parse_stmt_check(JnParser* p, Jn_Node* stmt);
-Jn_Node* parse_expr(JnParser* p);
-Jn_Node* parse_error(JnParser* p, const char* msg, ...);
+Jn_Node* parse_stmt(Jn_Parser* p);
+Jn_Node* parse_stmt_check(Jn_Parser* p, Jn_Node* stmt);
+Jn_Node* parse_expr(Jn_Parser* p);
+Jn_Node* parse_error(Jn_Parser* p, const char* msg, ...);
 
 #endif //JN_PARSE_H

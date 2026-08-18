@@ -30,7 +30,7 @@ typedef struct Chuck{
 
 typedef struct {
     JnObject** slots;
-    JnFunctionObject* fn;
+    Jn_Function* fn;
     uint8_t* ip;
     Jn_environ* env;
 } CallFrame;

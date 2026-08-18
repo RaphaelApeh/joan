@@ -190,7 +190,7 @@ JN_API void Jn_pushchar(Jn_State* state, Jn_Char c)
 
 static JnObject* call_function(Jn_State* state, JnVM* vm, JnObject* obj, JnObject** args)
 {
-    JnFunctionObject* fn = obj->fn;
+    Jn_Function* fn = obj->fn;
     JnVM child;
     Jnvm_init(&child, fn->chuck);
     child.env = fn->env;
@@ -813,13 +813,26 @@ int vm_run(Jn_State* state, JnVM* vm)
                         PUSH(vm, a);
                         break;
                     case JN_FUNCTION_TYPE: {
-                        JnFunctionObject* fn = o->fn;
+                        Jn_Function* fn = o->fn;
                         if (count != fn->arity)
                             return die(state,
                                 vm, 
                                 "function '%s' expected %d args but got %d",
                                 fn->name, fn->arity, count
                             );
+                        if (fn->is_yield)
+                        {
+                            JnVM* gvm = Jn_alloc(sizeof(*gvm));
+                            Jnvm_init(gvm, fn->chuck);
+                            gvm->env = fn->env;
+                            for (int i = 0; i < fn->arity; ++i)
+                            {
+                                environ_insert(gvm->env, fn->params[i], args[i]);
+                            }
+                            o = jn_obj_gen(state, gvm);
+                            PUSH(vm, o);
+                            break;
+                        }
                         JnObject* res = call_function(state, vm, o, args);
                         PUSH(vm, res);
                         break;
@@ -908,7 +921,7 @@ void compile(Jn_Node* node, Chuck* chuck)
         break;
     case AST_YIELD: {
         if (NULL != node->yield_node.value)
-            compile(chuck, node->yield_node.value);
+            compile(node->yield_node.value, chuck);
         else
             WRITE_CHUCK(chuck, OP_NONE);
         
@@ -1169,7 +1182,8 @@ void compile(Jn_Node* node, Chuck* chuck)
         JnObject* fn_obj = jn_obj_function(
             node->state,
             node->fn_node.block,
-            chuck->env, node->fn_node.params, node->fn_node.count, node->fn_node.name
+            chuck->env, node->fn_node.params, node->fn_node.count, node->fn_node.name,
+            node->fn_node.is_yield
         );
         idx = add_constant(chuck, fn_obj);
         WRITE_CHUCK(chuck, OP_CONSTANT);

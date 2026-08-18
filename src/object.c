@@ -443,11 +443,12 @@ JnObject* jn_obj_lambda(Jn_State* state, Jn_Node* expr, char** params, int arity
         write_chuck_loc(chuck, OP_NONE, expr->line, expr->col);
     }
     write_chuck_loc(chuck, OP_RETURN, expr->line, expr->col);
-    JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
+    Jn_Function* fn = JN_ALLOC(sizeof(Jn_Function));
     fn->chuck = chuck;
     fn->env = Jn_environ_init(env);
     fn->params = params;
     fn->arity = arity;
+    fn->is_yield = false;
     fn->name = DEFAULT_LAMBDA_NAME;
     fn->is_lambda = 1;
     JnObject* obj = jn_obj_new(state, JN_FUNCTION_TYPE);
@@ -461,7 +462,8 @@ JnObject* jn_obj_function(
     Jn_environ* env,
     char** params, 
     int arity, 
-    char* name
+    char* name,
+    bool is_yield
 )
 {
     Chuck* chuck = JN_ALLOC(sizeof(Chuck));
@@ -470,12 +472,13 @@ JnObject* jn_obj_function(
     compile(block, chuck);
     write_chuck_loc(chuck, OP_NONE, block->line, block->col);    
     write_chuck_loc(chuck, OP_RETURN, block->line, block->col);
-    JnFunctionObject* fn = JN_ALLOC(sizeof(JnFunctionObject));
+    Jn_Function* fn = JN_ALLOC(sizeof(Jn_Function));
     fn->chuck = chuck;
     fn->env = Jn_environ_init(env);
     fn->params = params;
     fn->arity = arity;
     fn->is_lambda = false;
+    fn->is_yield = is_yield;
     fn->name = name;
     JnObject* obj = jn_obj_new(state, JN_FUNCTION_TYPE);
     obj->fn = fn;
@@ -666,6 +669,9 @@ void jn_obj_print(JnObject* obj)
         case JN_HASHMAP_TYPE:
             print_hashmap(obj);
             break;
+        case JN_GENERATOR_TYPE:   {
+            printf("<Generator %lld>", (uintptr_t)obj);
+        } break;
         case JN_MODULE_TYPE:
             fprintf(stdout, "<Module '%s' at '%s'>", obj->module->name, obj->module->path);
             break;

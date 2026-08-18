@@ -10,7 +10,7 @@
 typedef struct case_t case_t;
 typedef struct case_o case_o;
 typedef struct elseif elseif;
-typedef struct JnParser JnParser;
+typedef struct Jn_Parser Jn_Parser;
 typedef struct attr_t attr_t;
 typedef struct Jn_Node Jn_Node;
 
@@ -77,12 +77,12 @@ typedef struct Jn_Node{
         } program_node;
         struct {
             Jn_Node* left;
-            JnTokenType op;
+            Jn_TokenType op;
             Jn_Node* right;
         } binary;
 
         struct {
-            JnTokenType op;
+            Jn_TokenType op;
             Jn_Node* right;
         } unary;
         // let x, y, z = 0
@@ -112,7 +112,7 @@ typedef struct Jn_Node{
             Jn_Node* callie;
             Jn_Node* setter;
             Jn_Node* field;
-            JnTokenType tok;
+            Jn_TokenType tok;
             bool is_setter;
             bool is_call;
         } member;
@@ -170,7 +170,7 @@ typedef struct Jn_Node{
         struct {
             Jn_Node* expr;
             Jn_Node* value;
-            JnTokenType op; // +=, -=, ...
+            Jn_TokenType op; // +=, -=, ...
         } reassign;
 
         struct {
@@ -267,31 +267,31 @@ typedef struct Jn_Node{
     int line, col;
 } Jn_Node;
 
-Jn_Node* ast_create(JnParser* p, Jn_NodeType type);
+Jn_Node* ast_create(Jn_Parser* p, Jn_NodeType type);
 
-Jn_Node* new_block(JnParser* p);
+Jn_Node* new_block(Jn_Parser* p);
 
 void add_block(Jn_Node* ast, Jn_Node* node);
 // LITERAL: -> true, false, None
-Jn_Node* ast_literal(JnParser* p, JnObject* object);
+Jn_Node* ast_literal(Jn_Parser* p, JnObject* object);
 
-Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, JnTokenType op, Jn_Node* rhs);
+Jn_Node* ast_binary(Jn_Parser* p, Jn_Node* lhs, Jn_TokenType op, Jn_Node* rhs);
 
-Jn_Node* ast_unary(JnParser* p, JnTokenType op, Jn_Node* right);
+Jn_Node* ast_unary(Jn_Parser* p, Jn_TokenType op, Jn_Node* right);
 
-Jn_Node* ast_program(JnParser* p);
-void ast_program_add(JnParser* p, Jn_Node* prog, Jn_Node* node);
+Jn_Node* ast_program(Jn_Parser* p);
+void ast_program_add(Jn_Parser* p, Jn_Node* prog, Jn_Node* node);
 //ARRAY: Jn_Node functions
-Jn_Node* ast_array(JnParser* p);
+Jn_Node* ast_array(Jn_Parser* p);
 void ast_array_add(Jn_Node* arr, Jn_Node* element);
 
-Jn_Node* ast_identifier(JnParser* p, const char* identifier);
+Jn_Node* ast_identifier(Jn_Parser* p, const char* identifier);
 
-Jn_Node* ast_yield(JnParser* p, Jn_Node* node);
+Jn_Node* ast_yield(Jn_Parser* p, Jn_Node* node);
 
 //ASSIGN: v = true; const x = 4
 Jn_Node* ast_assign(
-    JnParser* p,
+    Jn_Parser* p,
     char* name,
     bool is_const,
     Jn_Node* value
@@ -299,23 +299,23 @@ Jn_Node* ast_assign(
 
 
 // Function
-Jn_Node* ast_function(JnParser* p, char* ident, Jn_Node* block, int count, char** params);
+Jn_Node* ast_function(Jn_Parser* p, char* ident, Jn_Node* block, int count, char** params);
 
 //IF STATEMENT
-Jn_Node* ast_if_node(JnParser* p, Jn_Node* cond, Jn_Node* then, elseif* elseif, Jn_Node* else_node);
+Jn_Node* ast_if_node(Jn_Parser* p, Jn_Node* cond, Jn_Node* then, elseif* elseif, Jn_Node* else_node);
 
 //BREAK, CONTINUE
-Jn_Node* ast_break(JnParser* p);
-Jn_Node* ast_continue(JnParser* p);
-Jn_Node* ast_return(JnParser* p, Jn_Node* value);
+Jn_Node* ast_break(Jn_Parser* p);
+Jn_Node* ast_continue(Jn_Parser* p);
+Jn_Node* ast_return(Jn_Parser* p, Jn_Node* value);
 // Call
-Jn_Node* ast_call(JnParser* p, Jn_Node* callee, Jn_Node** args, size_t count);
+Jn_Node* ast_call(Jn_Parser* p, Jn_Node* callee, Jn_Node** args, size_t count);
 
-Jn_Node* ast_while(JnParser* p, Jn_Node* cond, Jn_Node* block);
+Jn_Node* ast_while(Jn_Parser* p, Jn_Node* cond, Jn_Node* block);
 //Match
-Jn_Node* ast_match(JnParser* p, Jn_Node* sub, case_t* cases, Jn_Node* def);
+Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def);
 
 //ERROR
-Jn_Node* ast_error(JnParser* p, const char* msg);
+Jn_Node* ast_error(Jn_Parser* p, const char* msg);
 
 #endif // JOAN_AST_H

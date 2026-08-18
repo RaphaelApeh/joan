@@ -921,7 +921,7 @@ JN_API JnObject* Jn_call_fn(Jn_State* state, char* fn_name, JnObject* args)
     assert(JN_IS_NATIVE(fn_obj) || JN_IS_FUNCTION(fn_obj));
     if (JN_IS_NATIVE(fn_obj))
         return JN_CALL_NATIVE(state, fn_obj, args);
-    JnFunctionObject* fn = fn_obj->fn;
+    Jn_Function* fn = fn_obj->fn;
     JnVM child;
     assert(fn->arity == JN_ARGS_COUNT(args));
     Jnvm_init(&child, fn->chuck);

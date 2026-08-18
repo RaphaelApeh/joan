@@ -9,7 +9,7 @@
 #include "parse.h"
 
 
-Jn_Node* ast_create(JnParser* p, Jn_NodeType type)
+Jn_Node* ast_create(Jn_Parser* p, Jn_NodeType type)
 {
     assert(p != NULL);
     assert(p->arena != NULL);
@@ -23,7 +23,7 @@ Jn_Node* ast_create(JnParser* p, Jn_NodeType type)
     return ast;
 }
 
-Jn_Node* new_block(JnParser* p)
+Jn_Node* new_block(Jn_Parser* p)
 {
     u64 capacity = 8;
     Jn_Node* ast = ast_create(p, AST_BLOCK);
@@ -46,7 +46,7 @@ void add_block(Jn_Node* ast, Jn_Node* node)
 }
 
 
-Jn_Node* ast_literal(JnParser* p, JnObject* object)
+Jn_Node* ast_literal(Jn_Parser* p, JnObject* object)
 {
     Jn_Node* ast = ast_create(p, AST_LITERAL);
 
@@ -54,12 +54,12 @@ Jn_Node* ast_literal(JnParser* p, JnObject* object)
     return ast;
 }
 
-Jn_Node* ast_decl(JnParser* p, const char* ident, Jn_Node* value, bool is_const)
+Jn_Node* ast_decl(Jn_Parser* p, const char* ident, Jn_Node* value, bool is_const)
 {
     return NULL;
 }
 
-Jn_Node* ast_while(JnParser* p, Jn_Node* cond, Jn_Node* block)
+Jn_Node* ast_while(Jn_Parser* p, Jn_Node* cond, Jn_Node* block)
 {
     Jn_Node* ast = ast_create(p, AST_WHILE);
     ast->while_node.cond = cond;
@@ -67,7 +67,7 @@ Jn_Node* ast_while(JnParser* p, Jn_Node* cond, Jn_Node* block)
     return ast;
 }
 
-Jn_Node* ast_identifier(JnParser* p, const char* identifier)
+Jn_Node* ast_identifier(Jn_Parser* p, const char* identifier)
 {
     Jn_Node* ast = ast_create(p, AST_IDENTIFIER);
 
@@ -75,7 +75,7 @@ Jn_Node* ast_identifier(JnParser* p, const char* identifier)
     return ast;
 }
 
-Jn_Node* ast_unary(JnParser* p, JnTokenType op, Jn_Node* right)
+Jn_Node* ast_unary(Jn_Parser* p, Jn_TokenType op, Jn_Node* right)
 {
     Jn_Node* ast = ast_create(p, AST_UNARY);
 
@@ -84,7 +84,7 @@ Jn_Node* ast_unary(JnParser* p, JnTokenType op, Jn_Node* right)
     return ast;
 }
 
-Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, JnTokenType op, Jn_Node* rhs)
+Jn_Node* ast_binary(Jn_Parser* p, Jn_Node* lhs, Jn_TokenType op, Jn_Node* rhs)
 {
     Jn_Node* ast = ast_create(p, AST_BINARY);
 
@@ -95,7 +95,7 @@ Jn_Node* ast_binary(JnParser* p, Jn_Node* lhs, JnTokenType op, Jn_Node* rhs)
 }
 
 
-Jn_Node* ast_array(JnParser* p)
+Jn_Node* ast_array(Jn_Parser* p)
 {
     Jn_Node* ast = ast_create(p, AST_ARRAY);
 
@@ -121,7 +121,7 @@ void ast_array_add(Jn_Node* arr, Jn_Node* element)
     arr->array.elements[arr->array.count++] = element;
 }
 
-Jn_Node* ast_program(JnParser* p)
+Jn_Node* ast_program(Jn_Parser* p)
 {
     Jn_Node* node = ast_create(p, AST_PROGRAM);
     node->program_node.count = 0;
@@ -130,7 +130,7 @@ Jn_Node* ast_program(JnParser* p)
     return node;
 }
 
-void ast_program_add(JnParser* p, Jn_Node* prog, Jn_Node* node)
+void ast_program_add(Jn_Parser* p, Jn_Node* prog, Jn_Node* node)
 {
     if (prog->program_node.count > prog->program_node.capacity)
     {
@@ -140,7 +140,7 @@ void ast_program_add(JnParser* p, Jn_Node* prog, Jn_Node* node)
     prog->program_node.items[prog->program_node.count++] = node;
 }
 
-Jn_Node* ast_yield(JnParser* p, Jn_Node* node)
+Jn_Node* ast_yield(Jn_Parser* p, Jn_Node* node)
 {
     Jn_Node* ast = ast_create(p, AST_YIELD);
     ast->yield_node.value = node;
@@ -148,7 +148,7 @@ Jn_Node* ast_yield(JnParser* p, Jn_Node* node)
 }
 
 Jn_Node* ast_assign(
-    JnParser* p,
+    Jn_Parser* p,
     char* name,
     bool is_const,
     Jn_Node* value
@@ -161,7 +161,7 @@ Jn_Node* ast_assign(
     return ast;
 }
 
-Jn_Node* ast_if_node(JnParser* p, Jn_Node* cond, Jn_Node* then, elseif* elseif, Jn_Node* else_node)
+Jn_Node* ast_if_node(Jn_Parser* p, Jn_Node* cond, Jn_Node* then, elseif* elseif, Jn_Node* else_node)
 {
     Jn_Node* ast = ast_create(p, AST_IF);
     ast->if_node.condition = cond;
@@ -171,19 +171,19 @@ Jn_Node* ast_if_node(JnParser* p, Jn_Node* cond, Jn_Node* then, elseif* elseif, 
     return ast;
 }
 
-Jn_Node* ast_break(JnParser* p)
+Jn_Node* ast_break(Jn_Parser* p)
 {
     Jn_Node* ast = ast_create(p, AST_BREAK);
     return ast;
 }
 
-Jn_Node* ast_continue(JnParser* p)
+Jn_Node* ast_continue(Jn_Parser* p)
 {
     Jn_Node* ast = ast_create(p, AST_CONTINUE);
     return ast;
 }
 
-Jn_Node* ast_match(JnParser* p, Jn_Node* sub, case_t* cases, Jn_Node* def)
+Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def)
 {
     Jn_Node* ast = ast_create(p, AST_MATCH);
     ast->match_node.cases = cases;
@@ -192,7 +192,7 @@ Jn_Node* ast_match(JnParser* p, Jn_Node* sub, case_t* cases, Jn_Node* def)
     return ast;
 }
 
-Jn_Node* ast_call(JnParser* p, Jn_Node* callee, Jn_Node** args, size_t count)
+Jn_Node* ast_call(Jn_Parser* p, Jn_Node* callee, Jn_Node** args, size_t count)
 {
     Jn_Node* ast = ast_create(p, AST_CALL);
     ast->call.callee = callee;
@@ -202,7 +202,7 @@ Jn_Node* ast_call(JnParser* p, Jn_Node* callee, Jn_Node** args, size_t count)
 }
 
 
-Jn_Node* ast_function(JnParser* p, char* ident, Jn_Node* block, int count, char** params)
+Jn_Node* ast_function(Jn_Parser* p, char* ident, Jn_Node* block, int count, char** params)
 {
     Jn_Node* ast = ast_create(p, AST_FUNCTION);
     ast->fn_node.block = block;
@@ -212,7 +212,7 @@ Jn_Node* ast_function(JnParser* p, char* ident, Jn_Node* block, int count, char*
     return ast;
 }
 
-Jn_Node* ast_error(JnParser* p, const char* msg)
+Jn_Node* ast_error(Jn_Parser* p, const char* msg)
 {
     Jn_Node* ast = ast_create(p, AST_ERROR);
     ast->error_msg = msg;

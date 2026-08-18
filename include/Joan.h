@@ -155,7 +155,7 @@ typedef enum{
 typedef struct Jn_State Joan;
 typedef struct Jn_GC Jn_GC;
 typedef struct JnInternEntry JnInternEntry;
-typedef struct JnParser JnParser;
+typedef struct Jn_Parser Jn_Parser;
 typedef struct Jn_Arena Jn_Arena;
 typedef struct JnObject JnObject;
 typedef struct JnVM JnVM;
@@ -164,6 +164,8 @@ typedef struct J_Context J_Context;
 typedef struct JN_Args JN_Args;
 typedef struct Jn_Buffer Jn_Buffer;
 typedef struct Jn_Node Jn_Node;
+typedef struct Jn_Lexer Jn_Lexer;
+typedef struct Jn_Token Jn_Token;
 typedef struct Jn_Gen Jn_Gen;
 typedef JnObject* (*Jn_CFunction)(Jn_State* state, JnObject* args);
 typedef JnObject* (*JN_CMethod) (Jn_State* state, JnObject* self, JnObject* args);
@@ -387,7 +389,7 @@ typedef struct Jn_State
     JnVM* vm;
     Jn_GC* gc;
     Jn_Arena* arena;
-    JnParser* parser;
+    Jn_Parser* parser;
     Jn_Error error;
     JnInternEntry* intern_pool[JN_INTER_SIZE];
     JnObject_Alloc alloc_fn;
@@ -456,8 +458,9 @@ typedef struct {
     Jn_environ* env;
     char** params;
     char* name;
-    int arity, is_lambda;
-} JnFunctionObject;
+    int arity;
+    bool is_yield, is_lambda;
+} Jn_Function;
 
 typedef struct {
     JnObject** items;
@@ -525,7 +528,7 @@ typedef struct JnObject{
         Jn_String* str;
         Jn_Array* arr;
         Jn_Tuple* tuple;
-        JnFunctionObject* fn;
+        Jn_Function* fn;
         Jn_Iter* iter;
         Jn_Hashmap* hashmap;
         Jn_Native* native_fn;
@@ -573,13 +576,13 @@ JN_API bool Jn_file_exists(const char* filename);
 
 // Lexer
 // Example:
-// JnToken tok;
+// Jn_Token tok;
 // while (Jn_get_next_token(&lex, &tok))
 //{
 //      printf("Token = %s", tok.lexeme);
 //}
 // WARNING: INTERNAL FUNCTION
-JN_API bool Jn_get_next_token(Jn_Lexer* lex, JnToken* tok);
+JN_API bool Jn_get_next_token(Jn_Lexer* lex, Jn_Token* tok);
 
 // Parser
 JN_API void Jn_read_file(Jn_Buffer* Out, const char* filename);
@@ -685,6 +688,8 @@ JN_API void Jn_program_close(Jn_State*);
 
 JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
 
+JN_API void Jn_tokenizer(Jn_State*, FILE*);
+
 // Object functions
 JN_API JnObject* jn_obj_new(Jn_State*, JnTypeObject type);
 JN_API JnObject* jn_obj_int(Jn_State*, long o_int);
@@ -700,6 +705,7 @@ JN_API JnObject* jn_obj_array(Jn_State* state);
 JN_API JnObject* jn_obj_cfn(Jn_State* state, char* name, Jn_CFunction fn);
 JnObject* jn_obj_type(Jn_State*, char* type_name, JnTypeObject type, Jn_CFunction fn);
 JnObject* jn_obj_intern(Jn_State* state, JnObject* obj);
+JnObject* jn_obj_gen(Jn_State* state, JnVM* gvm);
 JnObject* jn_obj_module(Jn_State*, char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(Jn_State*, char* name, char** fields);
 JnObject* jn_obj_arg(Jn_State*, JnObject** args, char** arg_names, size_t count);
