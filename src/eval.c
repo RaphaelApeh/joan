@@ -75,7 +75,6 @@ static JnObject* eval_string(Jn_State* state, JnObject* lhs, JnObject* rhs, int 
 static JnObject* eval_float(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
 static JnObject* eval_array(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
 static JnObject* eval_hashmap(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
-static JnObject* eval_default(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
 
 
 bool jn_obj_match(JnObject* obj, JnObject* other)
@@ -121,6 +120,9 @@ JnObject* eval_binary(Jn_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op
         if (jn_obj_truthy(lhs) || jn_obj_truthy(rhs))
             is_true = true;
         return JN_RETURN_BOOL(state, is_true);
+    case EVAL_EQUAL:{
+        return JN_RETURN_BOOL(state, jn_obj_equals(lhs, rhs));
+    } break;
     default:
         break;
     }
@@ -378,11 +380,6 @@ static JnObject* eval_hashmap(Jn_State* state, JnObject* lhs, JnObject* rhs, int
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Invalid operation.");
     }
 }
-static JnObject* eval_default(Jn_State* state, JnObject* lhs, JnObject* rhs, int op)
-{
-    assert(false && "TODO");
-}
-
 #undef eval_bin
 #undef eval_bin_int
 #undef eval_bin_bool

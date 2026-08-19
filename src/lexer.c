@@ -8,7 +8,7 @@ JN_API bool Jn_get_next_token(Jn_Lexer* lex, Jn_Token* tok)
 {
     if (NULL == tok) return false;
     *tok = next_token(lex);
-    return tok->type != TOK_EOF;
+    return tok->type != TOK_EOF && tok->type != TOK_ERROR;
 }
 
 void strip_ws(Jn_Lexer* l)

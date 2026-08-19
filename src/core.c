@@ -244,6 +244,8 @@ JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* so
         state->cxt.source.source = strdup(source);
     if (!state->cxt.source.filename)
         state->cxt.source.filename = strdup(filename);
+    
+    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, (char *)filename));
     assert(state->parser->arena && "Jn_Arena not set ...");
     assert(state->parser && "Parser not set ...");
     assert(state->vm->chuck && "VM Chuck is NULL ....");
@@ -275,7 +277,6 @@ JN_API int Jn_execute_main(Jn_State* state, const char* filepath)
     J_Source src = read_source_file(filepath);
     assert(src.filename != NULL && src.source != NULL);
     state->cxt.source = src;
-    Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, (char *)filepath));
     int exit_code = Jn_exec_program(state, filepath, src.source);
     return exit_code;
 }

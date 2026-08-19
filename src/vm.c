@@ -822,7 +822,7 @@ int vm_run(Jn_State* state, JnVM* vm)
                             );
                         if (fn->is_yield)
                         {
-                            JnVM* gvm = Jn_alloc(sizeof(*gvm));
+                            JnVM* gvm = Jn_alloc(sizeof(JnVM));
                             Jnvm_init(gvm, fn->chuck);
                             gvm->env = fn->env;
                             for (int i = 0; i < fn->arity; ++i)

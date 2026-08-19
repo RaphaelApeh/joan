@@ -323,6 +323,8 @@ typedef struct Jn_environ Jn_environ;
     (arr)->size++;                                         \
 } while(false)
 
+
+#define jn_obj__type(obj)   (NULL == obj) ? -1 : obj->type
 #define Jn__iter_foreach(var, iter)     \
     for (JnObject** __iter = iter->items, ** __end = __iter + iter->size,, * ##var = *__iter; \
         __iter < __end && ((##var = *__iter), 1); ++__iter)

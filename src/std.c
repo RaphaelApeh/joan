@@ -779,6 +779,27 @@ static JnObject* native_isinstance(Jn_State* state, JnObject* arg)
     return NULL;
 }
 
+static JnObject* native_next(Jn_State* state, JnObject* args)
+{
+    int count = JN_ARGS_COUNT(args);
+    if (count != 1)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "next() expected one positional argument but (got %d)", count);
+    
+    JnObject* obj = JN_GET_ARG(args);
+    if (jn_obj__type(obj) != JN_GENERATOR_TYPE)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "next() expected a generator object but got %s", "TODO");
+
+    Jn_Gen* gen = obj->gen;
+    JnObject* DONE = Jn_get_global(state, "DONE");
+    if (NULL == DONE) DONE = JN_RETURN_NONE;
+    if (gen->done) return DONE;
+    int ret = vm_run(state, gen->vm);
+    if (ret == JN_INTERPRET_YEILD)  return gen->vm->yielded;
+    gen->done = true;
+    if (ret == JN_INTERPRET_OK)   return (gen->vm->sp > gen->vm->stack) ? *(gen->vm->sp -1) : DONE;
+    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "generator terminated with an error (%s).", ret);
+}
+
 static JnObject* native_exit(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
@@ -1021,5 +1042,6 @@ JN_API void Jn_load_Cfunctions(Jn_State* state)
     Jn_register_fn(state, "defined", "Check if a variable exists in the current scope.", native_defined);
     Jn_register_fn(state, "format", "String format specifier.", native_format);
     Jn_register_fn(state, "exit", "Exit from program", native_exit);
+    Jn_register_fn(state, "next", "Advance a generator and return the yielded value.", native_next);
     // add other built-in functions
 }
