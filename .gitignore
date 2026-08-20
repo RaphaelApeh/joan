@@ -20,6 +20,7 @@ dist/
 wheels/
 *.egg-info
 template/
+token.txt
 # CMake stuff
 CMakeCache.txt
 cmake_install.cmake

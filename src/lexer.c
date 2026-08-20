@@ -66,7 +66,7 @@ bool peek_advance(Jn_Lexer* l, char c)
 }
 
 
-void J_init_lexer(Jn_Lexer* l, char* source, const char* filename)
+void jn_lexer_init(Jn_Lexer* l, char* source, const char* filename)
 {
     l->start = source;
     l->curr = source;

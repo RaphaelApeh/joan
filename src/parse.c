@@ -191,7 +191,7 @@ Jn_Node* Jn_parse_file(Jn_State* state, const char* filename)
     Jn_Buffer b;
     Jn_buff_init(&b);
     Jn_read_file(&b, filename);
-    J_init_lexer(&l, b.data, filename);
+    jn_lexer_init(&l, b.data, filename);
     jn_init_parser(state->parser, &l);
     Jn_Parser* p = state->parser;
     Jn_Token curr_tok = p->curr;

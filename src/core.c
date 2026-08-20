@@ -108,12 +108,13 @@ JN_API Jn_Error* Jn_get_error(Jn_State* state)
     return &state->error;
 }
 
-JN_API void Jn_read_file(Jn_Buffer* Out, const char* filename)
+JN_API int Jn_read_file(Jn_Buffer* Out, const char* filename)
 {
     FILE* fptr = fopen(filename, "rb");
-    if (!fptr || !Out) return;
-    read_from_fptr(fptr, Out);
+    if (!fptr || !Out) return -1;
+    if (!read_from_fptr(fptr, Out)) return -1;
     Jn_buff_add_char(Out, 0);
+    return 0;
 }
 
 JN_API void Jn_set_global(Jn_State* state, char* name, JnObject* obj)
@@ -235,7 +236,7 @@ JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* so
     assert(state->running && "program is not initialize.");
     Jn_Lexer l;
     state->parser->arena = state->arena;
-    J_init_lexer(&l, (char *)source, filename);
+    jn_lexer_init(&l, (char *)source, filename);
     jn_init_parser(state->parser, &l);
     state->vm->global = state->globals;
     state->vm->env = state->globals;
@@ -371,7 +372,7 @@ JN_API JnObject* Jn_import_module(Jn_State* state, char* path, int is_std)
     Jn_Lexer l;
     Jn_Parser p = {0};
     p.arena = state->arena;
-    J_init_lexer(&l, src.source, path);
+    jn_lexer_init(&l, src.source, path);
     jn_init_parser(&p, &l);
     Jn_environ* env = Jn_environ_init(NULL);
     JnVM vm = {0};

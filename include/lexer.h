@@ -11,7 +11,7 @@ typedef struct Jn_Lexer{
     size_t column;
 } Jn_Lexer;
 
-void J_init_lexer(Jn_Lexer* l, char* source, const char* filename);
+void jn_lexer_init(Jn_Lexer* l, char* source, const char* filename);
 void strip_ws(Jn_Lexer * l);
 char peek_next(Jn_Lexer* l);
 char peek(Jn_Lexer* l);

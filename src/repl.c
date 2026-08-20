@@ -35,6 +35,7 @@ struct Command parse_args(char** args, int argc)
         {"help", 'h', OPTPARSE_NONE},
         {"version", 'v', OPTPARSE_NONE},
         {"repl", 'r', OPTPARSE_OPTIONAL},
+        {"token", 't', OPTPARSE_REQUIRED},
         {"file", 'f', OPTPARSE_REQUIRED},
         {"debug", 'd', OPTPARSE_NONE},
         {"command", 'c', OPTPARSE_REQUIRED},
@@ -69,6 +70,11 @@ struct Command parse_args(char** args, int argc)
                 c.filename = opts.optarg;
                 break;
             }
+            case 't':{
+                VALIDATE_CMD();
+                c.type = C_TOKEN;
+                c.filename = opts.optarg;
+            } break;
             case 'd':{
                 c.debug = true; break;
             }
@@ -98,9 +104,8 @@ struct Command parse_args(char** args, int argc)
     }
     return c;
     err:
-        c.type = C_ERROR;
-        c.error_msg = "Multiple commands specified.";
-        return c;
+        fprintf(stderr,  "Multiple commands specified.");
+        exit(1);
 }
 
 static int parse_buffer(char* str)

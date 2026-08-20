@@ -1,34 +1,9 @@
-#include "Joan.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <assert.h>
+#include <Joan.h>
 #include "repl.h"
+#include "lexer.h"
+#include "token.h"
 #include "env.h"
 
-
-char* read_file(const char* filename)
-{
-    FILE* p_file;
-    p_file = fopen(filename, "rb");
-    if (NULL == p_file)
-    {
-        perror("Filename does not exists.");
-        exit(1);
-    }
-    fseek(p_file, 0, SEEK_END);
-    size_t size = ftell(p_file);
-    rewind(p_file);
-    char* buf = malloc(sizeof(char) * (size + 1));
-    if (NULL == buf)
-    {
-        perror("memory failed.");
-        exit(1);
-    }
-    fread(buf, 1, size, p_file);
-    buf[size] = '\0';
-    fclose(p_file);
-    return buf;
-}
 
 void usage(void)
 {
@@ -40,6 +15,7 @@ void usage(void)
     "-r --repl:         REPL.\n"
     "-c --command:      execute a program string.\n"
     "-i --iterative:    run program into repl.\n"
+    "-t --token         print the token from a file(use only for debugging.).\n"
     "-h --help:         output help information.\n\n"
     "Examples: \n"
     "\t$ joan\n"
@@ -50,10 +26,50 @@ void usage(void)
     );
 }
 
+static void print_token(Jn_State* state, char* filename)
+{
+    if (!filename) return;
+    Jn_Lexer l = {0}; Jn_Buffer b; Jn_Token t;
+    Jn_buff_init(&b);
+    if (!Jn_read_file(&b, filename))
+    {
+        fprintf(stderr, "File not found \"%s\".\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    jn_lexer_init(&l, b.data, filename);
+    while (Jn_get_next_token(&l, &t))
+    {
+        // TODO: token_string char array
+        printf("[TOKEN=%d]: ", t.type);
+        switch (t.type)
+        {
+            case TOK_CHAR:
+                printf("['%s']\n", t.lexeme); break;
+            case TOK_STRING:
+                printf("[\"%s\"]\n", t.lexeme); break;
+            case TOK_NEWLINE:
+                printf("[\\n]\n"); break;
+            default:
+                printf("[%s]\n", t.lexeme);
+        }
+    }
+    switch (t.type)
+    {
+        case TOK_ERROR:
+            fprintf(stderr, "[Error:%s:%lld:%lld]: %s\n", l.filename, l.line, l.column, t.lexeme);
+            break;
+        case TOK_EOF:
+            fprintf(stderr, "[EOF]: program ended.\n");
+        default:
+            break;
+    }
+    Jn_buff_clear(&b);
+}
+
 void version(void)
 {
     fprintf(stdout, 
-    "Joan v" JOAN_VERSION
+    "Joan v" JOAN_VERSION " at " JOAN_BRANCH
     );
 }
 
@@ -89,13 +105,20 @@ int main(int argc, char** argv)
         {
             goto execute;
         }
+        case C_TOKEN:
+            goto token;
         default:
-            usage(); return -1;
+            usage(); return 0;
     }
     return 0;
     repl:
         Jn_program_init(&state, nw_argv, nw_argc);
         Jn_repl(&state);
+        Jn_program_close(&state);
+        return 0;
+    token:
+        Jn_program_init(&state, nw_argv, nw_argc);
+        print_token(&state, c.filename);
         Jn_program_close(&state);
         return 0;
     scmd:

@@ -209,10 +209,17 @@ static JnObject *a, *b, *key, *value, *array, *pos;
 
 int vm_run(Jn_State* state, JnVM* vm)
 {
+
+    #define BINARY_OP(op) do  {                 \
+        a = pop(vm); b = pop(vm);               \
+        o = eval_binary(state, b, a, EVAL_##op);\
+        PUSH(vm, o);                            \
+    } while(false)
+
     #define PUSH(vm, obj)  do { \
-        assert((vm) != NULL || (obj) != NULL);              \
-        if (JN_IS_ERROR((obj))) return vm_error(state, vm, (obj)); \
-        push(vm, (obj));                                  \
+        assert((vm) != NULL || (obj) != NULL);                      \
+        if (JN_IS_ERROR((obj))) return vm_error(state, vm, (obj));  \
+        push(vm, (obj));                                            \
     }while(false)
 
     #define READ_BYTE() (*vm->ip++)
@@ -249,86 +256,23 @@ int vm_run(Jn_State* state, JnVM* vm)
             {
                 PUSH(vm, JN_RETURN_FALSE(state));
             } break;
-            case OP_ADD:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_ADD);
-                PUSH(vm, o);
-                break;
-            case OP_SUB:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_SUB);
-                PUSH(vm, o);
-                break;
-            case OP_MUL:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_MUL);
-                PUSH(vm, o);
-                break;
-            case OP_BITAND:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_BAND);
-                PUSH(vm, o);
-                break;
-            case OP_BITOR:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_BOR);
-                PUSH(vm, o);
-                break;
-            case OP_PERC:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_PERC);
-                PUSH(vm, o);
-                break;
-            case OP_DIV:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_DIV);
-                PUSH(vm, o);
-                break;
-            case OP_BITAC:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_BAC);
-                PUSH(vm, o);
-                break;
-            case OP_EQUAL:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_EQUAL);
-                PUSH(vm, o);
-                break;
-            case OP_LSHIFT:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_LSHIFT);
-                PUSH(vm, o);
-                break;
-            case OP_RSHIFT:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_RSHIFT);
-                PUSH(vm, o);
-                break;
-            case OP_NEQ:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_NOTEQUAL);
-                PUSH(vm, o);
-                break;
-            case OP_GT:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_GT);
-                PUSH(vm, o);
-                break;
-            case OP_GTE:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_GTE);
-                PUSH(vm, o);
-                break;
-            case OP_LT:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_LT);
-                PUSH(vm, o);
-                break;
-            case OP_LTE:
-                a = pop(vm); b = pop(vm);
-                o = eval_binary(state, b, a, EVAL_LTE);
-                PUSH(vm, o);
-                break;
+            case OP_ADD:    BINARY_OP(ADD); break;
+            case OP_SUB:    BINARY_OP(SUB); break;
+            case OP_MUL:    BINARY_OP(MUL); break;
+            case OP_BITAND: BINARY_OP(BAND); break;
+            case OP_BITOR:  BINARY_OP(BOR); break;
+            case OP_PERC:   BINARY_OP(PERC); break;
+            case OP_DIV:    BINARY_OP(DIV); break;
+            case OP_BITAC:  BINARY_OP(BAC); break;
+            case OP_EQUAL:  BINARY_OP(EQUAL); break;
+            case OP_LSHIFT: BINARY_OP(LSHIFT); break;
+            case OP_RSHIFT: BINARY_OP(RSHIFT); break;
+            case OP_NEQ:    BINARY_OP(NOTEQUAL); break;
+            case OP_GT:     BINARY_OP(GT); break;
+            case OP_GTE:    BINARY_OP(GTE); break;
+            case OP_LT:     BINARY_OP(LT); break;
+            case OP_LTE:    BINARY_OP(LTE); break;
+
             case OP_IMPORT: 
                 char* lib = READ_IDENT();
                 bool is_std = READ_BYTE();

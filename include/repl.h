@@ -9,6 +9,7 @@ typedef enum {
     C_RUN,
     C_ITERATIVE,
     C_SCMD,
+    C_TOKEN,
     C_UNKOWN,
 } CommandType;
 

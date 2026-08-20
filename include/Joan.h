@@ -587,7 +587,7 @@ JN_API bool Jn_file_exists(const char* filename);
 JN_API bool Jn_get_next_token(Jn_Lexer* lex, Jn_Token* tok);
 
 // Parser
-JN_API void Jn_read_file(Jn_Buffer* Out, const char* filename);
+JN_API int Jn_read_file(Jn_Buffer* Out, const char* filename);
 JN_API Jn_Node* Jn_parse_file(Jn_State* state, const char* filename);
 
 // Object Argument helper
