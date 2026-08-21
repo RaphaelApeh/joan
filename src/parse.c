@@ -82,18 +82,18 @@ static bool is_assign_token(Jn_TokenType type)
 {
     switch (type)
     {
-        case TOK_APLUS:
-        case TOK_AMINUS:
-        case TOK_AMUL:
+        case TOK_EQ_PLUS:
+        case TOK_EQ_MINUS:
+        case TOK_EQ_MUL:
         case TOK_EQUAL:
-        case TOK_ASLASH:
-        case TOK_APERCENTAGE:
-        case TOK_ARSHIFT:
-        case TOK_ALSHIFT:
-        case TOK_AXOR:
-        case TOK_ABITAND:
-        case TOK_ABITOR:
-        case TOK_SETTER:
+        case TOK_EQ_SLASH:
+        case TOK_EQ_PERCENTAGE:
+        case TOK_EQ_RSHIFT:
+        case TOK_EQ_LSHIFT:
+        case TOK_EQ_XOR:
+        case TOK_EQ_BITAND:
+        case TOK_EQ_BITOR:
+        case TOK_DCOLON:
         case TOK_WALRUS:
             return true;
         default:
@@ -396,7 +396,7 @@ static Jn_Node* parse_match(Jn_Parser* p)
     {
         if (match(p, TOK_ELSE))
         {
-            match(p, TOK_DCOLON);
+            match(p, TOK_EQ_GT);
             if (match(p, TOK_THEN))
                 else_stmt = parse_expr(p);
             else if (check(p, TOK_LBRACE))
@@ -405,7 +405,7 @@ static Jn_Node* parse_match(Jn_Parser* p)
         {
             Jn_Node* sub = parse_expr(p);
             Jn_Node* block = NULL;
-            if (!match(p, TOK_DCOLON))
+            if (!match(p, TOK_EQ_GT))
                 return parse_error(p, "Expected '=>'");
             if (match(p, TOK_THEN))
                 block = parse_expr(p);
@@ -651,7 +651,7 @@ static Jn_Node* parse_enum(Jn_Parser* p)
     
     char* ident = GET_LEX(p);
     next_parser(p);
-    match(p, TOK_DCOLON);
+    match(p, TOK_EQ_GT);
     if (!match(p, TOK_LBRACE))
         return parse_error(p, "Expected an '{' but got '%s'.", GET_LEX(p));
     
@@ -870,7 +870,7 @@ static Jn_Node* parse_lambda(Jn_Parser* p)
         if (match(p, TOK_BITOR)) break;
     } while(true);
     args[len] = NULL;
-    match(p, TOK_DCOLON);
+    match(p, TOK_EQ_GT);
     Jn_Node* expr = NULL;
     
     if (check(p, TOK_LBRACE))
@@ -1033,7 +1033,7 @@ static Jn_Node* parse_multi_var(Jn_Parser* p, Jn_Node* first)
     idents[len++] = (char *)first->identifier;
     while (true)
     {
-        if (check(p, TOK_WALRUS) || check(p, TOK_SETTER))
+        if (check(p, TOK_WALRUS) || check(p, TOK_DCOLON))
         break;
         if (!check(p, TOK_IDENT))
             return parse_error(p, "Expected an identifier.");
@@ -1049,7 +1049,7 @@ static Jn_Node* parse_multi_var(Jn_Parser* p, Jn_Node* first)
         if (match(p, TOK_COMMA))
             continue;
         
-        if (check(p, TOK_WALRUS) || check(p, TOK_SETTER))
+        if (check(p, TOK_WALRUS) || check(p, TOK_DCOLON))
             break;
         return parse_error(p, "Got an invalid token.");
     }

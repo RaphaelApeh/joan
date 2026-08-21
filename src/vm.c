@@ -377,18 +377,18 @@ int vm_run(Jn_State* state, JnVM* vm)
                     return die(state,vm, "Seem like you are trying to reassign a variable of type const, \t did you mean ':=' but used '::'.");
                 switch (t_op)
                 {
-                    case TOK_APLUS: REASSIGN_OP(ADD); break;
-                    case TOK_AMINUS: REASSIGN_OP(SUB); break;
+                    case TOK_EQ_PLUS: REASSIGN_OP(ADD); break;
+                    case TOK_EQ_MINUS: REASSIGN_OP(SUB); break;
                     case TOK_EQUAL: jn_obj_reassign(o, a);  break;
-                    case TOK_AMUL: REASSIGN_OP(MUL); break;
-                    case TOK_ARSHIFT: REASSIGN_OP(RSHIFT); break;
-                    case TOK_ALSHIFT: REASSIGN_OP(LSHIFT); break;
+                    case TOK_EQ_MUL: REASSIGN_OP(MUL); break;
+                    case TOK_EQ_RSHIFT: REASSIGN_OP(RSHIFT); break;
+                    case TOK_EQ_LSHIFT: REASSIGN_OP(LSHIFT); break;
                     case TOK_XOR: REASSIGN_OP(BAC); break;
-                    case TOK_APERCENTAGE: REASSIGN_OP(PERC); break;
-                    case TOK_AXOR: REASSIGN_OP(BAC); break;
-                    case TOK_ASLASH:    REASSIGN_OP(DIV); break;
-                    case TOK_ABITAND:   REASSIGN_OP(BAND); break;
-                    case TOK_ABITOR:    REASSIGN_OP(BOR); break;
+                    case TOK_EQ_PERCENTAGE: REASSIGN_OP(PERC); break;
+                    case TOK_EQ_XOR: REASSIGN_OP(BAC); break;
+                    case TOK_EQ_SLASH:    REASSIGN_OP(DIV); break;
+                    case TOK_EQ_BITAND:   REASSIGN_OP(BAND); break;
+                    case TOK_EQ_BITOR:    REASSIGN_OP(BOR); break;
                     default:
                         return die(state,vm, "invalid operator.");
                 }
@@ -770,7 +770,7 @@ void compile(Jn_Node* node, Chuck* chuck)
             id = add_ident(chuck, node->assign_multiple.idents[i]);
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, node->assign_multiple.op == TOK_SETTER);
+            WRITE_CHUCK(chuck, node->assign_multiple.op == TOK_DCOLON);
         }
         break;
     case AST_TUPLE:
@@ -1263,7 +1263,7 @@ void compile(Jn_Node* node, Chuck* chuck)
     case AST_REASSIGN:
         compile(node->reassign.value, chuck);
 
-        if (node->reassign.op == TOK_WALRUS || node->reassign.op == TOK_SETTER)
+        if (node->reassign.op == TOK_WALRUS || node->reassign.op == TOK_DCOLON)
         {
             if (node->reassign.expr->type != AST_IDENTIFIER)
             {
@@ -1276,7 +1276,7 @@ void compile(Jn_Node* node, Chuck* chuck)
 
             WRITE_CHUCK(chuck, OP_SET_GLOBAL);
             WRITE_CHUCK(chuck, id);
-            WRITE_CHUCK(chuck, node->reassign.op == TOK_SETTER);
+            WRITE_CHUCK(chuck, node->reassign.op == TOK_DCOLON);
             break;
         }
 

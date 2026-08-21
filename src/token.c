@@ -49,20 +49,20 @@ char* tok_string[] = {
     [TOK_PI] = "TOK_PI",
     [TOK_AT] = "TOK_AT",
     [TOK_RANGE] = "TOK_RANGE",
-    [TOK_DCOLON] = "TOK_DCOLON",
+    [TOK_EQ_GT] = "TOK_EQ_GT",
     [TOK_TILDE] = "TOK_TILDE",
     [TOK_ELLIPSIS] = "TOK_ELLIPSIS",
-    [TOK_APLUS] = "TOK_APLUS",
-    [TOK_AMINUS] = "TOK_AMINUS",
-    [TOK_AMUL] = "TOK_AMUL",
-    [TOK_ARSHIFT] = "TOK_ARSHIFT",
-    [TOK_ALSHIFT] = "TOK_ALSHIFT",
-    [TOK_APERCENTAGE] = "TOK_APERCENTAGE",
-    [TOK_AXOR] = "TOK_AXOR",
-    [TOK_ASLASH] = "TOK_ASLASH",
-    [TOK_ABITAND] = "TOK_ABITAND",
-    [TOK_ABITOR] = "TOK_ABITOR",
-    [TOK_APOW] = "TOK_APOW",
+    [TOK_EQ_PLUS] = "TOK_EQ_PLUS",
+    [TOK_EQ_MINUS] = "TOK_EQ_MINUS",
+    [TOK_EQ_MUL] = "TOK_EQ_MUL",
+    [TOK_EQ_RSHIFT] = "TOK_EQ_RSHIFT",
+    [TOK_EQ_LSHIFT] = "TOK_EQ_LSHIFT",
+    [TOK_EQ_PERCENTAGE] = "TOK_EQ_PERCENTAGE",
+    [TOK_EQ_XOR] = "TOK_EQ_XOR",
+    [TOK_EQ_SLASH] = "TOK_EQ_SLASH",
+    [TOK_EQ_BITAND] = "TOK_EQ_BITAND",
+    [TOK_EQ_BITOR] = "TOK_EQ_BITOR",
+    [TOK_EQ_POW] = "TOK_EQ_POW",
     [TOK_EQUAL] = "TOK_EQUAL",
     [TOK_EQEQ] = "TOK_EQEQ",
     [TOK_GT] = "TOK_GT",
@@ -76,7 +76,7 @@ char* tok_string[] = {
     [TOK_WALRUS] = "TOK_WALRUS",
     [TOK_QUESTION] = "TOK_QUESTION",
     [TOK_PERCENTAGE] = "TOK_PERCENTAGE",
-    [TOK_SETTER] = "TOK_SETTER",
+    [TOK_DCOLON] = "TOK_DCOLON",
     [TOK_NONE] = "TOK_NONE",
     [TOK_TRUE] = "TOK_TRUE",
     [TOK_FALSE] = "TOK_FALSE",
@@ -157,10 +157,7 @@ static char* rm_num_sep(const char* s)
     return out;
 }
 
-static bool equal(const char* src, const char* src2)
-{
-    return strcmp(src, src2) == 0;
-}
+static bool equal(const char* src, const char* src2){return strcmp(src, src2) == 0;}
 
 Jn_Token clean_token(Jn_Lexer* l)
 {
@@ -511,7 +508,6 @@ Jn_Token next_token(Jn_Lexer* l)
     )
     return number_token(l);
     if (isalnum(c) || c == '_') return token_identifier(l);
-    // TODO: redefine token.
     switch (c)
     {
         case '\n':
@@ -532,7 +528,7 @@ Jn_Token next_token(Jn_Lexer* l)
             if (peek(l) == ':')
             {
                 advance(l);
-                return make_token(l, TOK_SETTER);
+                return make_token(l, TOK_DCOLON);
             }
             if (peek_advance(l, '='))
                 return make_token(l, TOK_WALRUS);
@@ -560,7 +556,7 @@ Jn_Token next_token(Jn_Lexer* l)
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOK_APLUS);
+                return make_token(l, TOK_EQ_PLUS);
             } else if (peek_advance(l, '+'))
                 return make_token(l, TOK_PLUS_PLUS);
             return make_token(l, TOK_PLUS);
@@ -568,7 +564,7 @@ Jn_Token next_token(Jn_Lexer* l)
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOK_AMINUS);
+                return make_token(l, TOK_EQ_MINUS);
             }
 
             if (peek_advance(l, '>'))
@@ -578,11 +574,11 @@ Jn_Token next_token(Jn_Lexer* l)
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOK_AMUL);
+                return make_token(l, TOK_EQ_MUL);
             } else if (peek_advance(l, '*'))
             {
                 if (peek_advance(l, '='))
-                    return make_token(l, TOK_APOW);
+                    return make_token(l, TOK_EQ_POW);
                 return make_token(l, TOK_POW);
             }
             return make_token(l, TOK_MUL);
@@ -593,7 +589,7 @@ Jn_Token next_token(Jn_Lexer* l)
             } else if (peek(l) == '>')
             {
                 advance(l);
-                return make_token(l, TOK_DCOLON);
+                return make_token(l, TOK_EQ_GT);
             }
             return make_token(l, TOK_EQUAL);
         case '>':
@@ -605,14 +601,14 @@ Jn_Token next_token(Jn_Lexer* l)
                 if (peek(l) == '=')
                 {
                     advance(l);
-                    return make_token(l, TOK_ARSHIFT);
+                    return make_token(l, TOK_EQ_RSHIFT);
                 }
                 return make_token(l, TOK_RSHIFT);
             }
             return make_token(l, TOK_GT);
         case '^':
             if (peek_advance(l, '='))
-                return make_token(l, TOK_AXOR);
+                return make_token(l, TOK_EQ_XOR);
             return make_token(l, TOK_XOR);
         case '<':
             if (peek(l) == '='){
@@ -623,7 +619,7 @@ Jn_Token next_token(Jn_Lexer* l)
                 if (peek(l) == '=')
                 {
                     advance(l);
-                    return make_token(l, TOK_ALSHIFT);
+                    return make_token(l, TOK_EQ_LSHIFT);
                 }
                 return make_token(l, TOK_LSHIFT);
             }
@@ -632,7 +628,7 @@ Jn_Token next_token(Jn_Lexer* l)
             if (peek(l) == '=')
             {
                 advance(l);
-                return make_token(l, TOK_APERCENTAGE);
+                return make_token(l, TOK_EQ_PERCENTAGE);
             }
             return make_token(l, TOK_PERCENTAGE);
         case '!':
@@ -646,7 +642,7 @@ Jn_Token next_token(Jn_Lexer* l)
             if (peek(l) == '/')
                 return make_comment(l);
             else if (peek_advance(l, '='))
-                return make_token(l, TOK_ASLASH);
+                return make_token(l, TOK_EQ_SLASH);
             else if (peek(l) == '*')
                 return make_comment_block(l);
             return make_token(l, TOK_SLASH);
@@ -662,7 +658,7 @@ Jn_Token next_token(Jn_Lexer* l)
                 advance(l);
                 return make_token(l, TOK_AND);
             } else if (peek_advance(l, '='))
-                return make_token(l, TOK_ABITAND);
+                return make_token(l, TOK_EQ_BITAND);
             return make_token(l, TOK_BITAND);
         case '|':
             if (peek(l) == '|')
@@ -670,7 +666,7 @@ Jn_Token next_token(Jn_Lexer* l)
                 advance(l);
                 return make_token(l, TOK_OR);
             } else if (peek_advance(l, '='))
-                return make_token(l, TOK_ABITOR);
+                return make_token(l, TOK_EQ_BITOR);
             return make_token(l, TOK_BITOR);
         case '#':
             return make_token(l, TOK_HASH);

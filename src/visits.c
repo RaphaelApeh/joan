@@ -23,7 +23,7 @@ static void visit_ident(JnSemantic* sem, Jn_Node* node)
 
 static void visit_reassign(JnSemantic* sem, Jn_Node* node)
 {
-    if (node->reassign.op == TOK_WALRUS || node->reassign.op == TOK_DCOLON)
+    if (node->reassign.op == TOK_WALRUS || node->reassign.op == TOK_EQ_GT)
         return;
     if (node->reassign.expr->type == AST_CALL)
     {

@@ -39,21 +39,21 @@ typedef enum {  TOK_EOF, TOK_NEWLINE,
     TOK_PI,
     TOK_AT,
     TOK_RANGE,
-    TOK_DCOLON,
+    TOK_EQ_GT,
     TOK_TILDE,
     TOK_ELLIPSIS,
 
-    TOK_APLUS, // +=
-    TOK_AMINUS, // -=
-    TOK_AMUL, // *=
-    TOK_ARSHIFT, // >>=
-    TOK_ALSHIFT, // <<=
-    TOK_APERCENTAGE, // %=
-    TOK_AXOR, // ^=
-    TOK_ASLASH, // /=
-    TOK_ABITAND, // &=
-    TOK_ABITOR, // |=
-    TOK_APOW, // **=
+    TOK_EQ_PLUS, // +=
+    TOK_EQ_MINUS, // -=
+    TOK_EQ_MUL, // *=
+    TOK_EQ_RSHIFT, // >>=
+    TOK_EQ_LSHIFT, // <<=
+    TOK_EQ_PERCENTAGE, // %=
+    TOK_EQ_XOR, // ^=
+    TOK_EQ_SLASH, // /=
+    TOK_EQ_BITAND, // &=
+    TOK_EQ_BITOR, // |=
+    TOK_EQ_POW, // **=
 
     TOK_EQUAL,
     TOK_EQEQ,
@@ -68,7 +68,7 @@ typedef enum {  TOK_EOF, TOK_NEWLINE,
     TOK_WALRUS, // :=
     TOK_QUESTION, // ?
     TOK_PERCENTAGE, // %
-    TOK_SETTER,
+    TOK_DCOLON,
     TOK_NONE,
     TOK_TRUE,
     TOK_FALSE,
