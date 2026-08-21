@@ -5,7 +5,7 @@
 #include "env.h"
 
 
-void usage(void)
+static void usage(void)
 {
     fprintf(stderr, 
     "Usage: joan [file] [..options]\n"
@@ -15,7 +15,7 @@ void usage(void)
     "-r --repl:         REPL.\n"
     "-c --command:      execute a program string.\n"
     "-i --iterative:    run program into repl.\n"
-    "-t --token         print the token from a file(use only for debugging.).\n"
+    "-t --token         print the tokens from a file(use only for debugging.).\n"
     "-h --help:         output help information.\n\n"
     "Examples: \n"
     "\t$ joan\n"
@@ -31,7 +31,7 @@ static void print_token(Jn_State* state, char* filename)
     if (!filename) return;
     Jn_Lexer l = {0}; Jn_Buffer b; Jn_Token t;
     Jn_buff_init(&b);
-    if (!Jn_read_file(&b, filename))
+    if (Jn_read_file(&b, filename) != 0)
     {
         fprintf(stderr, "File not found \"%s\".\n", filename);
         exit(EXIT_FAILURE);
@@ -56,7 +56,7 @@ static void print_token(Jn_State* state, char* filename)
     switch (t.type)
     {
         case TOK_ERROR:
-            fprintf(stderr, "[Error:%s:%lld:%lld]: %s\n", l.filename, l.line, l.column, t.lexeme);
+            fprintf(stderr, "[Error:\"%s\":%lld:%lld]: %s\n", l.filename, l.line, l.column, t.lexeme);
             break;
         case TOK_EOF:
             fprintf(stderr, "[EOF]: program ended.\n");
@@ -66,7 +66,7 @@ static void print_token(Jn_State* state, char* filename)
     Jn_buff_clear(&b);
 }
 
-void version(void)
+static void version(void)
 {
     fprintf(stdout, 
     "Joan v" JOAN_VERSION " at " JOAN_BRANCH

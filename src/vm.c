@@ -445,44 +445,12 @@ int vm_run(Jn_State* state, JnVM* vm)
                         return die(state,vm, "invalid operator.");
                 }
                 break;
-            case OP_POW:
-                a = pop(vm); b = pop(vm);
-                a = eval_binary(state, b, a, EVAL_POW);
-                PUSH(vm, a);
-                break;
-            case OP_IN:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(state, b, a, EVAL_IN);
-                PUSH(vm, a);
-                break;
-            case OP_NOT_IN:
-                a = pop(vm);
-                b = pop(vm);
-                a = eval_binary(state, b, a, EVAL_NOT_IN);
-                PUSH(vm, a);
-                break;
-            case OP_IS:
-                b = pop(vm); a = pop(vm);
-                a = eval_binary(state, a, b, EVAL_IS);
-                if (NULL == a)
-                    return die(state,vm, "Invalid binary opration.");
-                PUSH(vm, a);
-                break;
-            case OP_AND:
-                b = pop(vm); a = pop(vm);
-                a = eval_binary(state, a, b, EVAL_AND);
-                if (NULL == a)
-                    return die(state,vm, "Invalid binary opration.");
-                PUSH(vm, a);
-                break;
-            case OP_OR:
-                b = pop(vm); a = pop(vm);
-                a = eval_binary(state, a, b, EVAL_OR);
-                if (NULL == a)
-                    return die(state,vm, "Invalid binary opration.");
-                PUSH(vm, a);
-                break;
+            case OP_POW: BINARY_OP(POW); break;
+            case OP_IN: BINARY_OP(IN); break;
+            case OP_NOT_IN: BINARY_OP(NOT_IN); break;
+            case OP_IS: BINARY_OP(IS); break;
+            case OP_AND: BINARY_OP(AND); break;
+            case OP_OR: BINARY_OP(OR); break;
             case OP_NOT:
                 o = pop(vm);
                 PUSH(vm, jn_obj_bool(state, !jn_obj_truthy(o)));
