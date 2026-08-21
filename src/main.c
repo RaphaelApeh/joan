@@ -39,7 +39,6 @@ static void print_token(Jn_State* state, char* filename)
     jn_lexer_init(&l, b.data, filename);
     while (Jn_get_next_token(&l, &t))
     {
-        // TODO: token_string char array
         printf("[%s]: ", tok_string[t.type]);
         switch (t.type)
         {

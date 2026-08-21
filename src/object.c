@@ -22,7 +22,24 @@
 #define LONG_HEX_NUM 0xbf58476d1ce4e5b9ULL
 #define LONG_HEX_NUM2 0x94d049bb133111ebULL
 #define LONG_HEX_NUM3 0x9e3779b97f4e7c15ULL
+
 JnObject NoneObj = {0};
+
+static char* defualt_object_string[] = {
+    [JN_NONE_TYPE] = "None",
+    [JN_INT_TYPE] = "int",
+    [JN_FLOAT_TYPE] = "float",
+    [JN_BOOL_TYPE] = "bool",
+    [JN_CHAR_TYPE] = "char",
+    [JN_STRING_TYPE] = "string",
+    [JN_RANGE_TYPE] = "Range",
+    [JN_ARRAY_TYPE] = "Array",
+    [JN_TUPLE_TYPE] = "tuple",
+    [JN_ERROR_TYPE] = "Error",
+    [JN_GENERATOR_TYPE] = "Generator",
+    [JN_HASHMAP_TYPE] = "Hashmap",
+    [JN_MODULE_TYPE] = "Module"
+};
 
 JN_INLINE uint64_t hash_mix(uint64_t x)
 {
@@ -158,18 +175,6 @@ JnObject* jn_obj_error(Jn_State* state, int type, char* msg, ...)
     return JN_INTERN_OBJECT(obj);
 }
 
-
-static void strip(const char* str)
-{
-    while (*str)
-    {
-        if (*str == '\\' && *str)
-            str += 2;
-        str++;
-    }
-}
-
-
 char* jn_obj_cstring(JnObject* obj)
 {
     if (!obj) return NULL;
@@ -189,7 +194,6 @@ char* jn_obj_cstring(JnObject* obj)
         assert(false && "Not yet Implemented.");
         break;
     }
-    strip(buffer);
     return buffer;
 }
 
@@ -210,32 +214,10 @@ JnObject* jn_obj_method(Jn_State* state, JnObject* obj, JN_CMethod method)
     return JN_INTERN_OBJECT(new_obj);
 }
 
-char* jn_obj_to_string(JnObject* obj)
+const char* jn_obj_to_string(JnObject* obj)
 {
-    if (!obj) return NULL;
-    char* type = NULL;
-    switch (obj->type)
-    {
-        case JN_ARRAY_TYPE:
-            type = "Array"; break;
-        case JN_INT_TYPE:
-            type = "int"; break;
-        case JN_STRING_TYPE:
-            type = "string"; break;
-        case JN_BOOL_TYPE:
-            type = "bool"; break;
-        case JN_CHAR_TYPE:
-            type = "char"; break;
-        case JN_HASHMAP_TYPE:
-            type = "hashmap"; break;
-        case JN_MODULE_TYPE:
-            type = "module"; break;
-        case JN_OBJECT_TYPE:
-            type = (char *)obj->type_val.typename; break;
-        default:
-            type = "<object>"; break;
-    }
-    return strdup(type);
+    if (NULL == obj) return NULL;
+    return defualt_object_string[obj->type];
 }
 
 
@@ -572,7 +554,10 @@ JnObject* jn_obj_array_get(Jn_Array* arr, int idx)
     return arr->items[idx];
 }
 
-JnObject* jn_obj_copy(JnObject* src){ return Jn_alloc_dup(src, sizeof(JnObject));}
+JN_API void jn_obj_copy(Jn_State* state, JnObject* dest, JnObject* src)
+{
+    
+}
 
 static void print_array(JnObject* obj)
 {
