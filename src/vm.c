@@ -216,6 +216,12 @@ int vm_run(Jn_State* state, JnVM* vm)
         PUSH(vm, o);                            \
     } while(false)
 
+    #define REASSIGN_OP(op) do {                                \
+        b = eval_binary(state, o, a, EVAL_##op);                \
+        if (NULL == b)  break;                                  \
+        if (JN_IS_ERROR(b)) return  vm_error(state, vm, b);    \
+        jn_obj_reassign(o, b);                                  \
+    } while(false)
     #define PUSH(vm, obj)  do { \
         assert((vm) != NULL || (obj) != NULL);                      \
         if (JN_IS_ERROR((obj))) return vm_error(state, vm, (obj));  \
@@ -371,76 +377,18 @@ int vm_run(Jn_State* state, JnVM* vm)
                     return die(state,vm, "Seem like you are trying to reassign a variable of type const, \t did you mean ':=' but used '::'.");
                 switch (t_op)
                 {
-                    case TOK_APLUS:
-                        b = eval_binary(state, o, a, EVAL_ADD);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_AMINUS:
-                        b = eval_binary(state, o, a, EVAL_SUB);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_EQUAL:
-                        jn_obj_reassign(o, a);
-                        break;
-                    case TOK_AMUL:
-                        b = eval_binary(state, o, a, EVAL_MUL);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_ARSHIFT:
-                        b = eval_binary(state, o, a, EVAL_RSHIFT);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-
-                        break;
-                    case TOK_ALSHIFT:
-                        b = eval_binary(state, o, a, EVAL_LSHIFT);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_XOR:
-                        b = eval_binary(state, o, a, EVAL_BAC);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_APERCENTAGE:
-                        b = eval_binary(state, o, a, EVAL_PERC);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_AXOR:
-                        b = eval_binary(state, o, a, EVAL_BAC);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_ASLASH:
-                        b = eval_binary(state, o, a, EVAL_DIV);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_ABITAND:
-                        b = eval_binary(state, o, a, EVAL_BAND);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
-                    case TOK_ABITOR:
-                        b = eval_binary(state, o, a, EVAL_BOR);
-                        if (NULL == b)
-                            break;
-                        jn_obj_reassign(o, b);
-                        break;
+                    case TOK_APLUS: REASSIGN_OP(ADD); break;
+                    case TOK_AMINUS: REASSIGN_OP(SUB); break;
+                    case TOK_EQUAL: jn_obj_reassign(o, a);  break;
+                    case TOK_AMUL: REASSIGN_OP(MUL); break;
+                    case TOK_ARSHIFT: REASSIGN_OP(RSHIFT); break;
+                    case TOK_ALSHIFT: REASSIGN_OP(LSHIFT); break;
+                    case TOK_XOR: REASSIGN_OP(BAC); break;
+                    case TOK_APERCENTAGE: REASSIGN_OP(PERC); break;
+                    case TOK_AXOR: REASSIGN_OP(BAC); break;
+                    case TOK_ASLASH:    REASSIGN_OP(DIV); break;
+                    case TOK_ABITAND:   REASSIGN_OP(BAND); break;
+                    case TOK_ABITOR:    REASSIGN_OP(BOR); break;
                     default:
                         return die(state,vm, "invalid operator.");
                 }

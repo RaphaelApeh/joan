@@ -694,14 +694,14 @@ JN_API void Jn_tokenizer(Jn_State*, FILE*);
 
 // Object functions
 JN_API JnObject* jn_obj_new(Jn_State*, JnTypeObject type);
-JN_API JnObject* jn_obj_int(Jn_State*, long o_int);
+JN_API JnObject* jn_obj_int(Jn_State*, Jn_Integer);
 JN_API JnObject* jn_obj_string(Jn_State*, char* str);
 JN_API void jn_obj_copy(Jn_State* state, JnObject* dest, JnObject* src);
-JN_API JnObject* jn_obj_char(Jn_State*, char c);
+JN_API JnObject* jn_obj_char(Jn_State*, Jn_Char);
 JN_API JnObject* jn_obj_none(void);
-JN_API JnObject* jn_obj_bool(Jn_State*, bool o_bool);
+JN_API JnObject* jn_obj_bool(Jn_State*, Jn_Bool);
 JN_API JnObject* jn_obj_range(Jn_State*, int64_t start, int64_t stop, int64_t step);
-JN_API JnObject* jn_obj_float(Jn_State*, double o_float);
+JN_API JnObject* jn_obj_float(Jn_State*, Jn_Float);
 JnObject* jn_obj_iter(Jn_State*, JnObject* iter);
 JN_API JnObject* jn_obj_array(Jn_State* state);
 JN_API JnObject* jn_obj_cfn(Jn_State* state, char* name, Jn_CFunction fn);

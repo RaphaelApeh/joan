@@ -64,7 +64,7 @@ JnObject* jn_obj_new(Jn_State* state, JnTypeObject type)
     return obj;
 }
 
-JnObject* jn_obj_int(Jn_State* state, long int_val)
+JnObject* jn_obj_int(Jn_State* state, Jn_Integer int_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_INT_TYPE);
     obj->int_val = int_val;
@@ -83,21 +83,21 @@ JnObject* jn_obj_string(Jn_State* state, char* str)
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_char(Jn_State* state, char c)
+JnObject* jn_obj_char(Jn_State* state, Jn_Char c)
 {
     JnObject* obj =  jn_obj_new(state, JN_CHAR_TYPE);
     obj->j_char = c;
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_bool(Jn_State* state, bool bool_val)
+JnObject* jn_obj_bool(Jn_State* state, Jn_Bool bool_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_BOOL_TYPE);
     obj->bool_val = bool_val;
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_float(Jn_State* state, double float_val)
+JnObject* jn_obj_float(Jn_State* state, Jn_Float float_val)
 {
     JnObject* obj =  jn_obj_new(state, JN_FLOAT_TYPE);
     obj->float_val = float_val;
@@ -556,7 +556,7 @@ JnObject* jn_obj_array_get(Jn_Array* arr, int idx)
 
 JN_API void jn_obj_copy(Jn_State* state, JnObject* dest, JnObject* src)
 {
-    
+
 }
 
 static void print_array(JnObject* obj)

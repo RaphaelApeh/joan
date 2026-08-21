@@ -40,8 +40,6 @@ int main(void)
     Jn_register(&state, "TEST", "TEST IF IT WORKS.", JN_RETURN_STRING(&state, "IT WORK's."));
     int exit_code = Jn_exec_string(&state, source);
     printf("Exit code = %d\n", exit_code);
-    const char* s = jn_obj_to_string(JN_RETURN_NONE);
-    if (s) printf("%s", s);
     Jn_program_close(&state);
     return 0;
 }
