@@ -40,7 +40,7 @@ static void print_token(Jn_State* state, char* filename)
     while (Jn_get_next_token(&l, &t))
     {
         // TODO: token_string char array
-        printf("[TOKEN=%d]: ", t.type);
+        printf("[%s]: ", tok_string[t.type]);
         switch (t.type)
         {
             case TOK_CHAR:

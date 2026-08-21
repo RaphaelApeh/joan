@@ -10,3 +10,9 @@ elseif argv[1] == "world"
 {
     printf("World World\n");
 }
+
+for i not in [1, 2, 3, 4] then
+    printf("Hello world")
+
+for i = 0; i < 10; i++ then
+    printf("Hello world")

@@ -120,6 +120,7 @@ typedef struct Jn_Token{
     int column;
 } Jn_Token;
 
+extern char* tok_string[];
 Jn_Token clean_token(Jn_Lexer * l);
 
 Jn_Token make_token(Jn_Lexer * l, Jn_TokenType type);

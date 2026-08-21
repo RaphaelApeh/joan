@@ -1,10 +1,8 @@
 #include <assert.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <Joan.h>
 #include "object.h"
 
-
+#define TOMBSTONE NULL
 
 static Jn_HashEntry* get_hash_entry(Jn_Hashmap* map, JnObject* key)
 {
@@ -77,8 +75,6 @@ void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value)
     get_or_insert_hash_entry(map, key, value);
 }
 
-
-
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)
 {
     assert(map != NULL);
@@ -89,7 +85,6 @@ JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index)
         return NULL; 
     return map->buckets[index].value;
 }
-
 
 bool Jnhashmap_remove(Jn_Hashmap* map, JnObject* key)
 {

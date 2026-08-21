@@ -790,13 +790,12 @@ static JnObject* native_next(Jn_State* state, JnObject* args)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "next() expected a generator object but got %s", "TODO");
 
     Jn_Gen* gen = obj->gen;
-    JnObject* DONE = Jn_get_global(state, "DONE");
-    if (NULL == DONE) DONE = JN_RETURN_NONE;
+    JnObject* DONE = JN_RETURN_NONE;
     if (gen->done) return DONE;
     int ret = vm_run(state, gen->vm);
     if (ret == JN_INTERPRET_YEILD)  return gen->vm->yielded;
     gen->done = true;
-    if (ret == JN_INTERPRET_OK)   return (gen->vm->sp > gen->vm->stack) ? *(gen->vm->sp -1) : DONE;
+    if (ret == JN_INTERPRET_OK)   return (gen->vm->sp > gen->vm->stack) ? *(gen->vm->sp - 1) : DONE;
     return JN_RAISE_EXCPETION(state, TYPE_ERROR, "generator terminated with an error (%s).", ret);
 }
 

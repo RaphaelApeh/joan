@@ -112,7 +112,7 @@ JN_API int Jn_read_file(Jn_Buffer* Out, const char* filename)
 {
     FILE* fptr = fopen(filename, "rb");
     if (!fptr || !Out) return -1;
-    if (!read_from_fptr(fptr, Out)) return -1;
+    if (read_from_fptr(fptr, Out) != 0) return -1;
     Jn_buff_add_char(Out, 0);
     return 0;
 }
