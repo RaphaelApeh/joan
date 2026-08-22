@@ -431,7 +431,7 @@ int vm_run(Jn_State* state, JnVM* vm)
                 case JN_HASHMAP_TYPE:
                 case JN_ARRAY_TYPE:
                 case JN_STRING_TYPE:
-                    JN_CMethod method = call_method(o, field);
+                    Jn_Cmethod method = call_method(o, field);
                     if (method == NULL)
                         return die(state,vm, "object does not have field '%s'", field);
                     PUSH(vm, jn_obj_method(state, o, method));

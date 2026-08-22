@@ -8,7 +8,7 @@
 static void usage(void)
 {
     fprintf(stderr, 
-    "Usage: joan [file] [..options]\n"
+    "Usage: joan [..options] [file]\n"
     "Options: \n"
     "-v --version:      output joan version.\n"
     "-f --file:         execute script file.\n"

@@ -168,7 +168,7 @@ typedef struct Jn_Lexer Jn_Lexer;
 typedef struct Jn_Token Jn_Token;
 typedef struct Jn_Gen Jn_Gen;
 typedef JnObject* (*Jn_CFunction)(Jn_State* state, JnObject* args);
-typedef JnObject* (*JN_CMethod) (Jn_State* state, JnObject* self, JnObject* args);
+typedef JnObject* (*Jn_Cmethod) (Jn_State* state, JnObject* self, JnObject* args);
 typedef void* (*JnObject_Alloc)(size_t size, JnTypeObject type);
 typedef JnObject* (*JnForeignHandler)(Jn_State* state, const char* fn_name, int params, JnObject* args);
 typedef struct Jn_CModule Jn_CModule;
@@ -541,7 +541,7 @@ typedef struct JnObject{
         Jn_Gen* gen;
         void* ptr_val;
         struct {
-            JN_CMethod fn;
+            Jn_Cmethod fn;
             JnObject* obj;
         } method;
         JnType type_val;
@@ -654,6 +654,10 @@ JN_API int Jn_settop(Jn_State*, JnObject*);
 JN_API void Jn_setinst(Jn_State*, int);
 JN_API JnObject* Jn_pop(Jn_State*);
 
+// GC
+
+JN_API void Jn_garbage_collect(Jn_State*);
+JN_API void Jn_gc_sweep(Jn_State*);
 
 // Globals
 
@@ -688,7 +692,8 @@ JN_API int Jn_exec_from_file(Jn_State*, char*, FILE*);
 
 JN_API void Jn_program_close(Jn_State*);
 
-JN_API JN_CMethod call_method(JnObject* obj, const char* method_name);
+JN_API Jn_Cmethod call_method(JnObject* obj, const char* method_name);
+JN_API JnObject* Jn_get_obj_attr(Jn_State*, JnObject*, const char*);
 
 JN_API void Jn_tokenizer(Jn_State*, FILE*);
 
@@ -711,7 +716,7 @@ JnObject* jn_obj_gen(Jn_State* state, JnVM* gvm);
 JnObject* jn_obj_module(Jn_State*, char* name, char* path, Jn_environ* env);
 JnObject* jn_obj_struct(Jn_State*, char* name, char** fields);
 JnObject* jn_obj_arg(Jn_State*, JnObject** args, char** arg_names, size_t count);
-JnObject* jn_obj_method(Jn_State*, JnObject* obj, JN_CMethod method);
+JnObject* jn_obj_method(Jn_State*, JnObject* obj, Jn_Cmethod method);
 JnObject* jn_obj_instance(Jn_State*, JnObject* obj, Jn_environ* fields);
 JN_API bool jn_obj_equals(JnObject* obj, JnObject* other);
 JN_API bool jn_obj_match(JnObject* obj, JnObject* other);

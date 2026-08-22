@@ -206,7 +206,7 @@ JnObject* jn_obj_type(Jn_State* state, char* type_name, JnTypeObject type, Jn_CF
     return JN_INTERN_OBJECT(obj);
 }
 
-JnObject* jn_obj_method(Jn_State* state, JnObject* obj, JN_CMethod method)
+JnObject* jn_obj_method(Jn_State* state, JnObject* obj, Jn_Cmethod method)
 {
     JnObject* new_obj = jn_obj_new(state, JN_METHOD_TYPE);
     new_obj->method.fn = method;

@@ -5,7 +5,6 @@
 #include "object.h"
 
 #ifdef JN_WINDOWS
-
 #define sleep Sleep
 #endif
 
@@ -20,7 +19,7 @@
 
 JN_API JnObject* Jn_make_args(Jn_State* state, size_t capacity)
 {
-    assert(capacity < MAX_OBJECT_ARGS);
+    if (capacity > MAX_OBJECT_ARGS) return NULL;
     JnObject** objs = malloc(sizeof(JnObject *) * capacity);
     assert(objs);
     JnObject* obj = jn_obj_new(state, JN_ARG_TYPE);
@@ -38,7 +37,7 @@ JN_API void Jn_add_arg(JnObject* args, JnObject* obj)
 
 struct JnObjectMethod {
     char* fn_name;
-    JN_CMethod method;
+    Jn_Cmethod method;
 };
 
 static JnObject* push_method(Jn_State* state, JnObject* self, JnObject* args);
@@ -90,7 +89,7 @@ static struct JnObjectMethod ARRAY_METHODS[] = {
 };
 
 
-JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
+JN_API Jn_Cmethod call_method(JnObject* obj, const char* method_name)
 {
     assert(obj != NULL);
     struct JnObjectMethod* METHODS = NULL;
@@ -108,8 +107,7 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
         default:
             return NULL;
     }
-    assert(METHODS != NULL);
-
+    if (NULL == METHODS) return NULL;
     for (int i = 0;; ++i)
     {
         if (
@@ -120,6 +118,36 @@ JN_API JN_CMethod call_method(JnObject* obj, const char* method_name)
             return METHODS[i].method;
     }
     return NULL;
+}
+
+JN_API JnObject* Jn_get_obj_attr(Jn_State* state, JnObject* obj, const char* name)
+{
+    if (NULL == obj || NULL == name) return NULL;
+    switch (jn_obj__type(obj))
+    {
+        case JN_STRING_TYPE:
+        case JN_INT_TYPE:
+        case JN_BOOL_TYPE:
+        case JN_FLOAT_TYPE:
+        case JN_ARRAY_TYPE:
+        case JN_HASHMAP_TYPE:
+        case JN_RANGE_TYPE:
+        {
+            Jn_Cmethod meth = call_method(obj, name);
+            if (NULL == meth) return NULL;
+            return jn_obj_method(state, obj, meth);
+        }
+        default:
+            // instance, struct, class, e.t.c
+            break;
+    }
+
+    return JN_RAISE_EXCPETION(
+        state, 
+        TYPE_ERROR, 
+        "%s does not have method '%s'.",
+        jn_obj_to_string(obj), name
+    );
 }
 
 
@@ -353,7 +381,30 @@ static JnObject* string_utf8(Jn_State* state, JnObject* cls)
 // Native functions
 static JnObject* native_getattr(Jn_State* state, JnObject* args)
 {
-    assert(false);
+    int count = JN_ARGS_COUNT(args);
+    if (count != 2 && count != 3)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "getattr() expected 2 or 3 arguments but got %d.", count);
+    
+    JnObject* obj = JN_GET_ARG(args);
+    JnObject* def_obj = NULL;
+    bool has_default = false;
+    if (jn_obj__type(JN_GET_ARGS(args, 1)) != JN_STRING_TYPE)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "getattr() expected as a second argument a string litral, but got \"%s\".", jn_obj_to_string(JN_GET_ARGS(args, 1)));
+
+    if (count == 3)
+    {
+        def_obj = JN_GET_ARGS(args, 2);
+        has_default = true;
+    }
+    char* _str = JN_AS_CSTRING(JN_GET_ARGS(args, 1));
+    JnObject* meth_obj = Jn_get_obj_attr(state, obj, _str);
+    if (NULL == meth_obj && has_default)
+        return def_obj;
+    else if (NULL == meth_obj && !has_default)
+        return JN_RAISE_EXCPETION(state, TYPE_ERROR, "getattr() \"%s\" does not have attribute \"%s\"",
+        jn_obj_to_string(obj), _str
+        );
+    return meth_obj;
 }
 
 
@@ -793,10 +844,11 @@ static JnObject* native_next(Jn_State* state, JnObject* args)
     JnObject* DONE = JN_RETURN_NONE;
     if (gen->done) return DONE;
     int ret = vm_run(state, gen->vm);
+    printf("hellow ro\n");
     if (ret == JN_INTERPRET_YEILD)  return gen->vm->yielded;
     gen->done = true;
     if (ret == JN_INTERPRET_OK)   return (gen->vm->sp > gen->vm->stack) ? *(gen->vm->sp - 1) : DONE;
-    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "generator terminated with an error (%s).", ret);
+    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "generator terminated with an error (%d).", ret);
 }
 
 static JnObject* native_exit(Jn_State* state, JnObject* args)
@@ -1041,6 +1093,7 @@ JN_API void Jn_load_Cfunctions(Jn_State* state)
     Jn_register_fn(state, "defined", "Check if a variable exists in the current scope.", native_defined);
     Jn_register_fn(state, "format", "String format specifier.", native_format);
     Jn_register_fn(state, "exit", "Exit from program", native_exit);
+    Jn_register_fn(state, "getattr", "Get attribute form an object.", native_getattr);
     Jn_register_fn(state, "next", "Advance a generator and return the yielded value.", native_next);
     // add other built-in functions
 }

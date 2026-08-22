@@ -151,7 +151,11 @@ JnObject* eval_binary(Jn_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op
     if (JN_IS_BOOL(lhs) && JN_IS_BOOL(rhs))
         return eval_bool(state, lhs, rhs, op);
     
-    return JN_RAISE_EXCPETION(state, TYPE_ERROR, "Does not support this operation");
+    return JN_RAISE_EXCPETION(
+        state, TYPE_ERROR, 
+        "\"%s\" does not support operation with \"%s\".",
+        jn_obj_to_string(lhs), jn_obj_to_string(rhs)
+    );
 }
 
 
