@@ -79,6 +79,9 @@ typedef enum{
     OP_FUNCTION,
     OP_BLOCK,
 
+    OP_PREFIX,
+    OP_SUFFIX,
+
     OP_MEMBER,
     OP_MEMBER_SET,
     OP_RETURN,

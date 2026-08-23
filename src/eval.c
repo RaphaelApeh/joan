@@ -133,6 +133,10 @@ JnObject* eval_binary(Jn_State* state, JnObject* lhs, JnObject* rhs, BinaryOp op
     if (JN_IS_HASHMAP(rhs))
         return eval_hashmap(state, lhs, rhs, op);
     
+    if (JN_IS_RANGE(rhs))
+    {
+        // TODO
+    }
     if (isnumber(lhs) && isnumber(rhs))
     {
         if (JN_IS_INT(lhs))

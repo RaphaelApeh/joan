@@ -412,7 +412,7 @@ static JnObject* native_print(Jn_State* state, JnObject* args)
     int count = JN_ARGS_COUNT(args);
     for (int i = 0; i > count; ++i)
     {
-        JnObject* obj = JN_GET_ARGS(args, i);
+        JnObject* obj = JN_GET_ARGS(args, i); // TODO: turn it to a function.
         jn_obj_print(obj);
         putchar(' ');
     }

@@ -778,7 +778,7 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
                 tpl = ast_tuple(p);
                 ast_tuple_add(tpl, left);
             }
-            Jn_Node* node = parse_expr(p);
+            Jn_Node* node = parse_expr(p); // TODO: tuple -> inline_expr -> false (1, 2) -> true 1, 2
             ast_tuple_add(tpl, node);
             left = tpl;
             continue;

@@ -83,10 +83,10 @@ typedef int JnHandle;
 #endif
 
 #define JOAN_VERSION_MAJOR 0
-#define JOAN_VERSION_MINOR 7
-#define JOAN_VERSION_PATCH 8
+#define JOAN_VERSION_MINOR 8
+#define JOAN_VERSION_PATCH 0
 
-#define JOAN_VERSION "0.7.8"
+#define JOAN_VERSION "0.8.0"
 #define JOAN_EXT "jt"
 #define JOAN_BRANCH "main"
 

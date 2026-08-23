@@ -131,6 +131,8 @@ void Jn_freeObject(JnObject* obj)
     obj = NULL;
 }
 
+JN_API size_t jn_obj_size(JnObject* obj);
+
 void sweep(Jn_State* state){
     JnObject** obj = &state->gc->objects;
     long count = 0;
@@ -150,6 +152,10 @@ void sweep(Jn_State* state){
         }
     }
 }
+
+JN_API void Jn_gc_sweep(Jn_State*  state) { sweep(state); }
+JN_API void Jn_garbage_collect(Jn_State* state) { gc_collect(state); }
+
 void gc_collect(Jn_State* state)
 {
     mark_roots(state->vm);
