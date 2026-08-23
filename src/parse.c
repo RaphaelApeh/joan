@@ -174,7 +174,7 @@ static Jn_Node* parse__body(Jn_Parser* p)
     return parse_error(p, "No expression block found.");
 }
 
-void jn_init_parser(Jn_Parser* p, Jn_Lexer* l)
+void jn_parser_init(Jn_Parser* p, Jn_Lexer* l)
 {
     assert(p != NULL && l != NULL);
     p->l = l;
@@ -192,7 +192,7 @@ Jn_Node* Jn_parse_file(Jn_State* state, const char* filename)
     Jn_buff_init(&b);
     Jn_read_file(&b, filename);
     jn_lexer_init(&l, b.data, filename);
-    jn_init_parser(state->parser, &l);
+    jn_parser_init(state->parser, &l);
     Jn_Parser* p = state->parser;
     Jn_Token curr_tok = p->curr;
     Jn_Node* program = ast_program(p);
@@ -207,7 +207,7 @@ Jn_Node* Jn_parse_file(Jn_State* state, const char* filename)
 }
 
 
-precedence get_prec(Jn_TokenType type)
+Jn_Parser_Prec get_prec(Jn_TokenType type)
 {
     switch (type)
     {
@@ -265,6 +265,7 @@ static Jn_Node* parse_block(Jn_Parser* p)
     Jn_Node* block = new_block(p);
     while (!check(p, TOK_RBRACE) && !check(p, TOK_EOF))
     {
+        p->skip_comma = false;
         add_block(block, parse_stmt_check(p, parse_stmt(p)));
     }
     match(p, TOK_RBRACE);
@@ -274,6 +275,20 @@ static Jn_Node* parse_block(Jn_Parser* p)
 
 Jn_Token next_parser(Jn_Parser* p)
 {
+    #define SHOULD_SKIP_COMMA(curr_token)   do  {       \
+        switch ((curr_token)){                          \
+            case TOK_LBRACKET:                          \
+            case TOK_LBRACE:                            \
+            case TOK_LPARN:                             \
+                p->skip_comma = true;   break;          \
+            case TOK_RPARN:                             \
+            case TOK_RBRACKET:                          \
+            case TOK_RBRACE:                            \
+                p->skip_comma = false;  break;          \
+            default: break;                             \
+        }                                               \
+    }while(0)
+    SHOULD_SKIP_COMMA(p->curr.type);
     p->prev = p->curr;
     p->curr = p->next;
     p->has_newl = false;
@@ -282,6 +297,7 @@ Jn_Token next_parser(Jn_Parser* p)
         if (p->next.type == TOK_NEWLINE)
             p->has_newl = true;
     }  while(p->next.type == TOK_NEWLINE);
+    SHOULD_SKIP_COMMA(p->curr.type);
     return p->curr;
 }
 
@@ -733,7 +749,7 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
         return parse_unary(p, TOK_PLUS_PLUS);
 
     Jn_Node* tpl = NULL;
-    
+
     while (true)
     {
         if (match(p, TOK_LPARN))
@@ -753,6 +769,20 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
             return parse_inline_if(p, left);
         }
 
+        if (!p->skip_comma && check(p, TOK_COMMA))
+        {
+            consume(p, TOK_COMMA);
+            if (NULL == tpl)
+            {
+                // probably the first time.
+                tpl = ast_tuple(p);
+                ast_tuple_add(tpl, left);
+            }
+            Jn_Node* node = parse_expr(p);
+            ast_tuple_add(tpl, node);
+            left = tpl;
+            continue;
+        }
         if (check(p, TOK_RANGE))
         {
             left = parse_range(p, left);
@@ -768,7 +798,7 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
     }
     if (is_assign_token(GET_TOK(p).type))
         return parse_reassign(p, left);
-    return left;
+    return (NULL != tpl) ? tpl : left;
 }
 
 static Jn_Node* parse_hashmap(Jn_Parser* p)
@@ -1243,13 +1273,13 @@ Jn_Node* parse_primary(Jn_Parser* p)
     }
 }
 
-Jn_Node* parse_prec(Jn_Parser* p, precedence prec)
+Jn_Node* parse_prec(Jn_Parser* p, Jn_Parser_Prec prec)
 {
     Jn_Node* left = parse_primary(p);
     while (true)
     {
         left = parse_postfix(p, left);
-        precedence next_pr;
+        Jn_Parser_Prec next_pr;
         Jn_TokenType op;
         bool comp = false;
         if (p->curr.type == TOK_IN && p->next.type == TOK_NOT)

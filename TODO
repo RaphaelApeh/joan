@@ -11,3 +11,4 @@
 -add OP_SUFFIX and OP_PREFIX
 -fix native_next
 -Add TOK_INDENT and TOK_DEDENT
+-Fix tuple parsing: 2, [1, 2], 3 -> (2, ([1, 2], 3))

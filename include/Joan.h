@@ -692,7 +692,6 @@ JN_API int Jn_exec_from_file(Jn_State*, char*, FILE*);
 
 JN_API void Jn_program_close(Jn_State*);
 
-JN_API Jn_Cmethod call_method(JnObject* obj, const char* method_name);
 JN_API JnObject* Jn_get_obj_attr(Jn_State*, JnObject*, const char*);
 
 JN_API void Jn_tokenizer(Jn_State*, FILE*);

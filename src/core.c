@@ -237,7 +237,7 @@ JN_API int Jn_exec_program(Jn_State* state, const char* filename, const char* so
     Jn_Lexer l;
     state->parser->arena = state->arena;
     jn_lexer_init(&l, (char *)source, filename);
-    jn_init_parser(state->parser, &l);
+    jn_parser_init(state->parser, &l);
     state->vm->global = state->globals;
     state->vm->env = state->globals;
     state->vm->chuck->env = state->vm->env;
@@ -373,7 +373,7 @@ JN_API JnObject* Jn_import_module(Jn_State* state, char* path, int is_std)
     Jn_Parser p = {0};
     p.arena = state->arena;
     jn_lexer_init(&l, src.source, path);
-    jn_init_parser(&p, &l);
+    jn_parser_init(&p, &l);
     Jn_environ* env = Jn_environ_init(NULL);
     JnVM vm = {0};
     Chuck chuck = {0};

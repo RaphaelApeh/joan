@@ -37,7 +37,7 @@ typedef enum{
     PREC_CALL,
 
     PREC_PRIMARY
-} precedence;
+} Jn_Parser_Prec;
 
 typedef struct Jn_Parser{
     Jn_State* state;
@@ -51,7 +51,7 @@ typedef struct Jn_Parser{
 } Jn_Parser;
 
 
-void jn_init_parser(Jn_Parser* p, Jn_Lexer* l);
+void jn_parser_init(Jn_Parser* p, Jn_Lexer* l);
 void advance_parser(Jn_Parser* p);
 
 Jn_Token next_parser(Jn_Parser* p);

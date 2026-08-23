@@ -285,6 +285,11 @@ void ast_program_add(Jn_Parser* p, Jn_Node* prog, Jn_Node* node);
 Jn_Node* ast_array(Jn_Parser* p);
 void ast_array_add(Jn_Node* arr, Jn_Node* element);
 
+// Tuple
+Jn_Node* ast_tuple(Jn_Parser* p);
+void ast_tuple_add(Jn_Node* tpl, Jn_Node* node);
+Jn_Node* ast_empty_tuple(Jn_Parser* p);
+
 Jn_Node* ast_identifier(Jn_Parser* p, const char* identifier);
 
 Jn_Node* ast_yield(Jn_Parser* p, Jn_Node* node);

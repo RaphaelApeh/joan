@@ -430,12 +430,12 @@ int vm_run(Jn_State* state, JnVM* vm)
                     break;
                 case JN_HASHMAP_TYPE:
                 case JN_ARRAY_TYPE:
-                case JN_STRING_TYPE:
-                    Jn_Cmethod method = call_method(o, field);
+                case JN_STRING_TYPE:{
+                    JnObject* method = Jn_get_obj_attr(state, o, field);
                     if (method == NULL)
                         return die(state,vm, "object does not have field '%s'", field);
-                    PUSH(vm, jn_obj_method(state, o, method));
-                    break;
+                    PUSH(vm, method);
+                }   break;
                 default:
                     return die(state,vm, "Object does not support member attribute.");
                 }

@@ -59,6 +59,32 @@ Jn_Node* ast_decl(Jn_Parser* p, const char* ident, Jn_Node* value, bool is_const
     return NULL;
 }
 
+Jn_Node* ast_tuple(Jn_Parser* p)
+{
+    Jn_Node* node = ast_create(p, AST_TUPLE);
+    node->tuple.count = 0;
+    node->tuple.elements = arena_alloc(p->arena, sizeof(Jn_Node *) * 40);
+    return node;
+}
+Jn_Node* ast_empty_tuple(Jn_Parser* p)
+{
+    Jn_Node* node = ast_create(p, AST_TUPLE);
+    node->tuple.count = 0;
+    node->tuple.elements = NULL;
+    return node;
+}
+
+void ast_tuple_add(Jn_Node* tpl, Jn_Node* node)
+{
+    if (NULL == tpl)
+    {
+        JN_LOG("Could not find node");
+        return;
+    }
+    // TODO: validate count
+    tpl->tuple.elements[tpl->tuple.count++] = node;
+}
+
 Jn_Node* ast_while(Jn_Parser* p, Jn_Node* cond, Jn_Node* block)
 {
     Jn_Node* ast = ast_create(p, AST_WHILE);
