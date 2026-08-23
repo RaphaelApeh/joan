@@ -267,7 +267,7 @@ typedef struct Jn_environ Jn_environ;
 #define JN_IS_TUPLE(obj) _JN_CHECK_TYPE(obj, JN_TUPLE_TYPE)
 #define JN_IS_INSTANCE(obj) _JN_CHECK_TYPE(obj, JN_INSTANCE_TYPE)
 #define JN_IS_FUNCTION(obj) _JN_CHECK_TYPE(obj, JN_FUNCTION_TYPE)
-#define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP(obj) || JN_IS_ARRAY(obj) || JN_IS_STRING(obj) || JN_IS_ITER(obj) || JN_IS_RANGE(obj))
+#define JN_IS_ITERABLE(obj) (JN_IS_HASHMAP((obj)) || JN_IS_TUPLE((obj)) || JN_IS_ARRAY((obj)) || JN_IS_STRING((obj)) || JN_IS_ITER((obj)) || JN_IS_RANGE((obj)))
 #define JN_HASHMAP_GET(map, key) Jn_hashmap_get(map, key)
 #define JN_HASMAP_PUT(map, key, value) Jn_hashmap_put(map, key, value)
 #define JN_HASHMAP_GET_FROM_STRING(map, str) Jn_hashmap_get_string((map), (str))

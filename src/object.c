@@ -635,7 +635,7 @@ void jn_obj_print(JnObject* obj)
     switch (JN_OBJ_TYPE(obj))
     {
         case JN_INT_TYPE:
-            fprintf(stdout, "%lld", JN_AS_INT(obj)); break;
+            printf("%lld", JN_AS_INT(obj)); break;
         case JN_CHAR_TYPE:
             fprintf(stdout, "%c", JN_AS_CHAR(obj)); break;
         case JN_STRING_TYPE:

@@ -407,6 +407,18 @@ static JnObject* native_getattr(Jn_State* state, JnObject* args)
     return meth_obj;
 }
 
+static JnObject* native_print(Jn_State* state, JnObject* args)
+{
+    int count = JN_ARGS_COUNT(args);
+    for (int i = 0; i > count; ++i)
+    {
+        JnObject* obj = JN_GET_ARGS(args, i);
+        jn_obj_print(obj);
+        putchar(' ');
+    }
+    putchar('\n');
+    return JN_RETURN_NONE;
+}
 
 static JnObject* native_format(Jn_State* state, JnObject* args)
 {
@@ -694,25 +706,10 @@ static JnObject* native_len(Jn_State* state, JnObject* args)
         return JN_RAISE_EXCPETION(state, TYPE_ERROR, "len() expect an iterable type.");
     int len = 0;
     JnObject* len_obj = JN_GET_ARG(args);
-    switch(JN_OBJ_TYPE(len_obj))
-    {
-        case JN_ARRAY_TYPE:
-            len = (int)JN_AS_ARRAY(len_obj)->size;
-            return JN_RETURN_INT(state, len);
-        case JN_STRING_TYPE:
-            len = JN_AS_STRING(len_obj)->len;
-            return JN_RETURN_INT(state, len);
-        case JN_RANGE_TYPE:
-            len = range_len(JN_AS_RANGE(len_obj));
-            return JN_RETURN_INT(state, len);
-        case JN_HASHMAP_TYPE:
-            len = (int)(JN_AS_HASHMAP(len_obj)->size);
-            return JN_RETURN_INT(state, len);
-        default:
-            return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
-
-    }
-    return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
+    len = jn_obj_count(len_obj);
+    if (len < 0)
+        return JN_RAISE_EXCPETION(state, NOT_IMPLEMENT_ERROR, "len() does not support this type at the moment.");
+    return JN_RETURN_INT(state, len);
 }
 
 static JnObject* native_gets(Jn_State* state, JnObject* args)
@@ -1087,6 +1084,7 @@ JN_API void Jn_load_Cfunctions(Jn_State* state)
     Jn_register_fn(state, "tochar", "Convert an object to char.", native_tochar);
     Jn_register_fn(state, "hasattr", "Return true if the object has the attribute.", native_hasattr);
     Jn_register_fn(state, "typeof", "Return the typeof an object.", native_typeof);
+    Jn_register_fn(state, "print", "Python type of print", native_print);
     Jn_register_fn(state, "printf", "C type of printf.", native_printf);
     Jn_register_fn(state, "assert", "Assert expression.", native_assert);
     Jn_register_fn(state, "sleep", "Sleep program", native_sleep);
