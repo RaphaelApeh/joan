@@ -33,17 +33,11 @@ SOFTWARE.
 extern "C" {
 #endif
 
-#ifndef _INC_STDIO
 #include  <stdio.h>
-#endif
-
-#ifndef _Jn_GCC_WRAP_STDINT_H
 #include <stdint.h>
-#endif
-
-#ifndef _STDBOOL_H
 #include <stdbool.h>
-#endif
+#include <string.h>
+#include <assert.h>
 
 #ifdef _WIN32
 #define JN_WINDOWS
