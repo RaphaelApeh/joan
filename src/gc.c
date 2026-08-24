@@ -131,7 +131,63 @@ void Jn_freeObject(JnObject* obj)
     obj = NULL;
 }
 
-JN_API size_t jn_obj_size(JnObject* obj);
+JN_API size_t jn_obj_size(JnObject* obj)
+{
+    if (NULL == obj) return 0;
+
+    size_t size = 0;
+
+    switch (jn_obj__type(obj))
+    {
+        case JN_STRING_TYPE:
+            size = sizeof(*obj->str) + (obj->str->length + 1); // +1 for null terminator
+            break;
+
+        case JN_ARRAY_TYPE:
+            size = sizeof(*obj->arr) + obj->arr->capacity * sizeof(JnObject*);
+            break;
+
+        case JN_TUPLE_TYPE:
+            size = sizeof(*obj->tuple) + obj->tuple->size * sizeof(JnObject*);
+            break;
+
+        case JN_HASHMAP_TYPE:
+            size = sizeof(*obj->hashmap) + obj->hashmap->capacity * sizeof(*obj->hashmap->buckets);
+            break;
+
+        case JN_FUNCTION_TYPE:
+            size = sizeof(*obj->fn);
+            if (obj->fn->env)
+                size += sizeof(*obj->fn->env) + obj->fn->env->capacity * sizeof(*obj->fn->env->buckets);
+            break;
+
+        case JN_NATIVE_TYPE:
+            size = sizeof(*obj->native_fn);
+            break;
+
+        case JN_ITER_TYPE:
+            size = sizeof(*obj->iter);
+            break;
+
+        case JN_MODULE_TYPE:
+            size = sizeof(*obj->module);
+            if (obj->module->env)
+                size += sizeof(*obj->module->env) + obj->module->env->capacity * sizeof(*obj->module->env->buckets);
+            break;
+
+        case JN_INSTANCE_TYPE:
+            size = sizeof(*obj->instance);
+            if (obj->instance->fields)
+                size += sizeof(*obj->instance->fields) + obj->instance->fields->capacity * sizeof(*obj->instance->fields->buckets);
+            break;
+
+        default:
+            size = sizeof(JnObject);
+            break;
+    }
+
+    return size;
+}
 
 void sweep(Jn_State* state){
     JnObject** obj = &state->gc->objects;
@@ -145,6 +201,8 @@ void sweep(Jn_State* state){
             #if defined(JOAN_DEBUG)
                 printf("Freeing object count (%ld)....\n", count++);
             #endif
+            state->gc->bytes_allocated -= jn_object_size(unreached);
+            state->gc->object_count--;
             Jn_freeObject(unreached);
         } else {
             (*obj)->marked = false;
