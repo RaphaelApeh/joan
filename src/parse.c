@@ -29,10 +29,7 @@
 static Jn_Node* parse_unary(Jn_Parser* p, Jn_TokenType op);
 static Jn_Node* parse_block(Jn_Parser* p);
 
-int check(Jn_Parser* p, Jn_TokenType type)
-{
-    return _check(p, type, false);
-}
+int check(Jn_Parser* p, Jn_TokenType type){ return _check(p, type, false); }
 
 static bool match(Jn_Parser* p, Jn_TokenType type)
 {
@@ -51,15 +48,9 @@ static bool expect(Jn_Parser* p, Jn_TokenType token, const char* msg, ...)
     return false;
 }
 
-JN_INLINE Jn_Token peek_parser(Jn_Parser* p)
-{
-    return p->next;
-}
+JN_INLINE Jn_Token peek_parser(Jn_Parser* p){ return p->next; }
 
-JN_INLINE Jn_Token previous(Jn_Parser* p)
-{
-    return p->prev;
-}
+JN_INLINE Jn_Token previous(Jn_Parser* p){ return p->prev; }
 
 JN_INLINE void consume(Jn_Parser* p, Jn_TokenType token)
 {
@@ -142,11 +133,7 @@ void advance_parser(Jn_Parser* p)
     p->next = next_token(p->l);
 }
 
-JN_INLINE bool check_next(Jn_Parser* p, Jn_TokenType type)
-{
-    return peek_parser(p).type == type;
-}
-
+JN_INLINE bool check_next(Jn_Parser* p, Jn_TokenType type){ return peek_parser(p).type == type; }
 JN_INLINE char* consume_token(Jn_Parser* p, Jn_TokenType token)
 {
     if (!check(p, token)) return NULL;
@@ -158,10 +145,7 @@ static char* consume_ident(Jn_Parser* p)
     return consume_token(p, TOK_IDENT);
 }
 
-static char* consume_string(Jn_Parser* p)
-{
-    return consume_token(p, TOK_STRING);
-}
+static char* consume_string(Jn_Parser* p){ return consume_token(p, TOK_STRING); }
 
 static Jn_Node* parse__body(Jn_Parser* p)
 {
