@@ -550,8 +550,8 @@ typedef struct JnObject{
     JnObject* next;
     const char* doc;
     JnTypeObject type;
-    int marked;
-    int constant;
+    uint8_t marked;
+    uint8_t constant;
 } JnObject;
 
 
@@ -609,6 +609,11 @@ JN_API void Jn_color_fprintf(FILE* _Std, int color, const char* fmt, ...);
     Jn_color_fprintf(stderr, JN_COLOR_YELLOW, (fmt), ##__VA_ARGS__)
 
 #define Jn_error_printf(fmt, ...) Jn_color_fprintf(stderr, JN_COLOR_RED, (fmt), ##__VA_ARGS__)
+
+// Error stuff
+#define Jn_seterror(s, ty, msg, ...)  \
+        Jn_seterror_loc((s), __LINE__, (ty), (msg), ##__VA_ARGS__)
+JN_API void Jn_seterror_loc(Jn_State* state, int line, int type, const char* msg, ...);
 
 // Register native function
 JN_API void Jn_define_fn(Jn_State* state, const char*, Jn_CFunction);
