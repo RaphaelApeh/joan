@@ -101,6 +101,7 @@ char* tok_string[] = {
     [TOK_CONST] = "TOK_CONST",
     [TOK_RETURN] = "TOK_RETURN",
     [TOK_YIELD] = "TOK_YIELD",
+    [TOK_RAISE] = "TOK_RAISE",
     [TOK_CLASS] = "TOK_CLASS",
     [TOK_STRUCT] = "TOK_STRUCT",
     [TOK_MATCH] = "TOK_MATCH",
@@ -132,6 +133,7 @@ KEYWORD_S Keywords[] = {
     {"loop", TOK_LOOP}, // Deprecated: remove soon
     {"then", TOK_THEN},
     {"yield", TOK_YIELD},
+    {"raise", TOK_RAISE},
     {"class", TOK_CLASS},
     {"match", TOK_MATCH},
 
