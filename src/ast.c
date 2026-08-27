@@ -54,6 +54,13 @@ Jn_Node* ast_literal(Jn_Parser* p, JnObject* object)
     return ast;
 }
 
+Jn_Node* ast_raise(Jn_Parser* p, Jn_Node* node)
+{
+  Jn_Node* ast = ast_create(p, AST_RAISE);
+  ast->raise_node.value = node;
+  return ast;
+}
+
 Jn_Node* ast_decl(Jn_Parser* p, const char* ident, Jn_Node* value, bool is_const)
 {
     return NULL;
