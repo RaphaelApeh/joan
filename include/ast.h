@@ -253,6 +253,10 @@ typedef struct Jn_Node{
             Jn_Node* block;
         } foreach_node;
 
+        struct {
+            Jn_Node* value;
+        } raise_node;
+
         struct{
             Jn_Node* subject;
             case_t* cases;
@@ -291,6 +295,8 @@ void ast_tuple_add(Jn_Node* tpl, Jn_Node* node);
 Jn_Node* ast_empty_tuple(Jn_Parser* p);
 
 Jn_Node* ast_identifier(Jn_Parser* p, const char* identifier);
+
+Jn_Node* ast_raise(Jn_Parser* p, Jn_Node* node);
 
 Jn_Node* ast_yield(Jn_Parser* p, Jn_Node* node);
 
