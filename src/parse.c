@@ -1172,6 +1172,14 @@ static Jn_Node* parse_yield(Jn_Parser* p)
     return ast_yield(p, parse_expr(p));
 }
 
+Jn_Node* parse_raise(Jn_Parser* p)
+{
+    consume(p, TOK_RAISE);
+    // TODO
+    Jn_Node* node = parse_expr(p);
+    return ast_raise(p, node);
+}
+
 Jn_Node* parse_primary(Jn_Parser* p)
 {
     Jn_Token t = p->curr;
@@ -1241,6 +1249,8 @@ Jn_Node* parse_primary(Jn_Parser* p)
             return parse_literal(p, JN_RETURN_FALSE(p->state));
         case TOK_YIELD:
             return parse_yield(p);
+        case TOK_RAISE:
+             return parse_raise(p);
         case TOK_LBRACKET:
             return parse_array(p);
         case TOK_BITOR:
