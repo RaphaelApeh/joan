@@ -63,6 +63,16 @@ typedef enum{
     AST_ERROR,
 } Jn_NodeType;
 
+typedef struct {
+   const char* name;
+   Jn_Node* default_value;
+} Jn_ArgParam;
+
+typedef struct {
+const char* name;
+Jn_Node* value;
+} Jn_Kwarg;
+
 typedef struct Jn_Node{
     Jn_NodeType type;
     union {
