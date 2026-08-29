@@ -3,6 +3,37 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+static int hex_value(char c)
+{
+    if (c >= '0' && c <= '9')
+        return c - '0';
+
+    if (c >= 'a' && c <= 'f')
+        return c - 'a' + 10;
+
+    if (c >= 'A' && c <= 'F')
+        return c - 'A' + 10;
+
+    return -1;
+}
+
+static int hex_n(const char *s, int n, uint32_t *value)
+{
+    uint32_t v = 0;
+
+    for (int i = 0; i < n; i++)
+    {
+        int x = hex_value(s[i]);
+
+        if (x < 0)
+            return 0;
+
+        v = (v << 4) | (uint32_t)x;
+    }
+
+    *value = v;
+    return 1;
+}
 
 bool strends(const char* str, const char* suf)
 {
@@ -106,6 +137,124 @@ char* str_esc(const char* str)
     }
     *d = '\0';
     return esc;
+}
+
+char* str_unesc(const char *str)
+{
+    if (str == NULL)
+        return NULL;
+
+    size_t input_len = strlen(str);
+
+    char *out = malloc(input_len + 1);
+
+    if (out == NULL)
+        return NULL;
+
+    const unsigned char *s = (const unsigned char *)str;
+    unsigned char *d = (unsigned char *)out;
+
+    while (*s)
+    {
+        if (*s != '\\')
+        {
+            *d++ = *s++;
+            continue;
+        }
+        if (s[1] == '\0')
+        {
+            *d++ = '\\';
+            break;
+        }
+
+        s++; // skip '\'
+
+        switch (*s)
+        {
+            case '\\':
+                *d++ = '\\';
+                s++;
+                break;
+
+            case '\'':
+                *d++ = '\'';
+                s++;
+                break;
+
+            case '"':
+                *d++ = '"';
+                s++;
+                break;
+
+            case 'a':
+                *d++ = '\a';
+                s++;
+                break;
+
+            case 'b':
+                *d++ = '\b';
+                s++;
+                break;
+
+            case 'f':
+                *d++ = '\f';
+                s++;
+                break;
+
+            case 'n':
+                *d++ = '\n';
+                s++;
+                break;
+
+            case 'r':
+                *d++ = '\r';
+                s++;
+                break;
+
+            case 't':
+                *d++ = '\t';
+                s++;
+                break;
+
+            case 'v':
+                *d++ = '\v';
+                s++;
+                break;
+
+            case '0':
+                *d++ = '\0';
+                s++;
+                break;
+
+            case 'x':
+                {
+                uint32_t value;
+
+                if (s[1] && s[2] && hex_n((const char *)s + 1, 2, &value))
+                {
+                    *d++ = (unsigned char)value;
+                    s += 3;
+                }
+                else
+                {
+                    *d++ = '\\';
+                    *d++ = 'x';
+                    s++;
+                }
+
+                break;
+            }
+
+            default:
+                *d++ = '\\';
+                *d++ = *s++;
+                break;
+        }
+    }
+
+    *d = '\0';
+
+    return out;
 }
 
 bool strstarts(const char* str, const char* pre)
