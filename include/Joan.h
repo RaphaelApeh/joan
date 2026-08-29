@@ -567,7 +567,7 @@ JN_API void* Jn_realloc(void* ptr, size_t size);
 JN_API void* Jn_alloc_dup(void* ptr, size_t size);
 JN_API void Jn_free(void* ptr);
 JN_API void Jn_mem_zero(void* ptr, size_t size);
-JN_API void* Jn_arena_alloc(Jn_State* state, size_t size);
+JN_API void* Jn_aalloc(Jn_State* state, size_t size);
 
 JN_API bool Jn_file_exists(const char* filename);
 
