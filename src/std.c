@@ -8,11 +8,9 @@
 #define sleep Sleep
 #endif
 
-
 #ifndef C_STRING_H
 #include "optionals/c_string.h"
 #endif
-
 
 #define MAX_OBJECT_ARGS 50
 
@@ -410,7 +408,7 @@ static JnObject* native_getattr(Jn_State* state, JnObject* args)
 static JnObject* native_print(Jn_State* state, JnObject* args)
 {
     int count = JN_ARGS_COUNT(args);
-    for (int i = 0; i > count; ++i)
+    for (int i = 0; i < count; ++i)
     {
         JnObject* obj = JN_GET_ARGS(args, i); // TODO: turn it to a function.
         jn_obj_print(obj);
