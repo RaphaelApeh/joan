@@ -13,55 +13,96 @@ bool strends(const char* str, const char* suf)
     );
 }
 
-
-
 char* str_esc(const char* str)
 {
-    // TODO: add Python-type of string escape
     if (NULL == str) return NULL;
 
     size_t esc_len = 0;
-    char* s = (unsigned char *)str;
-    while (*s)
+    for (const unsigned char* s = (const unsigned char *)str; *s; s++)
     {
         switch (*s)
         {
-        case '\n':
-        case '\'':
-        case '\t':
-        case '\r':
-        case '\f':
-        case '\v':
-        case '\0':
-        case '\\':
-            esc_len += 2; break;
-        default:
-            esc_len++; break;
-        }
-        s++;
-    }
-    unsigned char* esc = malloc(esc_len + 1);
-    if (NULL == esc) return NULL;
-    char* d = esc;
-    s = (unsigned char *)str;
-
-    while (*s)
-    {
-        switch (*s)
-        {
-            case '\\': *d++ = '\\'; *d++ = '\\'; break;
-            case '\n':  *d++ = '\\'; *d++ = 'n'; break;
-            case '\r':  *d++ = '\\'; *d++ = 'r'; break;
-            case '\t': *d++ = '\\'; *d++ = 't'; break;
-            case '\b':  *d++ = '\\'; *d++ = 'b'; break;
-            case '\f': *d++ = '\\';  *d++ = 'f'; break;
-            case '\v': *d++ = '\\'; *d++ = 'v'; break;
-            case '\0': *d++ = '\\'; *d++ = '0'; break; // Not sure.
+            case '\\':
+            case '\"':
+            case '\n':
+            case '\r':
+            case '\t':
+            case '\b':
+            case '\f':
+            case '\v':
+                len += 2;
+                break;
             default:
-                *d++ = *s; 
+                if (!isprint(*s)) len += 4;
+                else len += 1;
                 break;
         }
-        s++;
+    }
+    char *esc = malloc(len + 1);
+    if (esc == NULL) return NULL;
+    char *d = esc;
+    for (const unsigned char *s = (const unsigned char *)str;
+         *s;
+         s++)
+    {
+        switch (*s)
+        {
+            case '\\':
+                *d++ = '\\';
+                *d++ = '\\';
+                break;
+
+            case '\"':
+                *d++ = '\\';
+                *d++ = '"';
+                break;
+
+            case '\n':
+                *d++ = '\\';
+                *d++ = 'n';
+                break;
+
+            case '\r':
+                *d++ = '\\';
+                *d++ = 'r';
+                break;
+
+            case '\t':
+                *d++ = '\\';
+                *d++ = 't';
+                break;
+
+            case '\b':
+                *d++ = '\\';
+                *d++ = 'b';
+                break;
+
+            case '\f':
+                *d++ = '\\';
+                *d++ = 'f';
+                break;
+
+            case '\v':
+                *d++ = '\\';
+                *d++ = 'v';
+                break;
+
+            default:
+                if (!isprint(*s))
+                {
+                    static const char hex[] = "0123456789abcdef";
+
+                    *d++ = '\\';
+                    *d++ = 'x';
+                    *d++ = hex[(*s >> 4) & 0x0f];
+                    *d++ = hex[*s & 0x0f];
+                }
+                else
+                {
+                    *d++ = (char)*s;
+                }
+                break;
+        }
     }
     *d = '\0';
     return esc;
