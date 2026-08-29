@@ -507,8 +507,12 @@ int vm_run(Jn_State* state, JnVM* vm)
                 b = pop(vm); a = pop(vm);
                 PUSH(vm, JN_RETURN_BOOL(state, jn_obj_match(a, b)));
             } break;
-            case OP_POP:
-                pop(vm); break;
+            case OP_POP: pop(vm); break;
+            case OP_RAISE: {
+                o = POP();
+                if (!JN_IS_ERROR(o)) return die(state, vm, "Expected an Exception object but got %s.", "TODO");
+                PUSH(vm, o);
+            } break;
             case OP_DUP:
                 JnObject* top = *(vm->sp - 1);
                 PUSH(vm, top); break;
