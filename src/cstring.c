@@ -17,7 +17,7 @@ char* str_esc(const char* str)
 {
     if (NULL == str) return NULL;
 
-    size_t esc_len = 0;
+    size_t len = 0;
     for (const unsigned char* s = (const unsigned char *)str; *s; s++)
     {
         switch (*s)
