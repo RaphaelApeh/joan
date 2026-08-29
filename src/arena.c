@@ -31,6 +31,12 @@ SOFTWARE.
 
 #define ARENA_BSIZE 1024
 
+JN_API void* Jn_aalloc(Jn_State* state, size_t size)
+{
+    if (!state || size == 0) return NULL;
+    return arena_alloc(state->arena, size)
+}
+
 static Jn_ArenaBlock* arena_block_alloc(size_t size)
 {
     Jn_ArenaBlock* block = malloc(sizeof(Jn_ArenaBlock));
@@ -67,7 +73,6 @@ void* arena_alloc(Jn_Arena* arena, size_t size)
     return ptr;
 }
 
-// TODO: arena_realloc fix bug
 void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size)
 {
     assert(old_size < new_size);
@@ -94,7 +99,7 @@ void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size
 }
 void arena_free(Jn_Arena* arena)
 {
-    assert(arena != NULL);
+    if (arena == NULL) return;
     Jn_ArenaBlock* block = arena->head;
     while (block)
     {
