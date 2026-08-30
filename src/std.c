@@ -1066,6 +1066,13 @@ JN_API void Jn_load_Cfunctions(Jn_State* state)
     Jn_register(state, "bool", NULL, JN_RETURN_TYPE_OBJECT(state, "bool", JN_BOOL_TYPE, bool_ctor));
     Jn_register(state, "char", NULL, JN_RETURN_TYPE_OBJECT(state, "char", JN_CHAR_TYPE, native_tochar));
 
+    // Expection
+    // Jn_register(state, "ValueError", jn_obj_error("ValueError", JN_VALUE_ERROR);
+    // Jn_register(state, "RuntimeError", jn_obj_error("RuntimeError", JN_RUNTIME_ERROR);
+    // Jn_register(state, "TypeError", jn_obj_error("TypeError", JN_TYPE_ERROR);
+    // Jn_register(state, "SystemError", jn_obj_error("SystemError", JN_SYS_ERROR);
+    // more...
+    
     // DEFAULT
     Jn_register(state, "__FILE__", "Returns the filename or main in repl.", JN_RETURN_STRING(state, filename));
     Jn_register(state, "ARRAY", "Array type.", JN_RETURN_INT(state, JN_ARRAY_TYPE));
