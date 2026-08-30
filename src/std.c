@@ -12,8 +12,7 @@
 #include "optionals/c_string.h"
 #endif
 
-#define MAX_OBJECT_ARGS 50
-
+#define MAX_OBJECT_ARGS 40
 
 JN_API JnObject* Jn_make_args(Jn_State* state, size_t capacity)
 {
@@ -330,7 +329,7 @@ static JnObject* string_part(Jn_State* state, JnObject* self, JnObject* arg)
         >>"key=value".part('=');
         ("key", "value")
         >>"key=value".part('?');
-        ("key-value", None)
+        ("key=value", None)
     */
     char* str_obj = JN_AS_CSTRING(self);
     if (JN_ARGS_COUNT(arg) != 1)
@@ -414,7 +413,7 @@ static JnObject* native_print(Jn_State* state, JnObject* args)
         jn_obj_print(obj);
         putchar(' ');
     }
-    putchar('\n');
+    if (count > 0) putchar('\n');
     return JN_RETURN_NONE;
 }
 
@@ -568,7 +567,8 @@ static JnObject* native_printf(Jn_State* state, JnObject* args)
     // JN_ARG_EXPECT_TYPE(JN_GET_ARG(args), JN_STRING_TYPE);
     if (!JN_IS_STRING(JN_GET_ARG(args)))
         return NULL;
-    char* str = JN_AS_CSTRING(JN_GET_ARG(args));
+    char* unesc_str = str_unesc(JN_AS_CSTRING(JN_GET_ARG(args)));
+    char* str = unesc_str;
     JnObject* obj;
     int arg_count = 1;
     while (*str)
@@ -633,7 +633,8 @@ static JnObject* native_printf(Jn_State* state, JnObject* args)
             putc(*str++, stdout);
         }
     }
-    putc('\n', stdout); // Not sure.
+    //putc('\n', stdout); // Not sure.
+    free(unesc_str);
     return JN_RETURN_NONE;
 }
 
