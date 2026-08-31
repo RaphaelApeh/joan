@@ -332,6 +332,8 @@ Jn_Node* ast_return(Jn_Parser* p, Jn_Node* value);
 // Call
 Jn_Node* ast_call(Jn_Parser* p, Jn_Node* callee, Jn_Node** args, size_t count);
 
+Jn_Node* ast_range(Jn_Parser* p, Jn_Node* start, Jn_Node* stop, Jn_Node* step);
+
 Jn_Node* ast_while(Jn_Parser* p, Jn_Node* cond, Jn_Node* block);
 //Match
 Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def);
