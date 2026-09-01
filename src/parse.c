@@ -321,12 +321,7 @@ static Jn_Node* parse_range(Jn_Parser* p, Jn_Node* node)
     Jn_Node* step = NULL;
     if (match(p, TOK_COLON))
         step = parse_expr(p);
-    Jn_Node* ast = ast_create(p, AST_RANGE);
-    ast->range_node.start = node;
-    ast->range_node.stop = stop;
-    ast->range_node.step = step;
-    ast->range_node.has_step = step != NULL;
-    ast->range_node.op = op;
+    Jn_Node* ast = ast_range(node, stop, step, op);
     return ast;
 }
 
