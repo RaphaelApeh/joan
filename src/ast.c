@@ -216,6 +216,17 @@ Jn_Node* ast_continue(Jn_Parser* p)
     return ast;
 }
 
+Jn_Node* ast_range(Jn_Parser* p, Jn_Node* start, Jn_Node* stop, Jn_Node* step, int op)
+{
+    Jn_Node* ast = ast_create(p, AST_RANGE);
+    ast->range_node.start = start;
+    ast->range_node.stop = stop;
+    ast->range_node.step = step;
+    ast->range_node.has_step = step != NULL;
+    ast->range_node.op = op;
+    return ast;
+}
+
 Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def)
 {
     Jn_Node* ast = ast_create(p, AST_MATCH);
