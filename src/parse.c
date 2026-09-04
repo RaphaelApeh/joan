@@ -722,6 +722,23 @@ static bool allow_instance(Jn_Parser* p, Jn_Node* node)
     return ret;
 }
 
+static Jn_Node* parse_inline_tuple(Jn_Parser* p, Jn_Node* first)
+{
+    consume(p, TOK_COMMA);
+    Jn_Node* tuple = ast_tuple(p);
+    ast_tuple_add(tuple, first);
+    for (;;)
+    {
+        // TODO: add support for 1, -> (1,)
+        ast_tuple_add(tuple, parse_expr(p));
+        
+        if (match(p, TOK_COMMA)) continue;
+        
+        break;
+    }
+    return tuple;
+}
+
 static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
 {
     if (check(p, TOK_PLUS_PLUS))
