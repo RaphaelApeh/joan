@@ -434,7 +434,7 @@ typedef JnObject* (* MethodFn) (JnObject* self, JnObject** argv, size_t argc);
 typedef struct {
     char* chars;
     unsigned long hash;
-    long len;
+    uint32_t len;
 } Jn_String;
 
 typedef struct {
@@ -728,6 +728,10 @@ JnObject* jn_obj_error(Jn_State*, int type, char* msg, ...);
 char* Jn_object_cstring(JnObject* obj);
 JN_API bool jn_obj_truthy(JnObject* obj);
 JN_API void jn_obj_print(JnObject* obj);
+// String functions
+Jn_String* jn_st_init(const char* str);
+bool jn_st_copy(Jn_String* dest, Jn_String* src);
+void jn_st_free(Jn_String* str_obj);
 // Array functions
 void jn_arr_pop(JnObject* arr_obj, JnObject** value);
 void jn_arr_copy(JnObject* dest, JnObject* src);
@@ -738,8 +742,6 @@ JnObject* jn_arr_get(JnObject* arr_obj, int index);
 // Returns -1 if function failed, returns 1 if increment capacity defualt 0
 int jn_arr_grow(JnObject* arr_obj, size_t new_size);
 void jn_arr_append_many(JnObject* arr_obj, JnObject** argv, size_t argc);
-
-
 //Hashmap Functions
 Jn_HashEntry* Jn_hashmap_get(Jn_Hashmap* map, JnObject* key);
 void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx);
