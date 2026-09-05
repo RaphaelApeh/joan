@@ -57,6 +57,36 @@ JN_INLINE uint64_t hash_combine(uint64_t a, uint64_t b)
             (a << 6) + (a >> 2)));
 }
 
+Jn_String* jn_st_init(const char* str)
+{
+    Jn_String* strObj = Jn_alloc(sizeof(*strObj));
+    if (NULL == strObj) return NULL;
+    Jn_String S_Obj = JNSTR_OBJ(str);
+    strObj->chars = S_Obj.chars;
+    strObj->hash = S_Obj.hash;
+    strObj->len = S_Obj.len;
+    return strObj;
+}
+
+bool jn_st_copy(Jn_String* dest, Jn_String* src)
+{
+    if (!dest || !src) return false;
+    memcopy(dest->chars, src->chars, src->len);
+    if (!dest->chars) return false;
+    dest->len = src->len;
+    dest->hash = src->hash;
+    return true;
+}
+
+void jn_st_free(Jn_String* str_obj)
+{
+    if (NULL == str_obj) return;
+    Jn_free(str_obj->chars);
+    str_obj->len = 0;
+    str_obj->hash = 0;
+    Jn_free(str_obj);
+}
+
 JnObject* jn_obj_new(Jn_State* state, JnTypeObject type)
 {
     JnObject* obj = gc_alloc(state, sizeof(JnObject), type);
