@@ -321,8 +321,7 @@ static Jn_Node* parse_range(Jn_Parser* p, Jn_Node* node)
     Jn_Node* step = NULL;
     if (match(p, TOK_COLON))
         step = parse_expr(p);
-    Jn_Node* ast = ast_range(node, stop, step, op);
-    return ast;
+    return ast_range(node, stop, step, op);
 }
 
 static Jn_Node* parse_while(Jn_Parser* p)
@@ -729,11 +728,9 @@ static Jn_Node* parse_inline_tuple(Jn_Parser* p, Jn_Node* first)
     ast_tuple_add(tuple, first);
     for (;;)
     {
-        // TODO: add support for 1, -> (1,)
+        if (p->has_newl || is_stmt_end(p)) break;
         ast_tuple_add(tuple, parse_expr(p));
-        
         if (match(p, TOK_COMMA)) continue;
-        
         break;
     }
     return tuple;
@@ -743,9 +740,6 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
 {
     if (check(p, TOK_PLUS_PLUS))
         return parse_unary(p, TOK_PLUS_PLUS);
-
-    Jn_Node* tpl = NULL;
-
     while (true)
     {
         if (match(p, TOK_LPARN))
@@ -767,16 +761,7 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
 
         if (!p->skip_comma && check(p, TOK_COMMA))
         {
-            consume(p, TOK_COMMA);
-            if (NULL == tpl)
-            {
-                // probably the first time.
-                tpl = ast_tuple(p);
-                ast_tuple_add(tpl, left);
-            }
-            Jn_Node* node = parse_expr(p); // TODO: tuple -> inline_expr -> false (1, 2) -> true 1, 2
-            ast_tuple_add(tpl, node);
-            left = tpl;
+            left = parse_inline_tuple(p, left);
             continue;
         }
         if (check(p, TOK_RANGE))
@@ -794,7 +779,7 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
     }
     if (is_assign_token(GET_TOK(p).type))
         return parse_reassign(p, left);
-    return (NULL != tpl) ? tpl : left;
+    return left;
 }
 
 static Jn_Node* parse_hashmap(Jn_Parser* p)
