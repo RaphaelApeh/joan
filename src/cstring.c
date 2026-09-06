@@ -418,7 +418,7 @@ size_t strlen_utf8(const char* str)
     return len;
 }
 
-char* strjoin(const char* str, const char* str2)
+char* strpjoin(const char* str, const char* str2)
 {
 size_t str_len = strlen(str);
 size_t str2_len = strlen(str2);
