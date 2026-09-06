@@ -394,6 +394,17 @@ JN_API void Jn_buff_clear(Jn_Buffer* B)
     B->data = NULL;
 }
 
+JN_API bool Jn_dir_exists(const char* path)
+{
+#ifdef _WIN32
+   DWORD attr = GetFileAttributesA(path);
+   return attr != INVALID_FILE_ATTRIBUTES && (attr & FILE_ATTRIBUTE_DIRECTORY); 
+#else
+   struct stat st;
+   return stat(path, &st) == 0 && S_ISDIR(st.st_mode); 
+#endif
+}
+
 JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...)
 {
     va_list arg; va_start(arg, fmt);
