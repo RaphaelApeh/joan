@@ -3,6 +3,14 @@
 #include <ctype.h>
 #include <stdbool.h>
 
+#ifdef _WIN32
+    #define PATH_SEP '\\'
+    #define PATH_LIST_SEP ';'
+#else
+    #define PATH_SEP '/'
+    #define PATH_LIST_SEP ':'
+#endif
+
 static int hex_value(char c)
 {
     if (c >= '0' && c <= '9')
@@ -408,4 +416,17 @@ size_t strlen_utf8(const char* str)
     while ((c = *str++) != '\0')
         len += (c & 0xC0) != 0x80;
     return len;
+}
+
+char* strjoin(const char* str, const char* str2)
+{
+size_t str_len = strlen(str);
+size_t str2_len = strlen(str2);
+bool slash = str_len > 0 && str[str_len - 1] != '/' && str[str_len - 1] != '\\'; 
+size_t size = str_len + str2_len + (slash ? 1 : 0) + 1; 
+char* result = malloc(size); 
+if (!result) return NULL; 
+if (slash) snprintf(result, size, "%s%c%s", str, PATH_SEP, str2); 
+else snprintf(result, size, "%s%s", str, str2); 
+return result; 
 }
