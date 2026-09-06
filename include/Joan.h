@@ -117,7 +117,6 @@ enum {
 };
 #endif
 
-
 #define JN_INITIAL_CAPACITY 0xff
 
 typedef enum{
@@ -403,7 +402,6 @@ void set_symbols(Jn_State* state, const char* str);
 
 Jn_CModule math_mod[] = {
     {"PI", NULL, JN_RETURN_FLOAT(3.14)}
-    {NULL, NULL, NULL} // required
 }
 
 Jn_CRegistry* math_lib = register_module("math", state, math_mod) 
@@ -569,7 +567,14 @@ JN_API void Jn_free(void* ptr);
 JN_API void Jn_mem_zero(void* ptr, size_t size);
 JN_API void* Jn_aalloc(Jn_State* state, size_t size);
 
+// Helpers
 JN_API bool Jn_file_exists(const char* filename);
+JN_API bool Jn_dir_exists(const char* path);
+#if JN_MSVC
+   #define Jn_strdup _strdup
+#else
+   #define Jn_strdup strdup
+#endif
 
 // Lexer
 // Example:
@@ -621,14 +626,12 @@ JN_API void Jn_define_fn(Jn_State* state, const char*, Jn_CFunction);
 JN_API void Jn_register_fn(Jn_State* state, char* name, char* doc, Jn_CFunction fn);
 JN_API void Jn_register(Jn_State* state, const char* name, const char* doc, JnObject* obj);
 
-
 // Buffer
 
 struct Jn_Buffer {
     char* data;
     size_t len, cap;
 };
-
 JN_API int Jn_buff_init(Jn_Buffer* B);
 JN_API void Jn_buff_add_char(Jn_Buffer* B, char c);
 JN_API void Jn_buff_add_string(Jn_Buffer* B, const char* str);
@@ -748,6 +751,9 @@ void Jn_hashmap_insert(Jn_Hashmap* map, JnObject* key, JnObject* value, int idx)
 void Jn_hashmap_put(Jn_Hashmap* map, JnObject* key, JnObject* value);
 JnObject* Jnhashmap_get_from_index(Jn_Hashmap* map, int index);
 bool Jnhashmap_remove(Jn_Hashmap* map, JnObject* key);
+// Module functions
+JnObject* jn_load_module(Jn_State* state, const char* path);
+// TODO: add more functions
 
 #ifdef __cplusplus
 }
