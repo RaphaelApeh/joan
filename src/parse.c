@@ -1,7 +1,4 @@
-#include <stdlib.h>
-#include <assert.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include <Joan.h>
 
 #include "parse.h"
 #include "object.h"
@@ -907,11 +904,17 @@ static Jn_Node* parse_import(Jn_Parser* p)
     */
     next_parser(p);
     char* import_path;
+    Jn_Buffer b = {0};
+    Jn_buff_init(&b);
+    while (check(p, TOK_IDENT))
+    {
+        Jn_buff_add_string(&b, get_lexeme(p));
+        if (match(p, TOK_DOT)) Jn_buff_add_char(&b, '.');
+    }
+    if (*(b.data + (b.count - 1)) == '.')
+        return parse_error(p, "Invalid syntax");
     char** fields = arena_alloc(p->arena, sizeof(char *) * 100);
     int len = 0, cap = 100;
-    if (!check(p, TOK_STRING))
-        return parse_error(p, "Expected an import path.");
-    import_path = get_lexeme(p);
     if (match(p, TOK_LBRACE))
     {
         while (true)
@@ -934,6 +937,9 @@ static Jn_Node* parse_import(Jn_Parser* p)
         }
     }
     fields[len] = NULL;
+    Jn_buff_add_char(&b, '\0');
+    import_path = Jn_strdup(b.data);
+    Jn_buff_free(&b);
     Jn_Node* ast = ast_create(p, AST_IMPORT);
     ast->import_node.lib = import_path;
     ast->import_node.fields = fields;
