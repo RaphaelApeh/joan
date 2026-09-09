@@ -898,9 +898,9 @@ static Jn_Node* parse_import(Jn_Parser* p)
 {
     /*
     Example:
-        import "conf" // import everything
+        import conf // import everything
         OR
-        import "conf"{version} // import only version
+        import myproject.conf{version} // import only version
     */
     next_parser(p);
     char* import_path;
@@ -909,10 +909,12 @@ static Jn_Node* parse_import(Jn_Parser* p)
     while (check(p, TOK_IDENT))
     {
         Jn_buff_add_string(&b, get_lexeme(p));
-        if (match(p, TOK_DOT)) Jn_buff_add_char(&b, '.');
+        if (match(p, TOK_DOT)) 
+        {
+            if (!check(p, TOK_IDENT) return parse_error(p, "Invalid import syntax");
+            Jn_buff_add_char(&b, '.');
+        }
     }
-    if (*(b.data + (b.count - 1)) == '.')
-        return parse_error(p, "Invalid syntax");
     char** fields = arena_alloc(p->arena, sizeof(char *) * 100);
     int len = 0, cap = 100;
     if (match(p, TOK_LBRACE))
