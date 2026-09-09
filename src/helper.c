@@ -1,13 +1,53 @@
 #include <sys/stat.h>
-#include <stdlib.h>
 #include <ctype.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include <Joan.h>
+
 #include "object.h"
 #include "helper.h"
 #include "ast.h"
 
+#if defined(JN_WINDOWS) && !defined(PATH_SEP)
+    #define PATH_SEP '\\'
+    #define PATH_LIST_SEP ';'
+#elif !defined(JN_WINDOWS) && !defined(PATH_SEP)
+    #define PATH_SEP '/'
+    #define PATH_LIST_SEP ':'
+#endif
+
 #define CHAR_EQUAL(a, b) (tolower((a)) == tolower((b)))
+
+static char* module_to_path(const char* module)
+{
+   size_t len = strlen(module);
+   char* path = Jn_alloc(len + 1); 
+   if (!path) return NULL; 
+   for (size_t i = 0; i < len; i++) 
+   { 
+     if (module[i] == '.') path[i] = PATH_SEP; 
+     else path[i] = module[i]; 
+   } 
+   path[len] = '\0'; 
+   return path; 
+}
+
+static char* try_module_path(const char* base)
+{
+    char* path;
+    size_t len = strlen(base); 
+    path = malloc(len + 4); 
+    
+    if (!path) return NULL; 
+    snprintf(path, len + 4, "%s." JOAN_EXT, base); 
+    
+    if (Jn_file_exists(path)) return path; 
+    free(path); 
+    char* init = str_pjoin(base, "__main__." JOAN_EXT); 
+    if (!init) return NULL; 
+    
+    if (Jn_file_exists(init)) return init; 
+    free(init); 
+    return NULL;
+}
 
 static int levenshtein(const char* str1, const char* str2)
 {
