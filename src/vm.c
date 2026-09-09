@@ -1301,6 +1301,10 @@ void compile(Jn_Node* node, Chuck* chuck)
         compile(node->index.array, chuck);
         WRITE_CHUCK(chuck, OP_INDEX);
         break;
+    case AST_PROGRAM: {
+        for (size_t i = 0; i < node->program_node.count; ++i)
+            compile(node->program_node.items[i], chuck);
+    } break;
     default:
         break;
     }
