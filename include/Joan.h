@@ -673,6 +673,7 @@ JN_API bool Jn_has_variable(Jn_State* state, const char* name);
 
 // Compile & Run
 JN_API int Jn_compile(Jn_State*);
+JN_API void Jn_compile_file(Jn_State* state, const char* filename);
 JN_API int Jn_exec(Jn_State*);
 
 // Load builtin function
