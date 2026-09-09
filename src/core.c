@@ -191,7 +191,6 @@ JN_API void Jn_program_init(Jn_State* state, char** argv, int argc)
 
 }
 
-
 JN_API int Jn_compile(Jn_State* state)
 {
     JnSemantic sem;
@@ -291,9 +290,7 @@ JN_API int Jn_exec_from_file(Jn_State* state, char* filename, FILE* fptr)
     read_from_fptr(fptr, &b);
     if (filename)
         state->cxt.source.filename = strdup(filename);
-    state->cxt.source.source = b.data; 
-    state->cxt.argv = NULL;
-    state->cxt.argc = 0;
+    state->cxt.source.source = b.data;
     int exit_code = Jn_exec_program(state, filename, b.data);    
     return exit_code;
 }
@@ -332,6 +329,13 @@ JN_API int Jn_exec_REPL(Jn_State* state, const char* source)
     return 0;
 }
 
+JN_API void Jn_compile_file(Jn_State* state, const char* filename)
+{
+    if (!state || !filename) return;
+    Jn_Node* node = Jn_parse_file(state, filename);
+    if (NULL == node) return;
+    compile(node, state->vm->chuck);
+}
 
 static JnObject* find_module(char* name)
 {
