@@ -1,7 +1,5 @@
 #ifndef JOAN_AST_H
 #define JOAN_AST_H
-#include <stdbool.h>
-#include <stdint.h>
 #include <string.h>
 #include "token.h"
 #include "object.h"
@@ -85,6 +83,7 @@ typedef struct Jn_Node{
             Jn_Node** items;
             size_t count, capacity;
         } program_node;
+
         struct {
             Jn_Node* left;
             Jn_TokenType op;
@@ -327,10 +326,22 @@ Jn_Node* ast_if_node(Jn_Parser* p, Jn_Node* cond, Jn_Node* then, elseif* elseif,
 
 //BREAK, CONTINUE
 Jn_Node* ast_break(Jn_Parser* p);
+
 Jn_Node* ast_continue(Jn_Parser* p);
+
 Jn_Node* ast_return(Jn_Parser* p, Jn_Node* value);
 // Call
 Jn_Node* ast_call(Jn_Parser* p, Jn_Node* callee, Jn_Node** args, size_t count);
+
+Jn_Node* ast_member_attr(Jn_Parser* p, Jn_Node* obj, Jn_Node* field, int tok);
+
+Jn_Node* ast_hashmap(Jn_Parser* p, Jn_Node** keys, Jn_Node** values, size_t count);
+
+Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def);
+
+Jn_Node* ast_lambda(Jn_Parser* p, Jn_Node* expr, char** argv, int argc);
+
+Jn_Node* ast_import(Jn_Parser* p, const char* lib, const char* alias, char** fields, size_t count);
 
 Jn_Node* ast_range(Jn_Parser* p, Jn_Node* start, Jn_Node* stop, Jn_Node* step int op);
 
