@@ -879,19 +879,8 @@ static Jn_Node* parse_lambda(Jn_Parser* p)
     } while(true);
     args[len] = NULL;
     match(p, TOK_EQ_GT);
-    Jn_Node* expr = NULL;
-    
-    if (check(p, TOK_LBRACE))
-    {
-        expr = parse_block(p);
-    } else {    
-        expr = parse_expr(p);
-    }
-    Jn_Node* ast = ast_create(p, AST_LAMBDA);
-    ast->lambda_node.count = len;
-    ast->lambda_node.expr = expr;
-    ast->lambda_node.args = args;
-    return ast;
+    Jn_Node* expr = parse__body(p);
+    return ast_lambda(p, expr, args, len);
 }
 
 static Jn_Node* parse_import(Jn_Parser* p)
@@ -906,12 +895,17 @@ static Jn_Node* parse_import(Jn_Parser* p)
     char* import_path;
     Jn_Buffer b = {0};
     Jn_buff_init(&b);
+    if (!check(p, TOK_IDENT))
+    {
+        Jn_buff_free(&b);
+        return parse_error(p, "expected an import identifier after 'import'.");
+    }
     while (check(p, TOK_IDENT))
     {
         Jn_buff_add_string(&b, get_lexeme(p));
         if (match(p, TOK_DOT)) 
         {
-            if (!check(p, TOK_IDENT) return parse_error(p, "Invalid import syntax");
+            if (!check(p, TOK_IDENT)) return parse_error(p, "expected import name after '.'.");
             Jn_buff_add_char(&b, '.');
         }
     }
@@ -922,7 +916,7 @@ static Jn_Node* parse_import(Jn_Parser* p)
         while (true)
         {
             if (!check(p, TOK_IDENT)) return parse_error(p, "Expected an identifier.");
-            if (len > cap)
+            if (len >= cap)
             {
                 cap *= 2;
                 fields = arena_realloc(
@@ -942,11 +936,7 @@ static Jn_Node* parse_import(Jn_Parser* p)
     Jn_buff_add_char(&b, '\0');
     import_path = Jn_strdup(b.data);
     Jn_buff_free(&b);
-    Jn_Node* ast = ast_create(p, AST_IMPORT);
-    ast->import_node.lib = import_path;
-    ast->import_node.fields = fields;
-    ast->import_node.count = len;
-    return ast;
+    return ast_import(p, import_path, fields, len);
 }
 
 static Jn_Node* parse_struct(Jn_Parser* p)
