@@ -256,6 +256,32 @@ Jn_Node* ast_function(Jn_Parser* p, char* ident, Jn_Node* block, int count, char
     return ast;
 }
 
+Jn_Node* ast_member_attr(Jn_Parser* p, Jn_Node* obj, Jn_Node* field, int tok)
+{
+    
+}
+
+Jn_Node* ast_hashmap(Jn_Parser* p, Jn_Node** keys, Jn_Node** values, size_t count)
+{
+    
+}
+
+Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def)
+{
+    
+}
+
+Jn_Node* ast_lambda(Jn_Parser* p, Jn_Node* expr, char** argv, int argc)
+{
+    
+}
+
+Jn_Node* ast_import(Jn_Parser* p, const char* lib, const char* alias, char** fields, size_t count)
+{
+    
+}
+
+
 Jn_Node* ast_error(Jn_Parser* p, const char* msg)
 {
     Jn_Node* ast = ast_create(p, AST_ERROR);
