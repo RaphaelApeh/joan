@@ -439,7 +439,7 @@ Jn_Token token_identifier(Jn_Lexer* l)
         if (equal(t.lexeme, Keywords[i].keyword))
         {
             t.type = Keywords[i].token;
-            break;
+            return t;
         }
     }
     return t;
