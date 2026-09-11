@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-#ifndef ARENA_H
-#define ARENA_H
+#ifndef JN_ARENA_H
+#define JN_ARENA_H
 #include <stddef.h>
 #include <stdint.h>
 
@@ -48,8 +48,8 @@ typedef struct Jn_Arena
 
 void arena_init(Jn_Arena* arena);
 void* arena_alloc(Jn_Arena* arena, size_t size);
-// TODO
+char* arena_strdup(Jn_Arena* arena, const char* str);
 void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size);
 void arena_free(Jn_Arena* arena);
 
-#endif
+#endif // JN_ARENA_H
