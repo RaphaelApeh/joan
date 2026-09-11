@@ -258,29 +258,49 @@ Jn_Node* ast_function(Jn_Parser* p, char* ident, Jn_Node* block, int count, char
 
 Jn_Node* ast_member_attr(Jn_Parser* p, Jn_Node* obj, Jn_Node* field, int tok)
 {
-    
+    Jn_Node* ast = ast_create(p, AST_MEMBER);
+    ast->member.callie = obj;
+    ast->member.field = field;
+    ast->member.tok = tok;
+    return ast;
 }
 
 Jn_Node* ast_hashmap(Jn_Parser* p, Jn_Node** keys, Jn_Node** values, size_t count)
 {
-    
+    Jn_Node* ast = ast_create(p, AST_HASHMAP);
+    ast->hmp_node.keys = keys;
+    ast->hmp_node.values = values;
+    ast->hmp_node.count = len;
+    return ast;
 }
 
 Jn_Node* ast_match(Jn_Parser* p, Jn_Node* sub, case_t* cases, Jn_Node* def)
 {
-    
+    Jn_Node* ast = ast_create(p, AST_MATCH);
+    ast->match_node.def = def;
+    ast->match_node.cases = cases;
+    ast->match_node.subject = sun;
+    return ast;
 }
 
 Jn_Node* ast_lambda(Jn_Parser* p, Jn_Node* expr, char** argv, int argc)
 {
-    
+    Jn_Node* ast = ast_create(p, AST_LAMBDA);
+    ast->lambda_node.count = argc;
+    ast->lambda_node.expr = expr;
+    ast->lambda_node.args = argv;
+    return ast;
 }
 
 Jn_Node* ast_import(Jn_Parser* p, const char* lib, const char* alias, char** fields, size_t count)
 {
-    
+    Jn_Node* ast = ast_create(p, AST_IMPORT);
+    ast->import_node.lib = import_path;
+    ast->import_node.alias = alias;
+    ast->import_node.fields = fields;
+    ast->import_node.count = len;
+    return ast;
 }
-
 
 Jn_Node* ast_error(Jn_Parser* p, const char* msg)
 {
