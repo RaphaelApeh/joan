@@ -73,6 +73,17 @@ void* arena_alloc(Jn_Arena* arena, size_t size)
     return ptr;
 }
 
+char* arena_strdup(Jn_Arena* arena, const char* str)
+{
+    if (!str) return NULL;
+    size_t len = strlen(str);
+    char* out = arena_alloc(arena, len + 1);
+    if (!out) return NULL;
+    memcpy(out, src, len);
+    out[len] = 0;
+    return out;
+}
+
 void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size)
 {
     assert(old_size < new_size);
@@ -97,6 +108,7 @@ void* arena_realloc(Jn_Arena* arena, void* ptr, size_t old_size, size_t new_size
     memcpy(new_ptr, ptr, copy);
     return ptr;
 }
+
 void arena_free(Jn_Arena* arena)
 {
     if (arena == NULL) return;
