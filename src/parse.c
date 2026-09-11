@@ -782,11 +782,9 @@ static Jn_Node* parse_postfix(Jn_Parser* p, Jn_Node* left)
 static Jn_Node* parse_hashmap(Jn_Parser* p)
 {
     skip(p, TOK_LBRACE, "Expected an opening '{'");
-    Jn_Node** keys = arena_alloc(p->arena, sizeof(Jn_Node *) * 30);
-    Jn_Node** values = arena_alloc(p->arena, sizeof(Jn_Node *) * 30);
-    size_t len= 0, cap = 30;    
-    Jn_Node* ast = ast_create(p, AST_HASHMAP);
-
+    Jn_Node** keys = arena_alloc(p->arena, sizeof(*keys) * 30);
+    Jn_Node** values = arena_alloc(p->arena, sizeof(*values) * 30);
+    size_t len = 0, cap = 30;
     while (true)
     {
         if (match(p, TOK_RBRACE))
@@ -796,8 +794,8 @@ static Jn_Node* parse_hashmap(Jn_Parser* p)
         if (len > cap)
         {
             cap *= 2;
-            keys = realloc(keys, sizeof(Jn_Node *) * cap);
-            values = realloc(values, sizeof(Jn_Node *) * cap);
+            keys = realloc(keys, sizeof(*keys) * cap);
+            values = realloc(values, sizeof(*values) * cap);
         }
         keys[len] = parse_expr(p);
         if (!match(p, TOK_COLON))
@@ -810,11 +808,7 @@ static Jn_Node* parse_hashmap(Jn_Parser* p)
             break;
         return parse_error(p, "expected a closing '}'.");
     }
-    match(p, TOK_SEMICOLON); // TODO
-    ast->hmp_node.keys = keys;
-    ast->hmp_node.values = values;
-    ast->hmp_node.count = len;
-    return ast;
+    return ast_hashmap(p, keys, values, len);
 }
 
 
@@ -905,7 +899,11 @@ static Jn_Node* parse_import(Jn_Parser* p)
         Jn_buff_add_string(&b, get_lexeme(p));
         if (match(p, TOK_DOT)) 
         {
-            if (!check(p, TOK_IDENT)) return parse_error(p, "expected import name after '.'.");
+            if (!check(p, TOK_IDENT)) 
+            {
+                Jn_buff_free(&b);
+                return parse_error(p, "expected import name after '.'.");
+            }
             Jn_buff_add_char(&b, '.');
         }
     }
@@ -934,9 +932,9 @@ static Jn_Node* parse_import(Jn_Parser* p)
     }
     fields[len] = NULL;
     Jn_buff_add_char(&b, '\0');
-    import_path = Jn_strdup(b.data);
+    import_path = arena_strdup(p->arena, b.data);
     Jn_buff_free(&b);
-    return ast_import(p, import_path, fields, len);
+    return ast_import(p, import_path, NULL, fields, len);
 }
 
 static Jn_Node* parse_struct(Jn_Parser* p)
