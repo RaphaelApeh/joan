@@ -16,6 +16,63 @@
 
 #define CHAR_EQUAL(a, b) (tolower((a)) == tolower((b)))
 
+static void jn_putc(Jn_Buffer *out, char c)
+{
+    if (out->cap != 0 && out->len + 1 < out->cap)
+    out->data[out->len] = c;
+    out->len++;
+}
+
+static void jn_puts(Jn_Buffer out, const char* str)
+{
+    if (!str)
+    str = "(null)";
+    while (*str) jn_putc(out, *str++); 
+}
+
+static void jn_put_uint(
+Jn_Buffer *out,
+unsigned long long value,
+unsigned base,
+int uppercase
+)
+{
+    static const char lower[] = "0123456789abcdef";
+    static const char upper[] = "0123456789ABCDEF";
+    const char *digits = uppercase ? upper : lower; 
+    char tmp[64]; size_t n = 0; 
+    if (value == 0) 
+    { 
+        jn_putc(out, '0'); 
+        return; 
+    } 
+    while (value) 
+    { 
+        tmp[n++] = digits[value % base]; 
+        value /= base; 
+    } 
+    while (n--) 
+        jn_putc(out, tmp[n]);
+}
+
+static void jn_put_int(Jn_Buffer *out, long long value)
+{
+    if (value < 0) {
+       jn_putc(out, '-');
+       unsigned long long magnitude = (unsigned long long)(-(value + 1)) + 1; 
+       jn_put_uint(out, magnitude, 10, 0); 
+    } else 
+    { 
+        jn_put_uint(out, (unsigned long long)value, 10, 0); 
+    }
+}
+
+static void jn_pad(Jn_Buffer *out, char c, size_t count)
+{
+    while (count--)
+       jn_putc(out, c);
+}
+
 static char* module_to_path(const char* module)
 {
    size_t len = strlen(module);
@@ -404,6 +461,7 @@ static void buff__gw(Jn_Buffer* B, size_t new_s)
 
 JN_API void Jn_buff_add_char(Jn_Buffer* B, char c)
 {
+    if (!B->data) Jn_buff_init(B);
     buff__gw(B, 0);
     B->data[B->len++] = c;
 }
@@ -443,6 +501,132 @@ JN_API bool Jn_dir_exists(const char* path)
    struct stat st;
    return stat(path, &st) == 0 && S_ISDIR(st.st_mode); 
 #endif
+}
+
+char* resolve_path(Jn_State* state, const char* path)
+{
+    if (!path || !state) return NULL;
+    char* relative = module_to_path(path);
+    if (!relative)
+        return NULL;
+    char* filename = state->cxt.source.filename;
+    if (filename) {
+        char current_dir[JN_PATH_MAX];
+
+        strncpy(
+            current_dir,
+            filename,
+            sizeof(current_dir) - 1
+        );
+
+        current_dir[sizeof(current_dir) - 1] = '\0';
+
+        char* slash = strrchr(current_dir, '/');
+
+#ifdef _WIN32
+        char* backslash = strrchr(current_dir, '\\');
+
+        if (!slash || (backslash && backslash > slash))
+            slash = backslash;
+#endif
+        if (slash) {
+            *slash = '\0';
+
+            char* base = path_join(current_dir, relative);
+
+            if (base) {
+                char* result = try_module_path(base);
+
+                free(base);
+
+                if (result) {
+                    free(relative);
+                    return result;
+                }
+            }
+        }
+    }
+        {
+        char* result = try_module_path(relative);
+
+        if (result) {
+            free(relative);
+            return result;
+        }
+    }
+
+    /*
+     * 3. Search JOAN_PATH.
+     *
+     * Example:
+     *
+     * Linux:
+     *     JOAN_PATH=./lib:/usr/local/lib/joan
+     *
+     * Windows:
+     *     JOAN_PATH=.\lib;C:\Joan\lib
+     */
+    const char* joan_path = getenv("JOAN_PATH");
+
+    if (joan_path) {
+        char* paths = strdup(joan_path);
+
+        if (paths) {
+            char separator[2] = {
+                PATH_LIST_SEP,
+                '\0'
+            };
+
+            char* saveptr = NULL;
+
+#ifdef _WIN32
+            char* part = strtok_s(
+                paths,
+                separator,
+                &saveptr
+            );
+#else
+            char* part = strtok_r(
+                paths,
+                separator,
+                &saveptr
+            );
+#endif
+
+            while (part) {
+                char* base = path_join(part, relative);
+                if (base) {
+                    char* result = try_module_path(base);
+                    free(base);
+
+                    if (result) {
+                        free(paths);
+                        free(relative);
+                        return result;
+                    }
+                }
+
+#ifdef _WIN32
+                part = strtok_s(
+                    NULL,
+                    separator,
+                    &saveptr
+                );
+#else
+                part = strtok_r(
+                    NULL,
+                    separator,
+                    &saveptr
+                );
+#endif
+            }
+
+            free(paths);
+        }
+    }
+    free(relative);
+
+    return NULL;
 }
 
 JN_API int Jn_snprintf(char* buff, size_t size, const char* fmt, ...)
