@@ -62,6 +62,10 @@ extern "C" {
 #include <unistd.h>
 #endif
 
+#ifndef JN_PATH_MAX
+#define JN_PATH_MAX 0xff << 2
+#endif
+
 #ifdef JN_MSVC
 #define JN_INLINE static __forceinline
 #else
