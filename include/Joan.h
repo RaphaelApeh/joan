@@ -597,6 +597,7 @@ JN_API Jn_Node* Jn_parse_file(Jn_State* state, const char* filename);
 // Object Argument helper
 JN_API JnObject* Jn_make_args(Jn_State* state, size_t capacity);
 JN_API void Jn_add_arg(JnObject* args, JnObject* obj);
+JN_API JnObject* Jn_shift_args(JnObject* args, int* count);
 
 // Set a custom foreign handler
 JN_API void Jn_add_handler(Jn_State* state, JnForeignHandler fn);
