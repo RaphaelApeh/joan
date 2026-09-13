@@ -32,6 +32,14 @@ JN_API void Jn_add_arg(JnObject* args, JnObject* obj)
     args->arg.args[args->arg.count++] = obj;
 }
 
+JN_API JnObject* Jn_shift_args(JnObject* args, int* count)
+{
+    if (!count) return NULL;
+    assert((*count) > 0);
+    if (*count > args.arg.count) return NULL;
+    return args.arg.args[(*count)--];
+}
+
 struct JnObjectMethod {
     char* fn_name;
     Jn_Cmethod method;
