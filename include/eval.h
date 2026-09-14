@@ -25,6 +25,7 @@ typedef enum{
     EVAL_IS,
     EVAL_EQUAL,
     EVAL_NOTEQUAL,
+    EVAL_RANGE,
 } BinaryOp;
 
 JnObject* eval_binary(Jn_State*, JnObject* lhs, JnObject* rhs, BinaryOp op);
