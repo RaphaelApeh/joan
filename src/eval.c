@@ -68,6 +68,8 @@ static bool array_contains(JnObject* key, Jn_Array* arr)
     return false;
 }
 
+static JnObject* eval_range(Jn_State* state, JnObject* start, JnObject* stop, JnObject* step);
+
 static JnObject* eval_int(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
 static JnObject* eval_char(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
 static JnObject* eval_bool(Jn_State* state, JnObject* lhs, JnObject* rhs, int op);
