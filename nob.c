@@ -18,7 +18,6 @@ int main(int argc, char** argv)
    // default gcc
    cc = "gcc"; //TODO: add opts
    Nob_Cmd cmd = {0};
-   nob_cmd_append(&cmd, cc, C_FLAGS);
 #if _WIN32
    if (!build_win(&cmd, cc)) return 1;
 #else
