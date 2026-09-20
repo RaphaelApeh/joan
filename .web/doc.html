@@ -2,97 +2,1071 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <meta name="description" content="">
+    <meta name="description" content="Joan programming language documentation">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>joan Documentation - a code documentation page template for codrops</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800,900" rel="stylesheet">
+
+    <title>Joan Documentation</title>
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
+    >
+
+    <link
+      href="https://fonts.googleapis.com/css?family=Nunito+Sans:300,400,600,700,800,900"
+      rel="stylesheet"
+    >
+
     <link rel="stylesheet" href="global.css">
     <link rel="stylesheet" href="doc.css">
     <link rel="author" href="humans.txt">
   </head>
+
   <body>
     <div class="doc__bg"></div>
+
     <nav class="header">
-      <h1 class="logo">joan <span class="logo__thin">Doc</span></h1>
+      <h1 class="logo">
+        joan <span class="logo__thin">Doc</span>
+      </h1>
+
       <ul class="menu">
-        <div class="menu__item toggle"><span></span></div>
-        <li class="menu__item"><a href="" class="link link--dark"><i class="fa fa-github"></i> Github</a></li>
-        <li class="menu__item"><a href="index.html" class="link link--dark"><i class="fa fa-home"></i> Home</a></li>
+        <div class="menu__item toggle">
+          <span></span>
+        </div>
+
+        <li class="menu__item">
+          <a
+            href="https://github.com/your-username/joan"
+            class="link link--dark"
+          >
+            <i class="fa fa-github"></i> Github
+          </a>
+        </li>
+
+        <li class="menu__item">
+          <a href="index.html" class="link link--dark">
+            <i class="fa fa-home"></i> Home
+          </a>
+        </li>
       </ul>
     </nav>
+
     <div class="wrapper">
+
+      <!-- Navigation -->
       <aside class="doc__nav">
         <ul>
           <li class="js-btn selected">Get Started</li>
-          <li class="js-btn">Configuration</li>
-          <li class="js-btn">Keybindings</li>
+          <li class="js-btn">Language Basics</li>
+          <li class="js-btn">Control Flow</li>
+          <li class="js-btn">Functions</li>
+          <li class="js-btn">Collections</li>
+          <li class="js-btn">Types</li>
+          <li class="js-btn">Modules</li>
+          <li class="js-btn">Error Handling</li>
+          <li class="js-btn">Built-ins</li>
+          <li class="js-btn">CLI</li>
+          <li class="js-btn">Runtime</li>
           <li class="js-btn">Issues</li>
         </ul>
       </aside>
+
       <article class="doc__content">
+
+        <!-- ===================================================== -->
+        <!-- GET STARTED -->
+        <!-- ===================================================== -->
+
         <section class="js-section">
+
           <h3 class="section__title">Get Started</h3>
-          <p>Learn how to configure settings for joan, such as your syntax highlighting preference and the default saving folder location.</p>
-          <h3 class="section__title">Installation</h3>
+
+          <p>
+            Joan is a small, dynamically typed programming language designed
+            to be simple, expressive, and embeddable. Joan uses a bytecode
+            virtual machine and provides features such as functions,
+            closures, iterators, modules, objects, hash maps, pattern
+            matching, and exception handling.
+          </p>
+
+          <p>
+            Joan source files use the <code>.jt</code> extension.
+          </p>
+
+          <h3 class="section__title">Hello World</h3>
+
           <div class="code__block code__block--notabs">
-            <pre class="code code--block">
-              <code>
-                $ joan  ——config
-                  {
-                    “encryption”: true, 
-                    “highlighting“: true,
-                    “prettyTable”: false,
-                    “font”: [“Helvetica”, “sans-serif”],
-                    “folder”: “~/Desktop“
-                  }
-              </code>
-            </pre>
+            <pre class="code code--block"><code>
+puts("Hello, World!")
+            </code></pre>
           </div>
+
+          <h3 class="section__title">Running Joan</h3>
+
+          <p>
+            A Joan program can be executed by passing its source file to
+            the Joan executable.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+$ joan main.jt
+            </code></pre>
+          </div>
+
+          <p>
+            Joan can also be used interactively through its REPL.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+$ joan
+
+joan&gt; let name = "Joan"
+joan&gt; puts(name)
+Joan
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Source Files</h3>
+
+          <p>
+            Joan programs conventionally use the <code>.jt</code> extension.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+project/
+├── main.jt
+├── config.jt
+└── utils.jt
+            </code></pre>
+          </div>
+
         </section>
+
+
+        <!-- ===================================================== -->
+        <!-- LANGUAGE BASICS -->
+        <!-- ===================================================== -->
+
         <section class="js-section">
-          <h3 class="section__title">Configuration</h3>
-          <p>Learn how to configure settings for joan, such as your syntax highlighting preference and the default saving folder location.</p>
+
+          <h3 class="section__title">Language Basics</h3>
+
+          <p>
+            Joan has a compact syntax inspired by modern scripting languages.
+            Variables can be declared with <code>let</code> and constants
+            with <code>const</code>.
+          </p>
+
+          <h3 class="section__title">Variables</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+let name = "Raphael"
+let age = 25
+let score = 98.5
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Constants</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+const pi = 3.14159
+const language = "Joan"
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Short Declaration</h3>
+
+          <p>
+            Joan also supports the <code>:=</code> declaration syntax.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+name := "Joan"
+age := 25
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Comments</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+// This is a comment
+
+let x = 10 // Comments can follow expressions
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Operators</h3>
+
           <table id="customers">
             <tr>
-              <th>Options</th>
-              <th>Value</th>
-              <th>Default</th>
+              <th>Operator</th>
+              <th>Description</th>
             </tr>
             <tr>
-              <td>encryption</td>
-              <td>encrypt all notes before saving. If turned on, it requires password to open the file.</td>
-              <td>false</td>
+              <td>+</td>
+              <td>Addition</td>
             </tr>
             <tr>
-              <td>highlighting</td>
-              <td>Show syntax highlight on markdown text.</td>
-              <td>true</td>
+              <td>-</td>
+              <td>Subtraction</td>
             </tr>
             <tr>
-              <td>prettyTable</td>
-              <td>Render table with joan’s pretty table style.</td>
-              <td>true</td>
+              <td>*</td>
+              <td>Multiplication</td>
+            </tr>
+            <tr>
+              <td>/</td>
+              <td>Division</td>
+            </tr>
+            <tr>
+              <td>%</td>
+              <td>Modulo</td>
+            </tr>
+            <tr>
+              <td>==</td>
+              <td>Equality</td>
+            </tr>
+            <tr>
+              <td>!=</td>
+              <td>Inequality</td>
+            </tr>
+            <tr>
+              <td>&lt;</td>
+              <td>Less than</td>
+            </tr>
+            <tr>
+              <td>&gt;</td>
+              <td>Greater than</td>
+            </tr>
+            <tr>
+              <td>&lt;=</td>
+              <td>Less than or equal</td>
+            </tr>
+            <tr>
+              <td>&gt;=</td>
+              <td>Greater than or equal</td>
             </tr>
           </table>
-          <p>Malis percipitur an pro. Pro aperiam persequeris at, at sonet sensibus mei, id mea postulant definiebas concludaturque. Id qui malis abhorreant, mazim melius quo et. At eam altera dolorum, case dicant lobortis ius te, ad vel affert oportere reprehendunt. Quo no verterem deseruisse, mea brute postea te, ne per tacimates suavitate vituperatoribus.</p>
-          <hr />
+
         </section>
+
+
+        <!-- ===================================================== -->
+        <!-- CONTROL FLOW -->
+        <!-- ===================================================== -->
+
         <section class="js-section">
-          <h3 class="section__title">Keybindings</h3>
-          <p>Lorem ipsum dolor sit amet, scripta tibique indoctum sit ei, mel inani aeterno ad. Facer oratio ex per. At eam movet verear, in sea brute patrioque disputando, usu nonumes torquatos an. Ex his quaerendum intellegebat, ut vel homero accusam. Eum at debet tibique, in vocibus temporibus adversarium sed. Porro verear eu vix, ne usu tation vituperata.</p>
-          <p>Malis percipitur an pro. Pro aperiam persequeris at, at sonet sensibus mei, id mea postulant definiebas concludaturque. Id qui malis abhorreant, mazim melius quo et. At eam altera dolorum, case dicant lobortis ius te, ad vel affert oportere reprehendunt. Quo no verterem deseruisse, mea brute postea te, ne per tacimates suavitate vituperatoribus.</p>
-          <p>Malis percipitur an pro. Pro aperiam persequeris at, at sonet sensibus mei, id mea postulant definiebas concludaturque. Id qui malis abhorreant, mazim melius quo et. At eam altera dolorum, case dicant lobortis ius te, ad vel affert oportere reprehendunt. Quo no verterem deseruisse, mea brute postea te, ne per tacimates suavitate vituperatoribus.</p>
-          <hr />
+
+          <h3 class="section__title">Control Flow</h3>
+
+          <p>
+            Joan provides conditional expressions, loops, foreach iteration,
+            pattern matching, <code>break</code>, and <code>continue</code>.
+          </p>
+
+          <h3 class="section__title">If Statements</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+if age &gt;= 18 {
+    puts("Adult")
+} elseif age &gt;= 13 {
+    puts("Teenager")
+} else {
+    puts("Child")
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">For Loops</h3>
+
+          <p>
+            Joan supports C-style <code>for</code> loops.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+for i := 0; i &lt; 10; i += 1 {
+    puts(i)
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Foreach</h3>
+
+          <p>
+            Collections can be iterated directly using <code>in</code>.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+items := [1, 2, 3, 4, 5]
+
+for item in items {
+    puts(item)
+}
+            </code></pre>
+          </div>
+
+          <p>
+            An index and value can also be unpacked during iteration.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+for index, value in items {
+    puts(index)
+    puts(value)
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Break and Continue</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+for i := 0; i &lt; 100; i += 1 {
+
+    if i == 10 {
+        break
+    }
+
+    if i % 2 == 0 {
+        continue
+    }
+
+    puts(i)
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Match</h3>
+
+          <p>
+            Joan supports pattern-style branching with <code>match</code>.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+match value {
+    1 =&gt; puts("one")
+    2 =&gt; puts("two")
+    3 =&gt; puts("three")
+    else =&gt; puts("other")
+}
+            </code></pre>
+          </div>
+
         </section>
+
+
+        <!-- ===================================================== -->
+        <!-- FUNCTIONS -->
+        <!-- ===================================================== -->
+
         <section class="js-section">
+
+          <h3 class="section__title">Functions</h3>
+
+          <p>
+            Functions are first-class values in Joan. They can be assigned
+            to variables, passed as arguments, returned from other functions,
+            and stored inside collections.
+          </p>
+
+          <h3 class="section__title">Defining Functions</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+fn add(a, b) {
+    return a + b
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Calling Functions</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+result := add(10, 20)
+
+puts(result)
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Default Arguments</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+fn greet(name = "World") {
+    puts("Hello " + name)
+}
+
+greet()
+greet("Joan")
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Keyword Arguments</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+fn create_user(name, age, active = true) {
+    // ...
+}
+
+create_user(
+    name = "Joan",
+    age = 1,
+    active = true
+)
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Lambda Functions</h3>
+
+          <p>
+            Small expressions can be represented using lambda syntax.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+square := |x| =&gt; x * x
+
+puts(square(5))
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Yield</h3>
+
+          <p>
+            Functions can yield values to create generator-style iteration.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+fn numbers() {
+    yield 1
+    yield 2
+    yield 3
+}
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- COLLECTIONS -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Collections</h3>
+
+          <p>
+            Joan provides arrays, tuples, ranges, and hash maps.
+          </p>
+
+          <h3 class="section__title">Arrays</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+numbers := [1, 2, 3, 4, 5]
+
+puts(numbers[0])
+puts(numbers[-1])
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Tuples</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+point := (10, 20)
+
+x := point[0]
+y := point[1]
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Hash Maps</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+user := {
+    "name": "Joan",
+    "age": 1,
+    "language": "jt"
+}
+
+puts(user["name"])
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Ranges</h3>
+
+          <p>
+            Ranges can be created with the <code>..</code> operator.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+for i in 1..10 {
+    puts(i)
+}
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- TYPES -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Types</h3>
+
+          <p>
+            Joan is dynamically typed. Values are represented internally
+            by Joan objects and may be inspected and manipulated at runtime.
+          </p>
+
+          <table id="customers">
+            <tr>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Example</th>
+            </tr>
+
+            <tr>
+              <td>None</td>
+              <td>Represents the absence of a value.</td>
+              <td><code>none</code></td>
+            </tr>
+
+            <tr>
+              <td>Boolean</td>
+              <td>Boolean value.</td>
+              <td><code>true</code></td>
+            </tr>
+
+            <tr>
+              <td>Integer</td>
+              <td>Whole number.</td>
+              <td><code>42</code></td>
+            </tr>
+
+            <tr>
+              <td>Float</td>
+              <td>Floating-point number.</td>
+              <td><code>3.14</code></td>
+            </tr>
+
+            <tr>
+              <td>String</td>
+              <td>Text value.</td>
+              <td><code>"hello"</code></td>
+            </tr>
+
+            <tr>
+              <td>Character</td>
+              <td>Single character.</td>
+              <td><code>'a'</code></td>
+            </tr>
+
+            <tr>
+              <td>Array</td>
+              <td>Mutable ordered collection.</td>
+              <td><code>[1, 2, 3]</code></td>
+            </tr>
+
+            <tr>
+              <td>Tuple</td>
+              <td>Ordered tuple of values.</td>
+              <td><code>(1, 2)</code></td>
+            </tr>
+
+            <tr>
+              <td>Range</td>
+              <td>Sequence represented by a range.</td>
+              <td><code>1..10</code></td>
+            </tr>
+
+            <tr>
+              <td>HashMap</td>
+              <td>Key-value collection.</td>
+              <td><code>{"name": "Joan"}</code></td>
+            </tr>
+
+            <tr>
+              <td>Function</td>
+              <td>User-defined callable value.</td>
+              <td><code>fn add(a,b) {}</code></td>
+            </tr>
+
+            <tr>
+              <td>Iterator</td>
+              <td>Object used to iterate over values.</td>
+              <td><code>iter</code></td>
+            </tr>
+
+            <tr>
+              <td>Generator</td>
+              <td>Produces values lazily.</td>
+              <td><code>yield</code></td>
+            </tr>
+
+            <tr>
+              <td>Module</td>
+              <td>Imported Joan module.</td>
+              <td><code>import math</code></td>
+            </tr>
+
+            <tr>
+              <td>Struct</td>
+              <td>User-defined structured type.</td>
+              <td><code>struct User {}</code></td>
+            </tr>
+
+            <tr>
+              <td>Instance</td>
+              <td>Instance of a user-defined type.</td>
+              <td><code>User{}</code></td>
+            </tr>
+
+          </table>
+
+          <h3 class="section__title">Type Construction</h3>
+
+          <p>
+            Types can be explicitly constructed when required.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+message := string{"hello"}
+
+number := int{"42"}
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- MODULES -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Modules</h3>
+
+          <p>
+            Joan modules allow code to be split into reusable source files.
+            Modules can expose functions, variables, types, and other
+            definitions.
+          </p>
+
+          <h3 class="section__title">Importing a Module</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+import math
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Importing Specific Names</h3>
+
+          <p>
+            Individual names can be selected from a module.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+import math{sqrt}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Module Example</h3>
+
+          <p>
+            Suppose <code>math.jt</code> contains:
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+fn square(x) {
+    return x * x
+}
+            </code></pre>
+          </div>
+
+          <p>
+            Another file can import the module and use its definitions.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+import math
+
+result := math.square(10)
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- ERROR HANDLING -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Error Handling</h3>
+
+          <p>
+            Joan provides exception handling using <code>try</code> and
+            <code>except</code>.
+          </p>
+
+          <h3 class="section__title">Try / Except</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+try {
+    result := 10 / 0
+} except {
+    puts("An error occurred")
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Runtime Errors</h3>
+
+          <p>
+            Runtime errors are represented by Joan error objects. Errors
+            can propagate through function calls until they are handled
+            by an appropriate exception handler.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+fn divide(a, b) {
+    return a / b
+}
+
+try {
+    divide(10, 0)
+} except {
+    puts("division failed")
+}
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- BUILTINS -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Built-in Functions</h3>
+
+          <p>
+            Joan provides built-in functions for common operations.
+          </p>
+
+          <table id="customers">
+            <tr>
+              <th>Function</th>
+              <th>Description</th>
+            </tr>
+
+            <tr>
+              <td><code>len()</code></td>
+              <td>Returns the length of a supported value.</td>
+            </tr>
+
+            <tr>
+              <td><code>puts()</code></td>
+              <td>Writes a value to standard output.</td>
+            </tr>
+
+            <tr>
+              <td><code>gets()</code></td>
+              <td>Reads input from standard input.</td>
+            </tr>
+
+            <tr>
+              <td><code>hasattr()</code></td>
+              <td>Checks whether an object has an attribute.</td>
+            </tr>
+
+            <tr>
+              <td><code>sleep()</code></td>
+              <td>Pauses execution for a specified duration.</td>
+            </tr>
+
+          </table>
+
+          <h3 class="section__title">Object Methods</h3>
+
+          <p>
+            Built-in objects expose methods appropriate to their type.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+name := "Joan"
+
+name.starts("Jo")
+name.ends("an")
+            </code></pre>
+          </div>
+
+          <p>
+            Arrays and hash maps also provide collection-oriented methods.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+items := []
+
+items.push(10)
+items.push(20)
+
+user := {}
+
+user.push("name", "Joan")
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- CLI -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Command Line</h3>
+
+          <p>
+            The Joan executable can be used to run programs or start an
+            interactive session.
+          </p>
+
+          <h3 class="section__title">Run a File</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+$ joan main.jt
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Run Source Directly</h3>
+
+          <p>
+            Joan can also execute source supplied directly through the
+            command line.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+$ joan -c 'puts("Hello from Joan")'
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">REPL</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+$ joan
+
+joan&gt; 1 + 2
+3
+
+joan&gt; let x = 20
+joan&gt; x * 2
+40
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- RUNTIME -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
+          <h3 class="section__title">Runtime</h3>
+
+          <p>
+            Joan is implemented as a compiler and virtual machine.
+            Source code is parsed into an abstract syntax tree, compiled
+            into bytecode, and executed by the Joan virtual machine.
+          </p>
+
+          <h3 class="section__title">Execution Pipeline</h3>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+Source
+  |
+  v
+Lexer
+  |
+  v
+Parser
+  |
+  v
+AST
+  |
+  v
+Compiler
+  |
+  v
+Bytecode
+  |
+  v
+Virtual Machine
+  |
+  v
+Runtime Objects
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Virtual Machine</h3>
+
+          <p>
+            The Joan VM executes bytecode instructions using a stack-based
+            execution model. Each execution context maintains an instruction
+            pointer, stack, environment, and associated runtime state.
+          </p>
+
+          <h3 class="section__title">Objects</h3>
+
+          <p>
+            Joan values are represented by runtime objects. The object system
+            supports primitive values, collections, functions, iterators,
+            modules, structures, instances, methods, native functions,
+            ranges, and errors.
+          </p>
+
+          <h3 class="section__title">Garbage Collection</h3>
+
+          <p>
+            Runtime objects are managed by Joan's garbage collector.
+            Objects can be marked during collection and reclaimed when they
+            are no longer reachable.
+          </p>
+
+          <h3 class="section__title">Embedding Joan</h3>
+
+          <p>
+            Joan exposes a C API that allows the language runtime to be
+            embedded into native applications.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+Jn_State* state = Jn_get_state();
+
+Jn_exec_program(
+    state,
+    "puts(\"Hello from embedded Joan\")"
+);
+            </code></pre>
+          </div>
+
+          <p>
+            Native C functions can also be registered with the Joan runtime.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+Jn_register_fn(
+    state,
+    "my_function",
+    my_function
+);
+            </code></pre>
+          </div>
+
+        </section>
+
+
+        <!-- ===================================================== -->
+        <!-- ISSUES -->
+        <!-- ===================================================== -->
+
+        <section class="js-section">
+
           <h3 class="section__title">Issues</h3>
-          <p>Lorem ipsum dolor sit amet, scripta tibique indoctum sit ei, mel inani aeterno ad. Facer oratio ex per. At eam movet verear, in sea brute patrioque disputando, usu nonumes torquatos an. Ex his quaerendum intellegebat, ut vel homero accusam. Eum at debet tibique, in vocibus temporibus adversarium sed. Porro verear eu vix, ne usu tation vituperata.</p>
-          <p>Malis percipitur an pro. Pro aperiam persequeris at, at sonet sensibus mei, id mea postulant definiebas concludaturque. Id qui malis abhorreant, mazim melius quo et. At eam altera dolorum, case dicant lobortis ius te, ad vel affert oportere reprehendunt. Quo no verterem deseruisse, mea brute postea te, ne per tacimates suavitate vituperatoribus.</p>
+
+          <p>
+            Joan is actively developed. Some language features and runtime
+            APIs may change between releases.
+          </p>
+
+          <h3 class="section__title">Reporting an Issue</h3>
+
+          <p>
+            When reporting a bug, include the Joan version, operating system,
+            source code that reproduces the problem, and the error output.
+          </p>
+
+          <div class="code__block code__block--notabs">
+            <pre class="code code--block"><code>
+Joan version: 0.7.8
+Platform: Windows / Linux / macOS
+
+Example:
+
+fn main() {
+    // minimal reproduction
+}
+            </code></pre>
+          </div>
+
+          <h3 class="section__title">Development</h3>
+
+          <p>
+            Joan's source code contains the lexer, parser, compiler,
+            bytecode emitter, virtual machine, object system, garbage
+            collector, standard library, and C embedding API.
+          </p>
+
+          <p>
+            Contributions, bug reports, language proposals, and improvements
+            are welcome through the project's GitHub repository.
+          </p>
+
         </section>
+
       </article>
     </div>
-    <script>hljs.initHighlightingOnLoad();</script>
+
+    <script>
+      hljs.initHighlightingOnLoad();
+    </script>
+
     <script src="index.js"></script>
   </body>
 </html>
